@@ -55,6 +55,7 @@ CSRC += $(LIBRARYPATH)/uart.c
 CSRC += $(LIBRARYPATH)/circularbuffer.c
 CSRC += $(LIBRARYPATH)/adc.c
 CSRC += $(LIBRARYPATH)/dac.c
+CSRC += $(LIBRARYPATH)/capcom.c
 
 ASRC = $(SYSPATH)/startup_LPC17xx.asm
 
