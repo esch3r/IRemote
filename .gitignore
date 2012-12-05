@@ -15,5 +15,15 @@
 *.exe
 *.out
 *.app
+
+# µC
 *.hex
 *.bin
+*.lst
+*.map
+
+# Temporary files
+*~*
+
+# Build folder
+code/build/
