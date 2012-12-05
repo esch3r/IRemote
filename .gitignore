@@ -29,3 +29,6 @@
 # Build folder
 code/build/
 code/doxygen/
+
+# Linux
+.directory
