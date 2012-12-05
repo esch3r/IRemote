@@ -21,6 +21,7 @@
 *.bin
 *.lst
 *.map
+*.elf
 
 # Temporary files
 *~*
