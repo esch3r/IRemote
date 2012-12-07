@@ -9,13 +9,21 @@
 #define _TIMERLIB_H_
 
 /** Set this constant to 0 if you want to write your own interrupt function */
+#ifndef TIMER0_IRQ_ENABLED
 #define TIMER0_IRQ_ENABLED 1
+#endif
 /** Set this constant to 0 if you want to write your own interrupt function */
+#ifndef TIMER1_IRQ_ENABLED
 #define TIMER1_IRQ_ENABLED 1
+#endif
 /** Set this constant to 0 if you want to write your own interrupt function */
+#ifndef TIMER2_IRQ_ENABLED
 #define TIMER2_IRQ_ENABLED 1
+#endif
 /** Set this constant to 0 if you want to write your own interrupt function */
+#ifndef TIMER3_IRQ_ENABLED
 #define TIMER3_IRQ_ENABLED 1
+#endif
 
 #define TIMER0 0
 #define TIMER1 1
@@ -288,6 +296,11 @@ int8 singleShotTimer2(uint32 ms, void (* func)(void));
  *  @return Returns 0 if successful or -1 if timer is already running.
  */
 int8 singleShotTimer3(uint32 ms, void (* func)(void));
+
+int8 initializeCapCom0(uint32 khz, uint8 pin, void (* func)(void));
+int8 initializeCapCom1(uint32 khz, uint8 pin, void (* func)(void));
+int8 initializeCapCom2(uint32 khz, uint8 pin, void (* func)(void));
+int8 initializeCapCom3(uint32 khz, uint8 pin, void (* func)(void));
 
 #endif
 

@@ -31,6 +31,114 @@ int8 deinitializeTimer0(void)
     return 0;
 }
 
+int8 initializeCapCom0(uint32 khz, uint8 pin, void (* func)(void))
+{
+    if (TIMER0_RUNNING())                       /* if timer is already in use return -1 */
+        return -1;
+        
+    TIMER0_ENABLE_CLK();                        /* Enable clock */
+    
+    TIMER0_RESET();                             /* Reset Timer Counter and Prescale Counter */
+    TIMER0_SET_KHZ(khz);                        /* Configure the timer to run with the given frequency */
+    TIMER0_SET_INTERVAL_MS(1000);
+    TIMER0_RESET_IRQS();                        /* Reset all interrupts */
+    TIMER0_ENABLE_IRQ();                        /* Enable IRQ for Timer_32_0) */
+    TIMER0_SET_IRQ_PRIORITY(LOW_IRQ_PRIORITY);  /* Set interrupt priority to allow delays in interrupt routine (not recommended) */
+    
+    
+    switch (pin)
+    {
+        case 0: CAPCOM_ENABLE_PIN0();  // Enable pin 0
+                CAPCOM0_ENABLE_CAP0(); // set CAP0 events
+                break;
+        case 1: CAPCOM_ENABLE_PIN1();  //Enable pin 1
+                CAPCOM0_ENABLE_CAP0(); // set CAP0 events
+                break;
+        case 2: CAPCOM_ENABLE_PIN2();  //Enable pin 2
+                CAPCOM0_ENABLE_CAP0(); // set CAP0 events
+                break;
+        case 3: CAPCOM_ENABLE_PIN3();  //Enable pin 3
+                CAPCOM0_ENABLE_CAP0(); // set CAP0 events
+                break;
+        case 4: CAPCOM_ENABLE_PIN4();  //Enable pin 4
+                CAPCOM0_ENABLE_CAP1(); // set CAP1 events
+                break;
+        case 5: CAPCOM_ENABLE_PIN5();  //Enable pin 5
+                CAPCOM0_ENABLE_CAP1(); // set CAP1 events
+                break;
+        case 6: CAPCOM_ENABLE_PIN6();  //Enable pin 6
+                CAPCOM0_ENABLE_CAP1(); // set CAP1 events
+                break;
+        case 7: CAPCOM_ENABLE_PIN7();  //Enable pin 7
+                CAPCOM0_ENABLE_CAP1(); // set CAP1 events
+                break;
+        default: break;
+    }
+    
+    functionPointer0 = func;  
+    
+    return 0;
+}
+
+int8 initializeCapCom3(uint32 khz, uint8 pin, void (* func)(void))
+{
+    //if (TIMER3_RUNNING())                       /* if timer is already in use return -1 */
+    //    return -1;
+        
+    TIMER3_ENABLE_CLK();                        /* Enable clock */
+    
+    CAPCOM_ENABLE_PIN5();  // Enable pin 0
+    
+    TIMER3_SET_KHZ(khz);                        /* Configure the timer to run with the given frequency */
+    TIMER3_RESET();                             /* Reset Timer Counter and Prescale Counter */
+    //TIMER3_SET_INTERVAL_MS(1000);
+    //TIMER3_RESET_AND_IRQ_ON_MATCH();
+    //TIMER3_RESET_ON_MATCH();            /* Reset the TC and generate an interrupt */
+    //TIMER3_RESET_IRQS();                        /* Reset all interrupts */
+    //TIMER3_SET_IRQ_PRIORITY(LOW_IRQ_PRIORITY);  /* Set interrupt priority to allow delays in interrupt routine (not recommended) */
+    CAPCOM3_ENABLE_CAP0();
+    CAPCOM3_ENABLE_CAP1(); // set CAP0 events
+    TIMER3_START(); /* start timer */
+    
+    
+   /* switch (pin)
+    {
+        case 0: CAPCOM_ENABLE_PIN0();  // Enable pin 0
+                CAPCOM3_ENABLE_CAP0(); // set CAP0 events
+                break;
+        case 1: CAPCOM_ENABLE_PIN1();  //Enable pin 1
+                CAPCOM3_ENABLE_CAP0(); // set CAP0 events
+                break;
+        case 2: CAPCOM_ENABLE_PIN2();  //Enable pin 2
+                CAPCOM3_ENABLE_CAP0(); // set CAP0 events
+                break;
+        case 3: CAPCOM_ENABLE_PIN3();  //Enable pin 3
+                CAPCOM3_ENABLE_CAP0(); // set CAP0 events
+                break;
+        case 4: CAPCOM_ENABLE_PIN4();  //Enable pin 4
+                CAPCOM3_ENABLE_CAP1(); // set CAP1 events
+                break;
+        case 5: CAPCOM_ENABLE_PIN5();  //Enable pin 5
+                CAPCOM3_ENABLE_CAP1(); // set CAP1 events
+                break;
+        case 6: CAPCOM_ENABLE_PIN6();  //Enable pin 6
+                CAPCOM3_ENABLE_CAP1(); // set CAP1 events
+                break;
+        case 7: CAPCOM_ENABLE_PIN7();  //Enable pin 7
+                CAPCOM3_ENABLE_CAP1(); // set CAP1 events
+                break;
+        default: break;
+    }*/
+    
+    NVIC_SetPriority(TIMER3_IRQn, ((0x01<<3)|0x01));
+    TIMER3_ENABLE_IRQ();                        /* Enable IRQ for Timer_32_0) */
+    
+    
+    functionPointer3 = func;  
+    
+    return 0;
+}
+
 void startTimer0(void)
 {
     TIMER0_START(); /* start timer */
@@ -715,8 +823,8 @@ int8 singleShotTimer3(uint32 ms, void (* func)(void))
 #if (TIMER3_IRQ_ENABLED == 1)
 void TIMER3_IRQHANDLER()
 {
-    TIMER3_RESET_IRQS();                    /* clear interrupt flag */
-
+    TIMER3_RESET_IRQS();                    // clear interrupt flag 
+    
     if (functionPointer3 != NULL)
         (*functionPointer3)();
     

@@ -22,7 +22,7 @@ CSRC += $(SYSPATH)/NVICInit.c
 CSRC += $(SYSPATH)/system_LPC17xx.c
 CSRC += $(SYSPATH)/libnosys_gnu.c
 
-CSRC += $(DRVPATH)/debug_frmwrk.c
+#CSRC += $(DRVPATH)/debug_frmwrk.c
 #CSRC += $(DRVPATH)/lpc17xx_gpdma.c
 #CSRC += $(DRVPATH)/lpc17xx_pinsel.c
 #CSRC += $(DRVPATH)/lpc17xx_systick.c
@@ -49,13 +49,13 @@ CSRC += $(DRVPATH)/lpc17xx_nvic.c
 #CSRC += $(DRVPATH)/lpc17xx_ssp.c
 CSRC += $(DRVPATH)/ledDriver.c
 
+#CSRC += $(LIBRARYPATH)/capcom.c
 CSRC += $(LIBRARYPATH)/timer.c
 CSRC += $(LIBRARYPATH)/led.c
 CSRC += $(LIBRARYPATH)/uart.c
 CSRC += $(LIBRARYPATH)/circularbuffer.c
 CSRC += $(LIBRARYPATH)/adc.c
 CSRC += $(LIBRARYPATH)/dac.c
-CSRC += $(LIBRARYPATH)/capcom.c
 
 ASRC = $(SYSPATH)/startup_LPC17xx.asm
 
