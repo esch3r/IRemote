@@ -9,11 +9,14 @@
 #include <math.h>
 #include <sys/types.h>
 #include <stdio.h>
+#include <string.h>
 
 void myFunc();
 
-uint16 currentTime = 0;
-uint32  lastState = 0;
+uint16  currentTime = 0;
+uint32  lastState = (1 << 26);
+uint8   frameReceived = 0;
+uint8   first = 1;
 
 CircularBuffer buffer0;
 char stringBuffer[1000];
@@ -33,24 +36,28 @@ int main(void)
     
     initializeCb(&buffer0,100,sizeof(uint16));
     
-    initializeTimer3(200,10);
+    initializeTimer3(1000,5);
     connectFunctionTimer3(&myFunc);
     startTimer3();
     
     LPC_GPIO1->FIODIR &= ~(1 << 26);
+    //LPC_PINCON->PINMODE3 |= (0b10 << 20);
     
     uint16 item;
-    uint16 n;
     for (;;) 
     {
-        delayMs(1000);
-        n = 0;
-        while (getCb(&buffer0,&item) == 0)
+        delayMs(10);
+        if (frameReceived == 1)
         {
-            printfUart0("%u\n",item);
-            //n += snprintf(&stringBuffer[n],1000-n,"%u ",item);
+            strcpy(stringBuffer,"Received. ");
+            while (getCb(&buffer0,&item) == 0)
+            {
+                sprintf(stringBuffer,"%s %u",stringBuffer,item);
+            }
+            sprintf(stringBuffer,"%s\n",stringBuffer);
+            printfUart0(stringBuffer);
+            frameReceived = 0;
         }
-        //printfUart0(stringBuffer);
      }
 
     return 0 ;
@@ -58,13 +65,23 @@ int main(void)
 
 void myFunc()
 {
-    currentTime++;
     static uint32 state;
+    const uint16 timeout = 2000; //10ms
+    
+    currentTime++;
     state = (LPC_GPIO1->FIOPIN & (1 << 26));
     if (state != lastState)
     {
-        //printfUart0("%u %u\n", currentTime, state);
-        putCb(&buffer0, &currentTime);
+        if (first != 1)
+        {
+            putCb(&buffer0, &currentTime);
+            if (currentTime >= timeout)     //detected a timeout => frameReceived
+            {
+                frameReceived = 1;
+                first = 1;
+            }
+        }
+        first = 0;
         currentTime = 0;
     }
     lastState = state;
