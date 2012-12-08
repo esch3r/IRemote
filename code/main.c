@@ -6,12 +6,15 @@
 #include <uart.h>
 #include <adc.h>
 #include <dac.h>
+#include <gpio.h>
+#include <pincon.h>
 #include <math.h>
 #include <sys/types.h>
 #include <stdio.h>
 #include <string.h>
 
 void myFunc();
+void testFunc();
 
 uint16  currentTime = 0;
 uint32  lastState = (1 << 26);
@@ -40,7 +43,11 @@ int main(void)
     connectFunctionTimer3(&myFunc);
     startTimer3();
     
-    LPC_GPIO1->FIODIR &= ~(1 << 26);
+    //LPC_GPIO1->FIODIR &= ~(1 << 26);
+    setGpioDirection(1,26,GpioDirectionInput);
+    setPinMode(2,10,PinModeNoPullUpDown);
+    setGpioDirection(2,10,GpioDirectionInput);
+    enableGpioInterrupt(2,10,GpioInterruptRisingEdge,&testFunc);
     //LPC_PINCON->PINMODE3 |= (0b10 << 20);
     
     uint16 item;
@@ -69,7 +76,7 @@ void myFunc()
     const uint16 timeout = 2000; //10ms
     
     currentTime++;
-    state = (LPC_GPIO1->FIOPIN & (1 << 26));
+    state = readGpio(1,26);//(LPC_GPIO1->FIOPIN & (1 << 26));
     if (state != lastState)
     {
         if (first != 1)
@@ -87,3 +94,7 @@ void myFunc()
     lastState = state;
 }
 
+void testFunc()
+{
+    toggleLed(1);
+}
