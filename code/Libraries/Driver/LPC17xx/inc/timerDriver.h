@@ -21,8 +21,8 @@
 #define TIMER0_SET_KHZ(x)               TIMER0_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E3))-1)
 #define TIMER0_SET_MHZ(x)               TIMER0_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E6))-1)
 #define TIMER0_RESET_IRQS()             LPC_TIM0->IR  = 0xff
-#define TIMER0_SET_INTERVAL_MS(x)       LPC_TIM0->MR0 = (uint32)x*(SYSTEMCLK/(LPC_TIM0->PR+1)) / 1000
-#define TIMER0_SET_INTERVAL_US(x)       LPC_TIM0->MR0 = (uint32)x*(SYSTEMCLK/(LPC_TIM0->PR+1)) / 1000000
+#define TIMER0_SET_INTERVAL_MS(x)       LPC_TIM0->MR0 = (uint32)(x*(SYSTEMCLK/(LPC_TIM0->PR+1)) / 1000)-1
+#define TIMER0_SET_INTERVAL_US(x)       LPC_TIM0->MR0 = (uint32)(x*(SYSTEMCLK/(LPC_TIM0->PR+1)) / 1000000)-1
 #define TIMER0_ENABLE_IRQ()             NVIC_EnableIRQ(TIMER0_IRQn)
 #define TIMER0_DISABLE_IRQ()            NVIC_DisableIRQ(TIMER0_IRQn)
 #define TIMER0_SET_IRQ_PRIORITY(x)                NVIC_SetPriority(TIMER0_IRQn,x)
@@ -41,8 +41,8 @@
 #define TIMER1_SET_KHZ(x)               TIMER1_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E3))-1)
 #define TIMER1_SET_MHZ(x)               TIMER1_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E6))-1)
 #define TIMER1_RESET_IRQS()             LPC_TIM1->IR  = 0xff
-#define TIMER1_SET_INTERVAL_MS(x)       LPC_TIM1->MR0 = (uint32)x*(SYSTEMCLK/(LPC_TIM1->PR+1)) / 1000
-#define TIMER1_SET_INTERVAL_US(x)       LPC_TIM1->MR0 = (uint32)x*(SYSTEMCLK/(LPC_TIM1->PR+1)) / 1000000
+#define TIMER1_SET_INTERVAL_MS(x)       LPC_TIM1->MR0 = (uint32)(x*(SYSTEMCLK/(LPC_TIM1->PR+1)) / 1000)-1
+#define TIMER1_SET_INTERVAL_US(x)       LPC_TIM1->MR0 = (uint32)(x*(SYSTEMCLK/(LPC_TIM1->PR+1)) / 1000000)-1
 #define TIMER1_ENABLE_IRQ()             NVIC_EnableIRQ(TIMER1_IRQn)
 #define TIMER1_DISABLE_IRQ()            NVIC_DisableIRQ(TIMER1_IRQn)
 #define TIMER1_SET_IRQ_PRIORITY(x)                NVIC_SetPriority(TIMER1_IRQn,x)
@@ -61,8 +61,8 @@
 #define TIMER2_SET_KHZ(x)               TIMER2_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E3))-1)
 #define TIMER2_SET_MHZ(x)               TIMER2_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E6))-1)
 #define TIMER2_RESET_IRQS()             LPC_TIM2->IR  = 0xff
-#define TIMER2_SET_INTERVAL_MS(x)       LPC_TIM2->MR0 = (uint32)x*(SYSTEMCLK/(LPC_TIM2->PR+1)) / 1000
-#define TIMER2_SET_INTERVAL_US(x)       LPC_TIM2->MR0 = (uint32)x*(SYSTEMCLK/(LPC_TIM2->PR+1)) / 1000000
+#define TIMER2_SET_INTERVAL_MS(x)       LPC_TIM2->MR0 = (uint32)(x*(SYSTEMCLK/(LPC_TIM2->PR+1)) / 1000)-1
+#define TIMER2_SET_INTERVAL_US(x)       LPC_TIM2->MR0 = (uint32)(x*(SYSTEMCLK/(LPC_TIM2->PR+1)) / 1000000)-1
 #define TIMER2_ENABLE_IRQ()             NVIC_EnableIRQ(TIMER2_IRQn)
 #define TIMER2_DISABLE_IRQ()            NVIC_DisableIRQ(TIMER2_IRQn)
 #define TIMER2_SET_IRQ_PRIORITY(x)                NVIC_SetPriority(TIMER2_IRQn,x)
@@ -81,17 +81,38 @@
 #define TIMER3_SET_KHZ(x)               TIMER3_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E3))-1)
 #define TIMER3_SET_MHZ(x)               TIMER3_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E6))-1)
 #define TIMER3_RESET_IRQS()             LPC_TIM3->IR  = 0xff
-#define TIMER3_SET_INTERVAL_MS(x)       LPC_TIM3->MR0 = (uint32)x*(SYSTEMCLK/(LPC_TIM3->PR+1)) / 1000
-#define TIMER3_SET_INTERVAL_US(x)       LPC_TIM3->MR0 = (uint32)x*(SYSTEMCLK/(LPC_TIM3->PR+1)) / 1000000
+#define TIMER3_SET_INTERVAL_MS(x)       LPC_TIM3->MR0 = (uint32)(x*(SYSTEMCLK/(LPC_TIM3->PR+1)) / 1000)-1
+#define TIMER3_SET_INTERVAL_US(x)       LPC_TIM3->MR0 = (uint32)(x*(SYSTEMCLK/(LPC_TIM3->PR+1)) / 1000000)-1
 #define TIMER3_ENABLE_IRQ()             NVIC_EnableIRQ(TIMER3_IRQn)
 #define TIMER3_DISABLE_IRQ()            NVIC_DisableIRQ(TIMER3_IRQn)
 #define TIMER3_SET_IRQ_PRIORITY(x)                NVIC_SetPriority(TIMER3_IRQn,x)
 #define TIMER3_RESET_AND_IRQ_ON_MATCH()           LPC_TIM3->MCR = (1 << 0) | (1 << 1)
 #define TIMER3_RESET_STOP_AND_IRQ_ON_MATCH()      LPC_TIM3->MCR = (1 << 0) | (1 << 1) | (1 << 2)
+#define TIMER3_RESET_ON_MATCH()                   LPC_TIM3->MCR = (1 << 1);
 #define TIMER3_STOP_AND_IRQ_ON_MATCH()            LPC_TIM3->MCR = (1 << 0) | (1 << 2)
 #define TIMER3_IRQHANDLER()             TIMER3_IRQHandler(void)
 
+#define CAPCOM_ENABLE_PIN0()   LPC_PINCON->PINSEL3  |= (0b11 << 20) // ; LPC_PINCON->PINMODE3 |= (0b10 << 20)  // CAP0.0   P1.26
+#define CAPCOM_ENABLE_PIN1()   LPC_PINCON->PINSEL3  |= (0b11 <<  4) // ; LPC_PINCON->PINMODE3 |= (0b10 <<  4)  // CAP1.0   P1.18
+#define CAPCOM_ENABLE_PIN2()   LPC_PINCON->PINSEL0  |= (0b11 <<  8) // ; LPC_PINCON->PINMODE0 |= (0b10 <<  8)  // CAP2.0   P0.4
+#define CAPCOM_ENABLE_PIN3()   LPC_PINCON->PINSEL1  |= (0b11 << 14) // ; LPC_PINCON->PINMODE1 |= (0b10 << 14)  // CAP3.0   P0.23
+#define CAPCOM_ENABLE_PIN4()   LPC_PINCON->PINSEL3  |= (0b11 << 22) // ; LPC_PINCON->PINMODE3 |= (0b10 << 22)  // CAP0.1   P1.27
+#define CAPCOM_ENABLE_PIN5()   LPC_PINCON->PINSEL3  |= (0b11 <<  6) // ; LPC_PINCON->PINMODE3 |= (0b10 <<  6)  // CAP1.1   P1.19
+#define CAPCOM_ENABLE_PIN6()   LPC_PINCON->PINSEL0  |= (0b11 << 10) // ; LPC_PINCON->PINMODE0 |= (0b10 << 10)  // CAP2.1   P0.5
+#define CAPCOM_ENABLE_PIN7()   LPC_PINCON->PINSEL1  |= (0b11 << 16) // ; LPC_PINCON->PINMODE1 |= (0b10 << 16)  // CAP3.1   P0.24
+
+#define CAPCOM0_ENABLE_CAP0()  LPC_TIM0->CCR |= (1 << 0) | (1 << 1) | (1 << 2)   //CAP0 on rising and falling edge and interrupt
+#define CAPCOM0_ENABLE_CAP1()  LPC_TIM0->CCR |= (1 << 3) | (1 << 4) | (1 << 5)   //CAP1 on rising and falling edge and interrupt
+
+#define CAPCOM1_ENABLE_CAP0()  LPC_TIM1->CCR |= (1 << 0) | (1 << 1) | (1 << 2)   //CAP0 on rising and falling edge and interrupt
+#define CAPCOM1_ENABLE_CAP1()  LPC_TIM1->CCR |= (1 << 3) | (1 << 4) | (1 << 5)   //CAP1 on rising and falling edge and interrupt
+
+#define CAPCOM2_ENABLE_CAP0()  LPC_TIM2->CCR |= (1 << 0) | (1 << 1) | (1 << 2)   //CAP0 on rising and falling edge and interrupt
+#define CAPCOM2_ENABLE_CAP1()  LPC_TIM2->CCR |= (1 << 3) | (1 << 4) | (1 << 5)   //CAP1 on rising and falling edge and interrupt
+
+#define CAPCOM3_ENABLE_CAP0()  LPC_TIM3->CCR |= (1 << 0) | (1 << 1) | (1 << 2)   //CAP0 on rising and falling edge and interrupt
+#define CAPCOM3_ENABLE_CAP1()  LPC_TIM3->CCR |= (1 << 3) | (1 << 4) | (1 << 5)   //CAP1 on rising and falling edge and interrupt
+
 #include <LPC17xx.h>
-#include <types.h>
 
 #endif

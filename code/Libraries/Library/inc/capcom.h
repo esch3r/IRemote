@@ -8,8 +8,6 @@
 #ifndef _CAPCOM_H_
 #define _CAPCOM_H_
 
-#include <types.h>
-
-int8 initializeCapCom0(uint32 clk, void (* func)(void));
+int c_entry(void);
 
 #endif
