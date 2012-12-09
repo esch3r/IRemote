@@ -8,6 +8,7 @@
 #include <dac.h>
 #include <gpio.h>
 #include <pincon.h>
+#include <pwm.h>
 #include <math.h>
 #include <sys/types.h>
 #include <stdio.h>
@@ -37,6 +38,8 @@ int main(void)
     initializeUart0(115200);                    // Init the UART
     printfUart0("Welcome to my Program!\n");    // Send a welcome message
     
+    initializePWM(38000,0.5,1);
+    
     initializeCb(&buffer0,100,sizeof(uint16));
     
     initializeTimer3(1000,5);
@@ -45,7 +48,7 @@ int main(void)
     
     //LPC_GPIO1->FIODIR &= ~(1 << 26);
     setGpioDirection(1,26,GpioDirectionInput);
-    setPinMode(2,10,PinModeNoPullUpDown);
+    setPinMode(2,10,PinModeNoPullUpDown);   //button3
     setGpioDirection(2,10,GpioDirectionInput);
     enableGpioInterrupt(2,10,GpioInterruptRisingEdge,&testFunc);
     //LPC_PINCON->PINMODE3 |= (0b10 << 20);
@@ -96,5 +99,5 @@ void myFunc()
 
 void testFunc()
 {
-    toggleLed(1);
+    startPWM(1);
 }

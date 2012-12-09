@@ -27,8 +27,11 @@
 *~*
 
 # Build folder
-code/build/
-code/doxygen/
+./code/build/
+./code/doxygen/
 
 # Linux
 .directory
+
+# Other
+./code/DbgCfg/LPC1758_OOCD_CMARM.cfg

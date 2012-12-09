@@ -2,7 +2,6 @@
 #define _PWM_DRIVER_H_
 
 //#include "LPC17xx.h"
-#include "lpc17xx_pinsel.h"
 #include <types.h>
 #include <LPC17xx.h>
 
@@ -42,6 +41,7 @@
 #define ADC_HAS_OVERRUN(x)  x & ADC_OVERRUN
 #define ADC_GET_VALUE(x)    (x >> 4) & 0xFFFF;
 
-int8 startPWM(uint8 pin);
 int8 initializePWM(uint32 freq,float duty, uint8 pin);
+inline void startPWM(uint8 pin);
+inline void stopPwm(uint8 pin);
 #endif

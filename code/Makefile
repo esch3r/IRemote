@@ -56,13 +56,9 @@ CSRC += $(LIBRARYPATH)/uart.c
 CSRC += $(LIBRARYPATH)/circularbuffer.c
 CSRC += $(LIBRARYPATH)/adc.c
 CSRC += $(LIBRARYPATH)/dac.c
-<<<<<<< HEAD
-CSRC += $(LIBRARYPATH)/capcom.c
 CSRC += $(LIBRARYPATH)/pwm.c
-=======
 CSRC += $(LIBRARYPATH)/gpio.c
 CSRC += $(LIBRARYPATH)/pincon.c
->>>>>>> cb1466efdcfce2833fe3125a55bd5d4221b7a03b
 
 ASRC = $(SYSPATH)/startup_LPC17xx.asm
 
