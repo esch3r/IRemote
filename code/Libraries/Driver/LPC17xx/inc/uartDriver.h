@@ -2,7 +2,6 @@
 #define _UARTDRIVER_H_
 
 #include <LPC17xx.h>
-#include <types.h>
 
 #define SYSTEMCORECLK SystemCoreClock
 #define PCLK SYSTEMCORECLK/4

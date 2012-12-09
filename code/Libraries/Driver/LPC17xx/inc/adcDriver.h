@@ -55,4 +55,6 @@
 #define ADC_HAS_OVERRUN(x)  x & ADC_OVERRUN
 #define ADC_GET_VALUE(x)    (x >> 4) & 0xFFFF;
 
+#include <LPC17xx.h>
+
 #endif

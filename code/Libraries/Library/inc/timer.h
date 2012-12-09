@@ -1,5 +1,5 @@
 /**
- * @file timerLib.h
+ * @file timer.h
  * @author Alexander Rössler
  * @brief Timer Library
  * @date 16-10-2012
@@ -296,6 +296,11 @@ int8 singleShotTimer2(uint32 ms, void (* func)(void));
  *  @return Returns 0 if successful or -1 if timer is already running.
  */
 int8 singleShotTimer3(uint32 ms, void (* func)(void));
+
+inline uint32 getCounterValueTimer0();
+inline uint32 getCounterValueTimer1();
+inline uint32 getCounterValueTimer2();
+inline uint32 getCounterValueTimer3();
 
 int8 initializeCapCom0(uint32 khz, uint8 pin, void (* func)(void));
 int8 initializeCapCom1(uint32 khz, uint8 pin, void (* func)(void));

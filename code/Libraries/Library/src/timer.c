@@ -277,6 +277,11 @@ int8 singleShotTimer0(uint32 ms, void (* func)(void))
     return 0;
 }
 
+inline uint32 getCounterValueTimer0()
+{
+    return TIMER0_COUNTER_VALUE();
+}
+
 #if (TIMER0_IRQ_ENABLED == 1)
 void TIMER0_IRQHANDLER()
 {
@@ -456,6 +461,11 @@ int8 singleShotTimer1(uint32 ms, void (* func)(void))
     TIMER1_START();                                     /* Start timer */
     
     return 0;
+}
+
+inline uint32 getCounterValueTimer1()
+{
+    return TIMER1_COUNTER_VALUE();
 }
 
 #if (TIMER1_IRQ_ENABLED == 1)
@@ -639,6 +649,11 @@ int8 singleShotTimer2(uint32 ms, void (* func)(void))
     return 0;
 }
 
+inline uint32 getCounterValueTimer2()
+{
+    return TIMER2_COUNTER_VALUE();
+}
+
 #if (TIMER2_IRQ_ENABLED == 1)
 void TIMER2_IRQHANDLER()
 {
@@ -818,6 +833,11 @@ int8 singleShotTimer3(uint32 ms, void (* func)(void))
     TIMER3_START();                                     /* Start timer */
     
     return 0;
+}
+
+inline uint32 getCounterValueTimer3()
+{
+    return TIMER3_COUNTER_VALUE();
 }
 
 #if (TIMER3_IRQ_ENABLED == 1)

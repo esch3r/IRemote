@@ -108,27 +108,27 @@ void enableGpioInterrupt(uint8 port, uint8 pin, enum GpioInterruptType type, voi
     {
         case 0: if ((type == GpioInterruptRisingEdge) || (type == GpioInterruptFallingAndRisingEdge))
                 {
-                    LPC_GPIOINT->IO0IntEnR |= (1 << pin);
+                   GPIO0_ENABLE_IRQ_RISING_EDGE(pin);
                 }
                 if ((type == GpioInterruptFallingEdge) || (type == GpioInterruptFallingAndRisingEdge))
                 {
-                    LPC_GPIOINT->IO0IntEnF |= (1 << pin);
+                    GPIO0_ENABLE_IRQ_FALLING_EDGE(pin);
                 }
                 functionPointers0[pin] = func;
                 break;
         case 2: if ((type == GpioInterruptRisingEdge) || (type == GpioInterruptFallingAndRisingEdge))
                 {
-                    LPC_GPIOINT->IO2IntEnR |= (1 << pin);
+                    GPIO2_ENABLE_IRQ_RISING_EDGE(pin);
                 }
                 if ((type == GpioInterruptFallingEdge) || (type == GpioInterruptFallingAndRisingEdge))
                 {
-                    LPC_GPIOINT->IO2IntEnF |= (1 << pin);
+                    GPIO2_ENABLE_IRQ_FALLING_EDGE(pin);
                 }
                 functionPointers2[pin] = func;
                 break;
         default: return;
     }
-    NVIC_EnableIRQ(EINT3_IRQn);
+    GPIO_ENABLE_IRQS();
     return;
 }
 
@@ -136,43 +136,44 @@ void disableGpioInterrupt(uint8 port, uint8 pin)
 {
     switch (port)
     {
-        case 0: LPC_GPIOINT->IO0IntEnR &= ~(1 << pin);
-                LPC_GPIOINT->IO0IntEnF &= ~(1 << pin);
+        case 0: GPIO0_DISABLE_IRQ_RISING_EDGE(pin);
+                GPIO0_DISABLE_IRQ_FALLING_EDGE(pin);
                 return;
-        case 2: LPC_GPIOINT->IO2IntEnR &= ~(1 << pin);
-                LPC_GPIOINT->IO2IntEnF &= ~(1 << pin);
+        case 2: GPIO2_DISABLE_IRQ_RISING_EDGE(pin);
+                GPIO2_DISABLE_IRQ_FALLING_EDGE(pin);
                 return;
         default: return;
     }
     return;
 }
 
-void EINT3_IRQHandler()
+#if (GPIO_IRQ_ENABLED == 1)
+void GPIO_IRQHANDLER()
 {
     uint8 i;
-    //toggleLed(1);
     
-    if (LPC_GPIOINT->IntStatus & (1 << 0))
+    if (GPIO0_IRQ_PENDING())
     {
         for (i = 0; i < GPIO0_INT_PIN_COUNT; i++)
         {
-            if ((LPC_GPIOINT->IO0IntStatR & (1 << i)) || (LPC_GPIOINT->IO0IntStatF & (1 << i)))
+            if ((GPIO0_RISING_IRQ_PENDING(i)) || (GPIO0_FALLING_IRQ_PENDING(i)))
             {
                 (*functionPointers0[i])();
-                LPC_GPIOINT->IO0IntClr |= (1 << i);
+                GPIO0_CLEAR_IRQ(i);
             }
         }
 
     }
-    else if (LPC_GPIOINT->IntStatus & (1 << 2))
+    else if (GPIO2_IRQ_PENDING())
     {
         for (i = 0; i < GPIO2_INT_PIN_COUNT; i++)
         {
-            if ((LPC_GPIOINT->IO2IntStatR & (1 << i)) || (LPC_GPIOINT->IO2IntStatF & (1 << i)))
+            if ((GPIO2_RISING_IRQ_PENDING(i)) || (GPIO2_FALLING_IRQ_PENDING(i)))
             {
                 (*functionPointers2[i])();
-                LPC_GPIOINT->IO2IntClr |= (1 << i);
+                GPIO2_CLEAR_IRQ(i);
             }
         }
     }
 }
+#endif

@@ -4,23 +4,21 @@
 #include <timer.h>
 #include <led.h>
 #include <uart.h>
-#include <adc.h>
-#include <dac.h>
 #include <gpio.h>
 #include <pincon.h>
 #include <pwm.h>
-#include <math.h>
-#include <sys/types.h>
 #include <stdio.h>
 #include <string.h>
 
 void myFunc();
 void testFunc();
 
-uint16  currentTime = 0;
+//uint16  currentTime = 0;
 uint32  lastState = (1 << 26);
 uint8   frameReceived = 0;
 uint8   first = 1;
+
+//uint32 lastTime = 0;
 
 CircularBuffer buffer0;
 char stringBuffer[1000];
@@ -42,16 +40,18 @@ int main(void)
     
     initializeCb(&buffer0,100,sizeof(uint16));
     
-    initializeTimer3(1000,5);
-    connectFunctionTimer3(&myFunc);
+    initializeTimer3(1000,1E9);
+    //connectFunctionTimer3(&myFunc);
     startTimer3();
     
-    //LPC_GPIO1->FIODIR &= ~(1 << 26);
-    setGpioDirection(1,26,GpioDirectionInput);
-    setPinMode(2,10,PinModeNoPullUpDown);   //button3
+    setGpioDirection(2,6,GpioDirectionInput);  // TSOP input pin
+    enableGpioInterrupt(2,6,GpioInterruptFallingAndRisingEdge, &myFunc);
+    
+    setPinMode(2,10,PinModeNoPullUpDown);       // button3
     setGpioDirection(2,10,GpioDirectionInput);
     enableGpioInterrupt(2,10,GpioInterruptRisingEdge,&testFunc);
-    //LPC_PINCON->PINMODE3 |= (0b10 << 20);
+    
+    setGpioDirection(0,9,GpioDirectionOutput);   // Output pin for testing purposes
     
     uint16 item;
     for (;;) 
@@ -75,26 +75,33 @@ int main(void)
 
 void myFunc()
 {
-    static uint32 state;
-    const uint16 timeout = 2000; //10ms
+//    static uint32 state;
+    const uint16 timeout = 20000; //20ms
+    static uint32 lastTime = 0;
+    static uint32 currentTime;
+    static uint16 timeDiff;
     
-    currentTime++;
-    state = readGpio(1,26);//(LPC_GPIO1->FIOPIN & (1 << 26));
-    if (state != lastState)
-    {
+    currentTime = getCounterValueTimer3();
+    timeDiff = currentTime - lastTime;
+    
+//    currentTime++;
+//    state = readGpio(2,6);
+//    if (state != lastState)
+//    {
         if (first != 1)
         {
-            putCb(&buffer0, &currentTime);
-            if (currentTime >= timeout)     //detected a timeout => frameReceived
+            putCb(&buffer0, &timeDiff);
+            if (timeDiff >= timeout)     //detected a timeout => frameReceived
             {
                 frameReceived = 1;
                 first = 1;
             }
         }
         first = 0;
-        currentTime = 0;
-    }
-    lastState = state;
+//        currentTime = 0;
+//    }
+//    lastState = state;
+    lastTime = currentTime;
 }
 
 void testFunc()

@@ -25,4 +25,6 @@
 #define DAC_ENABLE_DOUBLE_BUFFER_AND_TIMEOUT()  LPC_DAC->DACCTRL = DACCTRL_DBLBUF_ENA | DACCTRL_CNT_ENA
 #define DAC_SET_VALUE(x)                        LPC_DAC->DACR = (x << 6) | DAC_BIAS;
 
+#include <LPC17xx.h>
+
 #endif

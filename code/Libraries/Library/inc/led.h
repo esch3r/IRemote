@@ -1,5 +1,5 @@
 /**
- * @file ledLib.h
+ * @file led.h
  * @author Alexander Rössler
  * @brief Led Library
  * @date 16-10-2012
@@ -13,7 +13,7 @@
 #define LED_RUNNING_TIME 30
 
 #include <ledDriver.h>
-#include <time.h>
+#include <types.h>
 
 /** Initializes the Leds. Per default red and green Leds will be enabled. */
 uint8 initializeLeds(void);

@@ -1,3 +1,10 @@
+/**
+ * @file pwm.h
+ * @author Johannes Wimmer & Alexander Rössler
+ * @brief PWM Library
+ * @date 16-10-2012
+ */
+
 #ifndef _PWM_DRIVER_H_
 #define _PWM_DRIVER_H_
 

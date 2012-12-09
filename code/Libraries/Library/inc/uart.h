@@ -23,6 +23,7 @@
 
 #include <uartDriver.h>
 #include <circularbuffer.h>
+#include <types.h>
 
 CircularBuffer uart0ReadBuffer;
 CircularBuffer uart0WriteBuffer;

@@ -9,7 +9,6 @@
 #define _ADC_H_
 
 #include <types.h>
-#include <LPC17xx.h>
 #include <dacDriver.h>
 
 /** Initializes the DAC */
