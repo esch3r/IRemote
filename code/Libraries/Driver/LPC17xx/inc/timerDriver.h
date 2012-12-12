@@ -63,7 +63,7 @@
 #define TIMER2_SET_KHZ(x)               TIMER2_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E3))-1)
 #define TIMER2_SET_MHZ(x)               TIMER2_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E6))-1)
 #define TIMER2_RESET_IRQS()             LPC_TIM2->IR  = 0xff
-#define TIMER2_SET_INTERVAL_MS(x)       LPC_TIM2->MR0 = (uint32)(xx/1000*(SYSTEMCLK/(LPC_TIM2->PR+1)))-1
+#define TIMER2_SET_INTERVAL_MS(x)       LPC_TIM2->MR0 = (uint32)(x/1000*(SYSTEMCLK/(LPC_TIM2->PR+1)))-1
 #define TIMER2_SET_INTERVAL_US(x)       LPC_TIM2->MR0 = (uint32)(x/1000000*(SYSTEMCLK/(LPC_TIM2->PR+1)))-1
 #define TIMER2_ENABLE_IRQ()             NVIC_EnableIRQ(TIMER2_IRQn)
 #define TIMER2_DISABLE_IRQ()            NVIC_DisableIRQ(TIMER2_IRQn)
