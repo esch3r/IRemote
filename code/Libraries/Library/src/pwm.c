@@ -39,3 +39,10 @@ inline void stopPwm(uint8 pin)
     
     return;
 }
+
+inline void togglePwm(uint8 pin)
+{
+    (LPC_PWM1->PCR & (1<<9)) ? (LPC_PWM1->PCR &= ~(1<<9)) : (LPC_PWM1->PCR |= (1<<9));  // Toggles output for PWM1
+    
+    return;
+}

@@ -20,6 +20,7 @@ uint8 applicationState = ApplicationStateIdle;
 int main(void)
 {   
     uint32 testVar;
+    IrCommand *testCommand;
     
     initializeLeds();
     clearAllLeds();
@@ -56,7 +57,11 @@ int main(void)
         }
         else if (applicationState == ApplicationStateCaptureCommand)
         {
-            processData();
+            testCommand = getIrCommand();
+            if (testCommand != NULL)    // We finally received something
+            {
+                outputCommand(testCommand);
+            }
         }
         else if (applicationState == ApplicationStateRunCommand)
         {

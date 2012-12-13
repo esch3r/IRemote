@@ -23,11 +23,16 @@
 #include <stdio.h>
 #include <string.h>
 
-void initializeIrControl();
-void startIrCapture();
-void stopIrCapture();
-void captureFunction();
-void processData();
-void saveIrFrame(CircularBuffer *buffer, IrCommand *command);
+void initializeIrControl(void);
 
+void startIrCapture(void);
+void stopIrCapture(void);
+IrCommand *getIrCommand(void);
+void saveIrFrame(CircularBuffer *buffer, IrCommand *command);
+void captureFunction(void);
+
+void runIrCommand(IrCommand *command);
+void runFunction(void);
+
+void outputCommand(IrCommand* command);
 #endif

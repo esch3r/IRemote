@@ -2,12 +2,13 @@
 
 uint8   frameReceived = 0;
 uint8   firstCapture = 1;
+uint8   currentPosition = 0;
 CircularBuffer buffer0;
 //char stringBuffer[1000];
 
 IrCommand *tmpCommand;
 
-void initializeIrControl()
+void initializeIrControl(void)
 {
     initializeCb(&buffer0,100,sizeof(uint16));
         
@@ -21,7 +22,7 @@ void initializeIrControl()
     
 }
 
-void processData()
+void outputCommand(IrCommand *command)
 {
     //static uint16 item;
     uint8 i;
@@ -36,16 +37,24 @@ void processData()
             sprintf(stringBuffer,"%s %u",stringBuffer,item);
         }
         sprintf(stringBuffer,"%s\n",stringBuffer);*/
-        for (i = 0; i < tmpCommand->length; i++)
+        for (i = 0; i < command->length; i++)
         {
-            printfUart0(" %u",tmpCommand->data[i]);
+            printfUart0(" %u",command->data[i]);
             delayMs(10);
         }
         printfUart0("\n");
     }
 }
 
-void startIrCapture()
+IrCommand* getIrCommand(void)
+{
+    if (frameReceived == 1)
+        return tmpCommand;
+    else
+        return NULL;
+}
+
+void startIrCapture(void)
 {
     tmpCommand = createIrCommand();
     firstCapture = 1;
@@ -54,13 +63,13 @@ void startIrCapture()
     //startTimer3();
 }
 
-void stopIrCapture()
+void stopIrCapture(void)
 {
     stopTimer3();
     disableGpioInterrupt(IR_CAPTURE_PORT, IR_CAPTURE_PIN);
 }
 
-void captureFunction()
+void captureFunction(void)
 {
     uint16 timeDiff;
     
@@ -105,4 +114,17 @@ void saveIrFrame(CircularBuffer *buffer, IrCommand *command)
         command->length = i;
         frameReceived = 1;
     }
+}
+
+void runIrCommand(IrCommand* command)
+{
+    tmpCommand = command;
+    
+    connectFunctionTimer3(&runFunction);
+    setIntervalUsTimer3(10);
+}
+
+void runFunction(void )
+{
+    
 }

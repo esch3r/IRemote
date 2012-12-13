@@ -51,4 +51,5 @@
 int8 initializePWM(uint32 freq,float duty, uint8 pin);
 inline void startPWM(uint8 pin);
 inline void stopPwm(uint8 pin);
+inline void tooglePwm(uint8 pin);
 #endif
