@@ -126,5 +126,6 @@ void runIrCommand(IrCommand* command)
 
 void runFunction(void )
 {
+    togglePwm(1);
     
 }
