@@ -153,6 +153,14 @@ void stopTimer0(void)
     return;
 }
 
+void resetTimer0(void)
+{
+    TIMER0_RESET(); /* reset timer */
+    TIMER0_START(); /* start timer */
+    
+    return;
+}
+
 void connectFunctionTimer0(void (* func)(void))
 {
     functionPointer0 = func;
@@ -335,6 +343,14 @@ void startTimer1(void)
 void stopTimer1(void)
 {
     TIMER1_STOP(); /* stop timer */
+    
+    return;
+}
+
+void resetTimer1(void)
+{
+    TIMER1_RESET(); /* reset timer */
+    TIMER1_START(); /* start timer */
     
     return;
 }
@@ -525,6 +541,14 @@ void stopTimer2(void)
     return;
 }
 
+void resetTimer2(void)
+{
+    TIMER2_RESET(); /* reset timer */
+    TIMER2_START(); /* start timer */
+    
+    return;
+}
+
 void connectFunctionTimer2(void (* func)(void))
 {
     functionPointer2 = func;
@@ -707,6 +731,14 @@ void startTimer3(void)
 void stopTimer3(void)
 {
     TIMER3_STOP(); /* stop timer */
+    
+    return;
+}
+
+void resetTimer3(void)
+{
+    TIMER3_RESET(); /* reset timer */
+    TIMER3_START(); /* start timer */
     
     return;
 }
@@ -937,6 +969,27 @@ void stopTimer(uint8 id)
     else if (id == TIMER3)
     {
         return stopTimer3();
+    }
+    return;
+}
+
+void resetTimer(uint8 id)
+{
+    if (id == TIMER0)
+    {
+        return resetTimer0();
+    }
+    else if (id == TIMER1)
+    {
+        return resetTimer1();
+    }
+    else if (id == TIMER2)
+    {
+        return resetTimer2();
+    }
+    else if (id == TIMER3)
+    {
+        return resetTimer3();
     }
     return;
 }

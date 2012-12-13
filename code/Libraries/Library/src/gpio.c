@@ -114,6 +114,7 @@ void enableGpioInterrupt(uint8 port, uint8 pin, enum GpioInterruptType type, voi
                 {
                     GPIO0_ENABLE_IRQ_FALLING_EDGE(pin);
                 }
+                GPIO0_CLEAR_IRQ(pin);
                 functionPointers0[pin] = func;
                 break;
         case 2: if ((type == GpioInterruptRisingEdge) || (type == GpioInterruptFallingAndRisingEdge))
@@ -124,6 +125,7 @@ void enableGpioInterrupt(uint8 port, uint8 pin, enum GpioInterruptType type, voi
                 {
                     GPIO2_ENABLE_IRQ_FALLING_EDGE(pin);
                 }
+                GPIO2_CLEAR_IRQ(pin);
                 functionPointers2[pin] = func;
                 break;
         default: return;
@@ -158,8 +160,8 @@ void GPIO_IRQHANDLER()
         {
             if ((GPIO0_RISING_IRQ_PENDING(i)) || (GPIO0_FALLING_IRQ_PENDING(i)))
             {
-                (*functionPointers0[i])();
                 GPIO0_CLEAR_IRQ(i);
+                (*functionPointers0[i])();
             }
         }
 
@@ -170,8 +172,8 @@ void GPIO_IRQHANDLER()
         {
             if ((GPIO2_RISING_IRQ_PENDING(i)) || (GPIO2_FALLING_IRQ_PENDING(i)))
             {
-                (*functionPointers2[i])();
                 GPIO2_CLEAR_IRQ(i);
+                (*functionPointers2[i])();
             }
         }
     }

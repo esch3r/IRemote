@@ -110,7 +110,7 @@ void startTimer2(void);
 /** Starts timer 3. */
 void startTimer3(void);
 
-/** Stops timer 0. id.
+/** Stops timer id.
  *  @param id Id of the timer that should be stopped. 0-3
  */
 void stopTimer(uint8 id);
@@ -122,6 +122,19 @@ void stopTimer1(void);
 void stopTimer2(void);
 /** Stops timer 3. */
 void stopTimer3(void);
+
+/** Resets timer id.
+ *  @param id Id of the timer that should be reset. 0-3
+ */
+void resetTimer(uint8 id);
+/** Resets timer 0. */
+void resetTimer0(void);
+/** Resets timer 1. */
+void resetTimer1(void);
+/** Resets timer 2. */
+void resetTimer2(void);
+/** Resets timer 3. */
+void resetTimer3(void);
 
 
 /** Sets tick inteval of timer id in microseconds.

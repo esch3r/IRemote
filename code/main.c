@@ -6,7 +6,16 @@
 #include <iap.h>
 #include "irControl.h"
 
+enum ApplicationState {
+    ApplicationStateIdle = 0,
+    ApplicationStateCaptureCommand = 1,
+    ApplicationStateRunCommand = 2
+};
+
 void testFunc();
+
+uint8 testMode = 0;
+uint8 applicationState = ApplicationStateIdle;
 
 int main(void)
 {   
@@ -42,8 +51,18 @@ int main(void)
     
     for (;;) 
     {
-        delayMs(10);
-        processData();
+        if (applicationState == ApplicationStateIdle)
+        {
+        }
+        else if (applicationState == ApplicationStateCaptureCommand)
+        {
+            processData();
+        }
+        else if (applicationState == ApplicationStateRunCommand)
+        {
+            
+        }
+        delayMs(100);
      }
 
     return 0 ;
@@ -53,5 +72,18 @@ int main(void)
 
 void testFunc()
 {
-    startPWM(1);
+    if (testMode == 0)
+    {
+        printfUart0("Start capturing data\n");
+        applicationState = ApplicationStateCaptureCommand;
+        startIrCapture();
+        testMode = 1;
+    }
+    else
+    {
+        printfUart0("Start running command\n");
+        applicationState = ApplicationStateRunCommand;
+        //runIrCommand();
+        testMode = 0;
+    }
 }
