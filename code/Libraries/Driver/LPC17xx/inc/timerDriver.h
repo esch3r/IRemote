@@ -21,8 +21,8 @@
 #define TIMER0_SET_KHZ(x)               TIMER0_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E3))-1)
 #define TIMER0_SET_MHZ(x)               TIMER0_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E6))-1)
 #define TIMER0_RESET_IRQS()             LPC_TIM0->IR  = 0xff
-#define TIMER0_SET_INTERVAL_MS(x)       LPC_TIM0->MR0 = (uint32)(x/1000*(SYSTEMCLK/(LPC_TIM0->PR+1)))-1
-#define TIMER0_SET_INTERVAL_US(x)       LPC_TIM0->MR0 = (uint32)(x/1000000*(SYSTEMCLK/(LPC_TIM0->PR+1)))-1
+#define TIMER0_SET_INTERVAL_MS(x)       LPC_TIM0->MR0 = (uint32)((double)x/1000*(SYSTEMCLK/(LPC_TIM0->PR+1)))-1
+#define TIMER0_SET_INTERVAL_US(x)       LPC_TIM0->MR0 = (uint32)((double)x/1000000*(SYSTEMCLK/(LPC_TIM0->PR+1)))-1
 #define TIMER0_ENABLE_IRQ()             NVIC_EnableIRQ(TIMER0_IRQn)
 #define TIMER0_DISABLE_IRQ()            NVIC_DisableIRQ(TIMER0_IRQn)
 #define TIMER0_SET_IRQ_PRIORITY(x)                NVIC_SetPriority(TIMER0_IRQn,x)
@@ -42,8 +42,8 @@
 #define TIMER1_SET_KHZ(x)               TIMER1_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E3))-1)
 #define TIMER1_SET_MHZ(x)               TIMER1_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E6))-1)
 #define TIMER1_RESET_IRQS()             LPC_TIM1->IR  = 0xff
-#define TIMER1_SET_INTERVAL_MS(x)       LPC_TIM1->MR0 = (uint32)(x/1000*(SYSTEMCLK/(LPC_TIM1->PR+1)))-1
-#define TIMER1_SET_INTERVAL_US(x)       LPC_TIM1->MR0 = (uint32)(x/1000000*(SYSTEMCLK/(LPC_TIM1->PR+1)))-1
+#define TIMER1_SET_INTERVAL_MS(x)       LPC_TIM1->MR0 = (uint32)((double)x/1000*(SYSTEMCLK/(LPC_TIM1->PR+1)))-1
+#define TIMER1_SET_INTERVAL_US(x)       LPC_TIM1->MR0 = (uint32)((double)x/1000000*(SYSTEMCLK/(LPC_TIM1->PR+1)))-1
 #define TIMER1_ENABLE_IRQ()             NVIC_EnableIRQ(TIMER1_IRQn)
 #define TIMER1_DISABLE_IRQ()            NVIC_DisableIRQ(TIMER1_IRQn)
 #define TIMER1_SET_IRQ_PRIORITY(x)                NVIC_SetPriority(TIMER1_IRQn,x)
@@ -63,8 +63,8 @@
 #define TIMER2_SET_KHZ(x)               TIMER2_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E3))-1)
 #define TIMER2_SET_MHZ(x)               TIMER2_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E6))-1)
 #define TIMER2_RESET_IRQS()             LPC_TIM2->IR  = 0xff
-#define TIMER2_SET_INTERVAL_MS(x)       LPC_TIM2->MR0 = (uint32)(x/1000*(SYSTEMCLK/(LPC_TIM2->PR+1)))-1
-#define TIMER2_SET_INTERVAL_US(x)       LPC_TIM2->MR0 = (uint32)(x/1000000*(SYSTEMCLK/(LPC_TIM2->PR+1)))-1
+#define TIMER2_SET_INTERVAL_MS(x)       LPC_TIM2->MR0 = (uint32)((double)x/1000*(SYSTEMCLK/(LPC_TIM2->PR+1)))-1
+#define TIMER2_SET_INTERVAL_US(x)       LPC_TIM2->MR0 = (uint32)((double)x/1000000*(SYSTEMCLK/(LPC_TIM2->PR+1)))-1
 #define TIMER2_ENABLE_IRQ()             NVIC_EnableIRQ(TIMER2_IRQn)
 #define TIMER2_DISABLE_IRQ()            NVIC_DisableIRQ(TIMER2_IRQn)
 #define TIMER2_SET_IRQ_PRIORITY(x)                NVIC_SetPriority(TIMER2_IRQn,x)
@@ -84,8 +84,8 @@
 #define TIMER3_SET_KHZ(x)               TIMER3_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E3))-1)
 #define TIMER3_SET_MHZ(x)               TIMER3_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E6))-1)
 #define TIMER3_RESET_IRQS()             LPC_TIM3->IR  = 0xff
-#define TIMER3_SET_INTERVAL_MS(x)       LPC_TIM3->MR0 = (uint32)(x/1000*(SYSTEMCLK/(LPC_TIM3->PR+1)))-1
-#define TIMER3_SET_INTERVAL_US(x)       LPC_TIM3->MR0 = (uint32)(x/1000000*(SYSTEMCLK/(LPC_TIM3->PR+1)) )-1
+#define TIMER3_SET_INTERVAL_MS(x)       LPC_TIM3->MR0 = (uint32)((double)x/1000*(SYSTEMCLK/(LPC_TIM3->PR+1)))-1
+#define TIMER3_SET_INTERVAL_US(x)       LPC_TIM3->MR0 = (uint32)((double)x/1000000*(SYSTEMCLK/(LPC_TIM3->PR+1)) )-1
 #define TIMER3_ENABLE_IRQ()             NVIC_EnableIRQ(TIMER3_IRQn)
 #define TIMER3_DISABLE_IRQ()            NVIC_DisableIRQ(TIMER3_IRQn)
 #define TIMER3_SET_IRQ_PRIORITY(x)                NVIC_SetPriority(TIMER3_IRQn,x)

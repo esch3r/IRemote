@@ -58,6 +58,7 @@ CSRC += $(LIBRARYPATH)/dac.c
 CSRC += $(LIBRARYPATH)/pwm.c
 CSRC += $(LIBRARYPATH)/gpio.c
 CSRC += $(LIBRARYPATH)/pincon.c
+CSRC += $(LIBRARYPATH)/iap.c
 CSRC += irControl.c
 
 ASRC = $(SYSPATH)/startup_LPC17xx.asm

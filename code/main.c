@@ -3,12 +3,15 @@
  */
 
 #include <led.h>
+#include <iap.h>
 #include "irControl.h"
 
 void testFunc();
 
 int main(void)
 {   
+    uint32 testVar;
+    
     initializeLeds();
     clearAllLeds();
     
@@ -19,6 +22,15 @@ int main(void)
     
     initializeUart0(115200);                    // Init the UART
     printfUart0("Welcome to IRemote!\n");    // Send a welcome message
+    printfUart0("Id: %i, Version: %i, Serial: %i\n",readIdIap(),readVersionIap(),readSerialIap());
+    //printfUart0("Sector 26: %i, Sector 27: %i\n",checkBlankIap(26),checkBlankIap(27));
+    testVar = 0;
+    __disable_irq();
+    //eraseIap(27);
+    //writeIap(27,256*64,(void*)(&testVar),sizeof(testVar));
+    readIap(27,256*64,(void*)(&testVar),sizeof(testVar));
+    printfUart0("Test: %u\n",testVar);
+    __enable_irq();
     
     initializeIrControl();
     
