@@ -28,21 +28,23 @@ int8 initializePWM(uint32 freq,float duty, uint8 pin)
 
 inline void startPWM(uint8 pin)
 {
-    LPC_PWM1->PCR |= (1<<9);		//output enabled for PWM1
+    LPC_PWM1->PCR |= (1<<9);        //Output enabled for PWM1
 
     return;
 }
 
 inline void stopPwm(uint8 pin)
 {
-    LPC_PWM1->PCR &= ~(1<<9);     //output disabled for PWM1
+    LPC_PWM1->TC = LPC_PWM1->MR1-1; // Nasty but awesome workaround to set the output to 0
+    LPC_PWM1->PCR &= ~(1<<9);       // Output disabled for PWM1
+    
     
     return;
 }
 
 inline void togglePwm(uint8 pin)
 {
-    (LPC_PWM1->PCR & (1<<9)) ? (LPC_PWM1->PCR &= ~(1<<9)) : (LPC_PWM1->PCR |= (1<<9));  // Toggles output for PWM1
+    (LPC_PWM1->PCR & (1<<9)) ? stopPwm(1) : startPWM(1);  // Toggles output for PWM1
     
     return;
 }

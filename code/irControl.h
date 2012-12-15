@@ -32,7 +32,9 @@ void saveIrFrame(CircularBuffer *buffer, IrCommand *command);
 void captureFunction(void);
 
 void runIrCommand(IrCommand *command);
+void stopIrCommand(void);
 void runFunction(void);
+uint8 isCommandRunning(void);
 
 void outputCommand(IrCommand* command);
 #endif

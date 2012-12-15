@@ -3,6 +3,7 @@
 uint8   frameReceived = 0;
 uint8   firstCapture = 1;
 uint8   currentPosition = 0;
+uint8   commandRunning = 0;
 CircularBuffer buffer0;
 //char stringBuffer[1000];
 
@@ -59,6 +60,7 @@ void startIrCapture(void)
     tmpCommand = createIrCommand();
     firstCapture = 1;
         
+    setIntervalMsTimer3(1E6);
     enableGpioInterrupt(IR_CAPTURE_PORT, IR_CAPTURE_PIN, GpioInterruptFallingAndRisingEdge, &captureFunction);
     //startTimer3();
 }
@@ -79,9 +81,9 @@ void captureFunction(void)
 
         if (timeDiff >= IR_TIMEOUT)     // Detected a timeout => frameReceived
         {
+            stopIrCapture();
             firstCapture = 1;
             saveIrFrame(&buffer0, tmpCommand);
-            stopIrCapture();
         }
         else
         {
@@ -119,13 +121,39 @@ void saveIrFrame(CircularBuffer *buffer, IrCommand *command)
 void runIrCommand(IrCommand* command)
 {
     tmpCommand = command;
+    currentPosition = 0;
+    commandRunning = 1;     // Set the variable which indicates that a command is running
     
     connectFunctionTimer3(&runFunction);
     setIntervalUsTimer3(10);
+    startTimer3();
+    //resetTimer3();
+}
+
+void stopIrCommand(void )
+{
+    stopTimer3();
+    stopPwm(1);
+    
+    commandRunning = 0;
 }
 
 void runFunction(void )
 {
     togglePwm(1);
-    
+    if (currentPosition < tmpCommand->length)
+    {
+        setIntervalUsTimer3(tmpCommand->data[currentPosition]);
+
+        currentPosition++;
+    }
+    else
+    {
+        stopIrCommand();
+    }
+}
+
+uint8 isCommandRunning(void )
+{
+    return commandRunning;
 }

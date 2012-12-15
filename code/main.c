@@ -6,21 +6,23 @@
 #include <iap.h>
 #include "irControl.h"
 
-enum ApplicationState {
+typedef enum {
     ApplicationStateIdle = 0,
     ApplicationStateCaptureCommand = 1,
     ApplicationStateRunCommand = 2
-};
+} ApplicationState;
 
 void testFunc();
+void startState(ApplicationState state);
 
 uint8 testMode = 0;
+IrCommand *testCommand;
 uint8 applicationState = ApplicationStateIdle;
 
 int main(void)
 {   
     uint32 testVar;
-    IrCommand *testCommand;
+    char   testChar;
     
     initializeLeds();
     clearAllLeds();
@@ -54,6 +56,13 @@ int main(void)
     {
         if (applicationState == ApplicationStateIdle)
         {
+            while (getcharUart0(&testChar) == 0)
+            {
+                if (testChar == 'r')
+                    startState(ApplicationStateRunCommand);
+                else if (testChar == 'c')
+                    startState(ApplicationStateCaptureCommand);
+            }
         }
         else if (applicationState == ApplicationStateCaptureCommand)
         {
@@ -61,11 +70,13 @@ int main(void)
             if (testCommand != NULL)    // We finally received something
             {
                 outputCommand(testCommand);
+                startState(ApplicationStateIdle);
             }
         }
         else if (applicationState == ApplicationStateRunCommand)
         {
-            
+            if (!isCommandRunning())    // Command has finished
+                startState(ApplicationStateIdle);
         }
         delayMs(100);
      }
@@ -79,16 +90,41 @@ void testFunc()
 {
     if (testMode == 0)
     {
-        printfUart0("Start capturing data\n");
-        applicationState = ApplicationStateCaptureCommand;
-        startIrCapture();
+        startState(ApplicationStateCaptureCommand);
         testMode = 1;
     }
     else
     {
-        printfUart0("Start running command\n");
-        applicationState = ApplicationStateRunCommand;
-        //runIrCommand();
+        startState(ApplicationStateRunCommand);
         testMode = 0;
     }
+}
+
+void startState(ApplicationState state)
+{
+    if (applicationState == state)              // If we are already in this state => ignore
+        return;
+    
+    if (state == ApplicationStateIdle)
+    {
+        applicationState = ApplicationStateIdle;
+    }
+    else if (state == ApplicationStateCaptureCommand)
+    {
+        applicationState = ApplicationStateCaptureCommand;
+        
+        printfUart0("Start capturing data\n");
+        blinkLed2(1);
+        startIrCapture();
+    }
+    else if (state = ApplicationStateRunCommand)
+    {
+        applicationState = ApplicationStateRunCommand;
+                
+        printfUart0("Start running command\n");
+        blinkLed(1);
+        runIrCommand(testCommand);
+    }
+    
+    return;
 }
