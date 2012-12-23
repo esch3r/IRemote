@@ -59,6 +59,7 @@ CSRC += $(LIBRARYPATH)/pwm.c
 CSRC += $(LIBRARYPATH)/gpio.c
 CSRC += $(LIBRARYPATH)/pincon.c
 CSRC += $(LIBRARYPATH)/iap.c
+CSRC += $(LIBRARYPATH)/wifly.c
 CSRC += irData.c
 CSRC += irControl.c
 
