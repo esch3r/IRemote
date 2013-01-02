@@ -5,17 +5,19 @@ int8 initializePWM(uint32 freq,float duty, uint8 pin)
     PWM_SET_CORE_CLK();
     
     LPC_PWM1->PR = 0;
-    //PWM_CLEAR_PINSEL();        !!!   // clear pin selection bits 
+
     switch (pin)
     {
-        case 1: PWM_ENABLE_PIN1();break;  //Enable pin 1
-    //LPC_PWM->PCR |= (1<<2)		//select double edge for PWM2
+        case 0: PWM_ENABLE_PIN0();break;  //Enable PWM1.1 on P2.0
+        case 1: PWM_ENABLE_PIN1();break;  //Enable PWM1.2 on P2.1
+        case 2: PWM_ENABLE_PIN2();break;  //Enable PWM1.3 on P2.2
+        case 3: PWM_ENABLE_PIN3();break;  //Enable PWM1.4 on P2.3
+        case 4: PWM_ENABLE_PIN4();break;  //Enable PWM1.5 on P2.4
+        case 5: PWM_ENABLE_PIN5();break;  //Enable PWM1.6 on P2.5
     
         default: break;
     }
 
-    //LPC_PWM->MCR |= (1<<6)		//set for PWMR2 enable interrupt
-    //LPC_PWM->MCR |= (1<<7)		//reset by match for PWMR2
     LPC_PWM1->LER |= (1<<0);		//Latch enable for Match 0	
     LPC_PWM1->LER |= (1<<1);		//Latch enable for Match 1
     LPC_PWM1->MR0 = (uint32)(PWM_CLK/freq);

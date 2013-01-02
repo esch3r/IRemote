@@ -26,7 +26,6 @@ int8	buttonCount = 0;
 
 uint8 initializeButton(uint8 Mhz,uint8 ID, uint8 Port, uint8 Pin){
 
-
 	setGpioDirection(Port, Pin, 0 );	//direction 0=input
 	buttons[buttonCount].id = ID;
 	buttons[buttonCount]->port = Port;
@@ -53,15 +52,13 @@ void valueButton(void){
 }
 
 int8 putVal(uint8 i,uint8 var){
-#define maxunset		4;
-
 
 	if(var){
 		val[i]->id=buttons[i]->id;
 		val[i]->count = &val[i]->count +1;
 	}
 	else{
-		if(buttons[i]->unset <= 4) buttons[i]->unset = buttons[i]->unset +1;
+		if(buttons[i]->unset <= maxunset) buttons[i]->unset = buttons[i]->unset +1;
 		else{
 			putCb(&buttonBuffer,&val[i]);
 			val[i]->count = 0;

@@ -746,7 +746,7 @@ typedef struct                          /* Controller Registers               */
 } LPC_CAN_TypeDef;
 
 /*------------- General Purpose Direct Memory Access (GPDMA) -----------------*/
-/** @brief  General Purpose Direct Memory Access (GPDMA) register structure definition */
+/** @brief  General Purpose 	ect Memory Access (GPDMA) register structure definition */
 typedef struct                          /* Common Registers                   */
 {
   __I  uint32_t DMACIntStat;

@@ -4,6 +4,9 @@
 #include <types.h>
 #include <timer.h>
 
+#define maxunset 	4
+
+
 uint8 initializeButton(uint8 Mhz,uint8 ID, uint8 Port, uint8 Pin);
 void valueButton(void);
 int8 putVal(uint8 i,uint8 var);
