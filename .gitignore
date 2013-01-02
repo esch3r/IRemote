@@ -33,5 +33,9 @@
 # Linux
 .directory
 
+# Qt
+*.pro.user
+*moc*
+
 # Other
 ./code/DbgCfg/LPC1758_OOCD_CMARM.cfg
