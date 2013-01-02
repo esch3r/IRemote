@@ -5,7 +5,9 @@ uint8   firstCapture = 1;
 uint8   currentPosition = 0;
 uint8   commandRunning = 0;
 CircularBuffer buffer0;
-//char stringBuffer[1000];
+
+uint8   repeatCount = 5;
+uint8   currentRepeatCount = 0;
 
 IrCommand *tmpCommand;
 
@@ -18,32 +20,18 @@ void initializeIrControl(void)
     setGpioDirection(IR_CAPTURE_PORT, IR_CAPTURE_PIN, GpioDirectionInput);  // TSOP input pin
     
     initializeTimer3(1000,1E9);
-    //connectFunctionTimer3(&myFunc);
-    //startTimer3();
     
 }
 
 void outputCommand(IrCommand *command)
 {
-    //static uint16 item;
-    uint8 i;
-        
     if (frameReceived == 1)
     {
         frameReceived = 0;
         
-        printfUart0("Rec: ");
-        /*while (getCb(&buffer0,&item) == 0)
-        {
-            sprintf(stringBuffer,"%s %u",stringBuffer,item);
-        }
-        sprintf(stringBuffer,"%s\n",stringBuffer);*/
-        for (i = 0; i < command->length; i++)
-        {
-            printfUart0(" %u",command->data[i]);
-            delayMs(10);
-        }
-        printfUart0("\n");
+        printfUart0("*DATA");
+        writeDataUart0((void*)command, sizeof(IrCommand));
+        printfUart0("\r");
     }
 }
 
@@ -58,11 +46,14 @@ IrCommand* getIrCommand(void)
 void startIrCapture(void)
 {
     tmpCommand = createIrCommand();
+    frameReceived = 0;
     firstCapture = 1;
         
     setIntervalMsTimer3(1E6);
+    connectFunctionTimer3(NULL);
     enableGpioInterrupt(IR_CAPTURE_PORT, IR_CAPTURE_PIN, GpioInterruptFallingAndRisingEdge, &captureFunction);
     //startTimer3();
+    resetTimer3();
 }
 
 void stopIrCapture(void)
@@ -81,9 +72,15 @@ void captureFunction(void)
 
         if (timeDiff >= IR_TIMEOUT)     // Detected a timeout => frameReceived
         {
-            stopIrCapture();
-            firstCapture = 1;
-            saveIrFrame(&buffer0, tmpCommand);
+            if (saveIrFrame(&buffer0, tmpCommand) == -1)
+            {
+                firstCapture = 1;
+            }
+            else
+            {
+                stopIrCapture();
+                return;
+            }
         }
         else
         {
@@ -98,7 +95,7 @@ void captureFunction(void)
     resetTimer3();                      // Reset the timer
 }
 
-void saveIrFrame(CircularBuffer *buffer, IrCommand *command)
+int8 saveIrFrame(CircularBuffer *buffer, IrCommand *command)
 {
     uint16 item;
     uint8 i = 0;
@@ -115,7 +112,10 @@ void saveIrFrame(CircularBuffer *buffer, IrCommand *command)
     {
         command->length = i;
         frameReceived = 1;
+        return 0;
     }
+    
+    return -1;
 }
 
 void runIrCommand(IrCommand* command)
@@ -127,15 +127,25 @@ void runIrCommand(IrCommand* command)
     connectFunctionTimer3(&runFunction);
     setIntervalUsTimer3(10);
     startTimer3();
-    //resetTimer3();
 }
 
 void stopIrCommand(void )
 {
     stopTimer3();
     stopPwm(1);
+    currentRepeatCount++;
     
-    commandRunning = 0;
+    if (currentRepeatCount == repeatCount)  // Repeat the command a few times
+    {
+        commandRunning = 0;
+        currentRepeatCount = 0;
+    }
+    else
+    {
+        currentPosition = 0;
+        setIntervalUsTimer3(IR_TIMEOUT);    // Timeout between commands
+        startTimer3();
+    }
 }
 
 void runFunction(void )
@@ -156,4 +166,9 @@ void runFunction(void )
 uint8 isCommandRunning(void )
 {
     return commandRunning;
+}
+
+void setIrRepeatCount(uint8 count)
+{
+    repeatCount = count;
 }

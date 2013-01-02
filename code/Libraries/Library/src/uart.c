@@ -260,6 +260,18 @@ int8 putcharUart3(char c)
 #endif
 }
 
+int8 writeDataUart0(void *data, uint32 length)
+{
+    uint32 i;
+    
+    for (i = 0; i < length; i++)
+    {
+        if (putcharUart0(*(char*)(data+i)) == -1)
+            return -1;
+    }
+    return 0;
+}
+
 int8 getcharUart0(char *c)
 {
 #if (USE_UART_BUFFER == 1)

@@ -1,8 +1,19 @@
 #include "irData.h"
 
+uint32 commandId = 0;
+
 IrCommand *createIrCommand(void)
 {
-    return (IrCommand *)calloc(sizeof(IrCommand),1);
+    IrCommand *command;
+    
+    command = (IrCommand *)calloc(sizeof(IrCommand),1);
+    if (command == NULL)
+        return NULL;
+    
+    command->id = commandId;
+    commandId++;
+    
+    return command;
 }
 
 void freeIrCommand(IrCommand *command)

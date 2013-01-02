@@ -10,11 +10,11 @@
 
 /** Size of UARTs circular buffer for reading */
 #ifndef UART_READ_BUFFER_SIZE
-#define UART_READ_BUFFER_SIZE 100
+#define UART_READ_BUFFER_SIZE 250
 #endif
 /** Size of UARTs circular buffer for writing */
 #ifndef UART_WRITE_BUFFER_SIZE
-#define UART_WRITE_BUFFER_SIZE 100
+#define UART_WRITE_BUFFER_SIZE 250
 #endif
 /** Defines wheter the UART buffer should be used or not */
 #ifndef USE_UART_BUFFER
@@ -78,6 +78,8 @@ int8 putcharUart2(char c);
  *  @return 0 if successful -1 if nothing to reading
  */
 int8 putcharUart3(char c);
+
+int8 writeDataUart0(void *data, uint32 length);
 
 /** Function to get character from UART0.
  *  @param c Pointer to the received character.

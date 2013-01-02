@@ -38,8 +38,8 @@ int main(void)
     char testChar;
      while (getcharUart0(&testChar) == 0)
             ;
-    printfUart0("Welcome to IRemote!\n");    // Send a welcome message
-    printfUart0("Id: %i, Version: %i, Serial: %i\n",readIdIap(),readVersionIap(),readSerialIap());
+    printfUart0("Welcome to IRemote!\r");    // Send a welcome message
+    printfUart0("Id: %i, Version: %i, Serial: %i\r",readIdIap(),readVersionIap(),readSerialIap());
    
     // Testing IAP functions
     //    uint32 testVar;
@@ -77,16 +77,6 @@ int main(void)
                 {
                     commandBuffer[commandBufferPos] = '\0';
                     processCommand();
-                    if ((strlen("run") == commandBufferPos) 
-                        && (strncmp("run",commandBuffer,commandBufferPos) == 0))
-                        startState(ApplicationStateRunCommand);
-                    else if ((strlen("capture") == commandBufferPos) 
-                        && (strncmp("capture",commandBuffer,commandBufferPos) == 0))
-                        startState(ApplicationStateCaptureCommand);
-                    else if ((strlen("test wifly") == commandBufferPos) 
-                        && (strncmp("test wifly",commandBuffer,commandBufferPos) == 0))
-                        startState(ApplicationStateWiFlyTest);
-                    
                     commandBufferPos = 0;
                 }
             }
@@ -148,7 +138,7 @@ void startState(ApplicationState state)
     {
         applicationState = ApplicationStateCaptureCommand;
         
-        printfUart0("Start capturing data\n");
+        printfUart0("Start capturing data\r");
         blinkLed2(1);
         startIrCapture();
     }
@@ -156,7 +146,7 @@ void startState(ApplicationState state)
     {
         applicationState = ApplicationStateRunCommand;
                 
-        printfUart0("Start running command\n");
+        printfUart0("Start running command\r");
         blinkLed(1);
         runIrCommand(testCommand);
     }
@@ -177,8 +167,8 @@ bool compareBaseCommand(char *original, char *received)
 
 bool compareExtendedCommand(char *original, char *received)
 {
-    return (((strlen(received) == 1) && strncmp(original,received,1)) ||
-                strcmp(original,received) == 0);
+    return (((strlen(received) == 1) && (strncmp(original,received,1) == 0)) ||
+                (strcmp(original,received) == 0));
 }
 
 void printUnknownCommand(void)
@@ -200,16 +190,23 @@ void processCommand(void )
     if (compareBaseCommand("run", dataPointer))
     {
         // We have a run command
+        dataPointer = strtok(NULL," ");
+        if (dataPointer != NULL)
+        {
+            memcpy(testCommand, dataPointer, sizeof(IrCommand));
+        }
+        startState(ApplicationStateRunCommand);
     }
     else if (compareBaseCommand("capture", dataPointer))
     {
         // We have a capture command
+        startState(ApplicationStateCaptureCommand);
     }
     else if (compareBaseCommand("set", dataPointer))
     {
         // starting a set command
-        //dataPointer = strtok(NULL," ");
-        if (strtok_r(NULL, " ", &dataPointer) == NULL)
+        dataPointer = strtok(NULL," ");
+        if (dataPointer == NULL)
         {
             printUnknownCommand();
             return;
@@ -217,7 +214,8 @@ void processCommand(void )
         else if (compareExtendedCommand("wlan",dataPointer))
         {
             // set wlan
-            if (strtok_r(NULL, " ", &dataPointer) == NULL)
+            dataPointer = strtok(NULL," ");
+            if (dataPointer == NULL)
             {
                 printUnknownCommand();
             }
@@ -234,6 +232,24 @@ void processCommand(void )
         else
         {
             printUnknownCommand();
+        }
+    }
+    else if (compareBaseCommand("test", dataPointer))
+    {
+        dataPointer = strtok(NULL," ");
+        if (dataPointer == NULL)
+        {
+            printUnknownCommand();
+            return;
+        }
+        else if (compareExtendedCommand("wifly",dataPointer))
+        {
+            startState(ApplicationStateWiFlyTest);
+        }
+        else
+        {
+            printUnknownCommand();
+            return;
         }
     }
     else
