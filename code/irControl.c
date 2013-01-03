@@ -9,7 +9,7 @@ CircularBuffer buffer0;
 uint8   repeatCount = 5;
 uint8   currentRepeatCount = 0;
 
-IrCommand *tmpCommand;
+IrCommand *tmpCommand = NULL;
 
 void initializeIrControl(void)
 {
@@ -29,9 +29,9 @@ void outputCommand(IrCommand *command)
     {
         frameReceived = 0;
         
-        printfUart0("*DATA");
-        writeDataUart0((void*)command, sizeof(IrCommand));
-        printfUart0("\r");
+        printfData("*DATA");
+        writeData((void*)command, sizeof(IrCommand));
+        printfData("\r");
     }
 }
 
@@ -45,6 +45,9 @@ IrCommand* getIrCommand(void)
 
 void startIrCapture(void)
 {
+    if (tmpCommand != NULL)
+        freeIrCommand(tmpCommand);
+    
     tmpCommand = createIrCommand();
     frameReceived = 0;
     firstCapture = 1;

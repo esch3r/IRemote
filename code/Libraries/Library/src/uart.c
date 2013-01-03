@@ -272,6 +272,42 @@ int8 writeDataUart0(void *data, uint32 length)
     return 0;
 }
 
+int8 writeDataUart1(void *data, uint32 length)
+{
+    uint32 i;
+    
+    for (i = 0; i < length; i++)
+    {
+        if (putcharUart1(*(char*)(data+i)) == -1)
+            return -1;
+    }
+    return 0;
+}
+
+int8 writeDataUart2(void *data, uint32 length)
+{
+    uint32 i;
+    
+    for (i = 0; i < length; i++)
+    {
+        if (putcharUart2(*(char*)(data+i)) == -1)
+            return -1;
+    }
+    return 0;
+}
+
+int8 writeDataUart3(void *data, uint32 length)
+{
+    uint32 i;
+    
+    for (i = 0; i < length; i++)
+    {
+        if (putcharUart3(*(char*)(data+i)) == -1)
+            return -1;
+    }
+    return 0;
+}
+
 int8 getcharUart0(char *c)
 {
 #if (USE_UART_BUFFER == 1)
@@ -316,74 +352,86 @@ int8 getcharUart3(char *c)
 #endif
 }
 
-void printfUart0(char *format, ...)
+int8 printfUart0(char *format, ...)
 {
-    char buffer[256];
+    char buffer[UART_PRINTF_BUFFER_SIZE];
     
     va_list arg_ptr;
     uint8 i = 0;
     
     va_start(arg_ptr,format);
-    vsprintf(buffer,format, arg_ptr);
+    vsnprintf(buffer,UART_PRINTF_BUFFER_SIZE, format, arg_ptr);
     va_end(arg_ptr);
     
     while (buffer[i] != 0)      // Loop through until reach string's zero terminator
     {
-        putcharUart0(buffer[i]);
+        if (putcharUart0(buffer[i]) == -1)
+            return -1;
         i++;
     }
+    
+    return 0;
 }
 
-void printfUart1(char *format, ...)
+int8 printfUart1(char *format, ...)
 {
-    char buffer[256];
+    char buffer[UART_PRINTF_BUFFER_SIZE];
     
     va_list arg_ptr;
     uint8 i = 0;
     
     va_start(arg_ptr,format);
-    vsprintf(buffer,format, arg_ptr);
+    vsnprintf(buffer, UART_PRINTF_BUFFER_SIZE, format, arg_ptr);
     va_end(arg_ptr);
     
     while (buffer[i] != 0)      // Loop through until reach string's zero terminator
     {
-        putcharUart1(buffer[i]);
+        if (putcharUart1(buffer[i]) == -1)
+            return -1;
         i++;
     }
+    
+    return 0;
 }
 
-void printfUart2(char *format, ...)
+int8 printfUart2(char *format, ...)
 {
-    char buffer[256];
+    char buffer[UART_PRINTF_BUFFER_SIZE];
     
     va_list arg_ptr;
     uint8 i = 0;
     
     va_start(arg_ptr,format);
-    vsprintf(buffer,format, arg_ptr);
+    vsnprintf(buffer, UART_PRINTF_BUFFER_SIZE, format, arg_ptr);
     va_end(arg_ptr);
     
     while (buffer[i] != 0)      // Loop through until reach string's zero terminator
     {
-        putcharUart2(buffer[i]);
+        if (putcharUart2(buffer[i]) == -1)
+            return -1;
         i++;
     }
+    
+    return 0;
 }
 
-void printfUart3(char *format, ...)
+int8 printfUart3(char *format, ...)
 {
-    char buffer[256];
+    char buffer[UART_PRINTF_BUFFER_SIZE];
     
     va_list arg_ptr;
     uint8 i = 0;
     
     va_start(arg_ptr,format);
-    vsprintf(buffer,format, arg_ptr);
+    vsnprintf(buffer, UART_PRINTF_BUFFER_SIZE, format, arg_ptr);
     va_end(arg_ptr);
     
     while (buffer[i] != 0)      // Loop through until reach string's zero terminator
     {
-        putcharUart3(buffer[i]);
+        if (putcharUart3(buffer[i]) == -1)
+            return -1;
         i++;
     }
+    
+    return 0;
 }

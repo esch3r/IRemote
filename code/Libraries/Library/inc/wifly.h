@@ -7,6 +7,8 @@
 
 #pragma once
 
+#define WIFLY_PRINTF_BUFFER_SIZE    256
+
 #include <uart.h>
 #include <types.h>
 
@@ -521,3 +523,26 @@ void fileIoWiFlyBootImage(uint16 num);
 /** Deletes the backup image, retrieves new image and updates the boot
 pointer to the new image.*/
 void fileIoWiFlyFtpUpdate(char *name);
+
+/** Sends a character to the WiFly module
+ * @param c The character to send.
+ * @return 0 if successful -1 if nothing to write
+ */
+int8 putcharWiFly(char c);
+/** Writes a defined a number of bytes from memory to UART0.
+ * @param data Pointer to the data.
+ * @param length Number of bytes to write.
+ * @return 0 if successful -1 if nothing to write
+ */
+int8 writeDataWiFly(void *data, uint32 length);
+/** Gets a character from UART0.
+ *  @param c Pointer to the received character.
+ *  @return 0 if successful -1 if nothing to read
+ */
+int8 getcharWiFly(char* c);
+/** Custom printf function for WiFly.
+ *  @param format Formated string.
+ *  @param ... Formatting parameters.
+ *  @return 0 if successful -1 if nothing to write
+ */
+int8 printfWiFly(char* format, ...);

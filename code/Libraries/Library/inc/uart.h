@@ -21,6 +21,8 @@
 #define USE_UART_BUFFER 1
 #endif
 
+#define UART_PRINTF_BUFFER_SIZE 256
+
 #include <uartDriver.h>
 #include <circularbuffer.h>
 #include <types.h>
@@ -60,43 +62,66 @@ int8 initializeUart3(uint32 baudrate);
 
 /** Function to send character over UART0.
  *  @param c The character to send.
- *  @return 0 if successful -1 if nothing to reading
+ *  @return 0 if successful -1 if nothing to write
  */
 int8 putcharUart0(char c);
 /** Function to send character over UART1.
  *  @param c The character to send.
- *  @return 0 if successful -1 if nothing to reading
+ *  @return 0 if successful -1 if nothing to write
  */
 int8 putcharUart1(char c);
 /** Function to send character over UART2.
  *  @param c The character to send.
- *  @return 0 if successful -1 if nothing to reading
+ *  @return 0 if successful -1 if nothing to write
  */
 int8 putcharUart2(char c);
 /** Function to send character over UART3.
  *  @param c The character to send.
- *  @return 0 if successful -1 if nothing to reading
+ *  @return 0 if successful -1 if nothing to write
  */
 int8 putcharUart3(char c);
 
+/** Function to write a defined a number of bytes from memory to UART0.
+ * @param data Pointer to the data.
+ * @param length Number of bytes to write.
+ * @return 0 if successful -1 if nothing to write
+ */
 int8 writeDataUart0(void *data, uint32 length);
+/** Function to write a defined a number of bytes from memory to UART1.
+ * @param data Pointer to the data.
+ * @param length Number of bytes to write.
+ * @return 0 if successful -1 if nothing to write
+ */
+int8 writeDataUart1(void *data, uint32 length);
+/** Function to write a defined a number of bytes from memory to UART2.
+ * @param data Pointer to the data.
+ * @param length Number of bytes to write.
+ * @return 0 if successful -1 if nothing to write
+ */
+int8 writeDataUart2(void *data, uint32 length);
+/** Function to write a defined a number of bytes from memory to UART3.
+ * @param data Pointer to the data.
+ * @param length Number of bytes to write.
+ * @return 0 if successful -1 if nothing to write
+ */
+int8 writeDataUart3(void *data, uint32 length);
 
-/** Function to get character from UART0.
+/** Function to get a character from UART0.
  *  @param c Pointer to the received character.
  *  @return 0 if successful -1 if nothing to read
  */
 int8 getcharUart0(char* c);
-/** Function to get character from UART1.
+/** Function to get a character from UART1.
  *  @param c Pointer to the received character.
  *  @return 0 if successful -1 if nothing to reading
  */
 int8 getcharUart1(char* c);
-/** Function to get character from UART2.
+/** Function to get a character from UART2.
  *  @param c Pointer to the received character.
  *  @return 0 if successful -1 if nothing to reading
  */
 int8 getcharUart2(char* c);
-/** Function to get character from UART3.
+/** Function to get a character from UART3.
   *  @param c Pointer to the received character.
   *  @return 0 if successful -1 if nothing to reading
  */
@@ -105,22 +130,26 @@ int8 getcharUart3(char* c);
 /** Custom printf function for UART0.
  *  @param format Formated string.
  *  @param ... Formatting parameters.
+ *  @return 0 if successful -1 if nothing to write
  */
-void printfUart0(char *format, ...);
+int8 printfUart0(char* format, ...);
 /** Custom printf function for UART1.void
  *  @param format Formated string.
  *  @param ... Formatting parameters.
+ *  @return 0 if successful -1 if nothing to write
  */
-void printfUart1(char *format, ...);
+int8 printfUart1(char* format, ...);
 /** Custom printf function for UART2.
  *  @param format Formated string.
  *  @param ... Formatting parameters.
+ *  @return 0 if successful -1 if nothing to write
  */
-void printfUart2(char *format, ...);
+int8 printfUart2(char* format, ...);
 /** Custom printf function for UART3.
  *  @param format Formated string.
  *  @param ... Formatting parameters.
+ *  @return 0 if successful -1 if nothing to write
  */
-void printfUart3(char *format, ...);
+int8 printfUart3(char* format, ...);
 
 #endif /*UART_H_*/

@@ -6,6 +6,7 @@
 #include <iap.h>
 #include <wifly.h>
 #include "irControl.h"
+#include "iremote.h"
 
 typedef enum {
     ApplicationStateIdle = 0,
@@ -34,12 +35,10 @@ int main(void)
     blinkLed3(1);
     delayMs(500);
     
-    initializeUart0(115200);                    // Init the UART
-    char testChar;
-     while (getcharUart0(&testChar) == 0)
-            ;
-    printfUart0("Welcome to IRemote!\r");    // Send a welcome message
-    printfUart0("Id: %i, Version: %i, Serial: %i\r",readIdIap(),readVersionIap(),readSerialIap());
+    initializeSerialConnection();
+     
+    printfData("Welcome to IRemote!\r");    // Send a welcome message
+    printfData("Id: %i, Version: %i, Serial: %i\r",readIdIap(),readVersionIap(),readSerialIap());
    
     // Testing IAP functions
     //    uint32 testVar;
@@ -99,8 +98,8 @@ int main(void)
         {
             static char receivedData;
             while (getcharUart0(&receivedData) == 0)
-                putcharUart1(receivedData);
-            while (getcharUart1(&receivedData) == 0)
+                putcharWiFly(receivedData);
+            while (getcharWiFly(&receivedData) == 0)
                 putcharUart0(receivedData);
         }
         delayMs(100);
@@ -138,7 +137,7 @@ void startState(ApplicationState state)
     {
         applicationState = ApplicationStateCaptureCommand;
         
-        printfUart0("Start capturing data\r");
+        printfData("Start capturing data\r");
         blinkLed2(1);
         startIrCapture();
     }
@@ -146,7 +145,7 @@ void startState(ApplicationState state)
     {
         applicationState = ApplicationStateRunCommand;
                 
-        printfUart0("Start running command\r");
+        printfData("Start running command\r");
         blinkLed(1);
         runIrCommand(testCommand);
     }
@@ -154,7 +153,7 @@ void startState(ApplicationState state)
     {
         applicationState = ApplicationStateWiFlyTest;
         
-        printfUart0("Going into WiFly Test state, all uart in and outputs will redirected.\n");
+        printfData("Going into WiFly Test state, all uart in and outputs will redirected.\n");
     }
     
     return;
@@ -173,12 +172,12 @@ bool compareExtendedCommand(char *original, char *received)
 
 void printUnknownCommand(void)
 {
-    printfUart0("CMD?\n");
+    printfData("CMD?\n");
 }
 
 void printParameterMissing(void)
 {
-    printfUart0("Missing parameter.\n");
+    printfData("Missing parameter.\n");
 }
 
 void processCommand(void )

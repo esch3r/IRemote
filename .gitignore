@@ -37,5 +37,8 @@
 *.pro.user
 *moc*
 
+# Kdevelop
+.kdev_include_paths
+
 # Other
 ./code/DbgCfg/LPC1758_OOCD_CMARM.cfg

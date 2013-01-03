@@ -20,6 +20,7 @@
 #include <uart.h>
 
 #include "irData.h"
+#include "iremote.h"
 
 #include <stdio.h>
 #include <string.h>

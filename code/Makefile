@@ -62,6 +62,7 @@ CSRC += $(LIBRARYPATH)/iap.c
 CSRC += $(LIBRARYPATH)/wifly.c
 CSRC += irData.c
 CSRC += irControl.c
+CSRC += iremote.c
 
 ASRC = $(SYSPATH)/startup_LPC17xx.asm
 
