@@ -1,4 +1,5 @@
 #include "iremote.h"
+#include <timer.h>
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -13,6 +14,22 @@ int8 initializeSerialConnection(void)
         while (getcharUart0(&tmpChar) == 0)     // Trash all unusefull characters
             ;
         activeConnections |= SerialConnection;
+        return 0;
+    }
+    
+    return -1;
+}
+
+int8 initializeNetworkConnection(void)
+{
+    if (initializeWiFly(115200) == 0)
+    {
+        actionWiFlyEnterCommandMode();      // Configure the wlan module
+        //delayMs(100);                        // Wait for command mode to enter
+        setWiFlyWlanJoin(2);                // Auto join
+        setWiFlyDnsName("IRemoteBox");      // Sets the default hostname
+        actionWiFlyExitCommandMode();
+        
         return 0;
     }
     

@@ -32,6 +32,16 @@ public:
     };
     Q_DECLARE_FLAGS(ActiveConnections, ActiveConnection)
 
+    enum WlanAuthType {
+        OpenAuthType = 0,
+        WEP128AuthType = 1,
+        WPA1AuthType = 2,
+        MixedWPA1AndWPA2PSKAuthType = 3,
+        WPA2PSKAuthType = 4,
+        AdhocAuthType = 6,
+        WPE64AuthType = 7
+    };
+
     explicit IRemote(QObject *parent = 0);
     ~IRemote();
 
@@ -42,6 +52,12 @@ public:
 
     bool isSerialPortConnected();
     bool isNetworkConnected();
+
+    void setWlanSsid(const QString &ssid);
+    void setWlanPhrase(const QString &phrase);
+    void setWlanKey(const QString &key);
+    void setWlanHostname(const QString &hostname);
+    void setWlanAuth(WlanAuthType mode);
 
     void actionRun();
     void actionRun(IrCommand irCommand);

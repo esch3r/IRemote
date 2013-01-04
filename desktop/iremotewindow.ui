@@ -337,7 +337,7 @@
              </property>
              <layout class="QGridLayout" name="gridLayout_6">
               <item row="0" column="0" colspan="2">
-               <widget class="QGroupBox" name="groupBox_6">
+               <widget class="QGroupBox" name="wlanGroupBox">
                 <property name="title">
                  <string>WLAN</string>
                 </property>
@@ -345,42 +345,99 @@
                  <bool>true</bool>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_7">
-                 <item row="0" column="0">
+                 <item row="1" column="0">
                   <widget class="QLabel" name="label_4">
                    <property name="text">
                     <string>SSID</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="1" colspan="2">
-                  <widget class="QLineEdit" name="lineEdit"/>
+                 <item row="1" column="1" colspan="2">
+                  <widget class="QLineEdit" name="wlanSsidEdit"/>
                  </item>
-                 <item row="1" column="0">
+                 <item row="2" column="0">
                   <widget class="QLabel" name="label_5">
                    <property name="text">
                     <string>Security</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="0">
+                 <item row="3" column="0">
                   <widget class="QLabel" name="label_6">
                    <property name="text">
                     <string>Passphrase</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="1" colspan="2">
-                  <widget class="QLineEdit" name="lineEdit_2"/>
+                 <item row="3" column="1" colspan="2">
+                  <widget class="QLineEdit" name="wlanPassphraseEdit">
+                   <property name="echoMode">
+                    <enum>QLineEdit::Password</enum>
+                   </property>
+                  </widget>
                  </item>
-                 <item row="3" column="2">
-                  <widget class="QPushButton" name="pushButton">
+                 <item row="2" column="1" colspan="2">
+                  <widget class="QComboBox" name="wlanSecurityCombo">
+                   <property name="currentIndex">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <property name="text">
+                     <string>Open</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>WEP-128</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>WPA1</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Mixed WPA1 &amp; WPA2-PSK</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>WPA2-PSK</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Adhoc</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>WPE-64</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="4" column="2">
+                  <widget class="QPushButton" name="wlanScanButton">
                    <property name="text">
                     <string>Scan...</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="1" colspan="2">
-                  <widget class="QComboBox" name="comboBox"/>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_8">
+                   <property name="text">
+                    <string>Hostname</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1" colspan="2">
+                  <widget class="QLineEdit" name="wlanHostnameEdit">
+                   <property name="text">
+                    <string>IRemoteBox</string>
+                   </property>
+                  </widget>
                  </item>
                 </layout>
                </widget>
@@ -399,7 +456,7 @@
                   </widget>
                  </item>
                  <item row="0" column="1">
-                  <widget class="QSpinBox" name="spinBox">
+                  <widget class="QSpinBox" name="irRepeatSpin">
                    <property name="suffix">
                     <string>x</string>
                    </property>
@@ -415,14 +472,14 @@
                </widget>
               </item>
               <item row="3" column="0">
-               <widget class="QPushButton" name="pushButton_3">
+               <widget class="QPushButton" name="settingsReadButton">
                 <property name="text">
                  <string>Read</string>
                 </property>
                </widget>
               </item>
               <item row="3" column="1">
-               <widget class="QPushButton" name="pushButton_2">
+               <widget class="QPushButton" name="settingsSubmitButton">
                 <property name="text">
                  <string>Submit</string>
                 </property>

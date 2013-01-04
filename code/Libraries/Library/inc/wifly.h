@@ -12,7 +12,7 @@
 #include <uart.h>
 #include <types.h>
 
-int8 initializeWiFly(void);
+int8 initializeWiFly(uint32 baudrate);
 
 /**  Sets the adhoc beacon interval in milliseconds. Default is 100. */
 void setWiFlyAdhocBeacon(uint32 ms);

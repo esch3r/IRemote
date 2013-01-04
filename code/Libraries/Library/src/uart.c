@@ -435,3 +435,12 @@ int8 printfUart3(char *format, ...)
     
     return 0;
 }
+
+void setBaudrateUart1(uint32 baudrate)
+{
+    UART1_SET_DLAB();               // set Divisor Latch Accress Bit
+    UART1_SET_BAUDRATE(baudrate);   // Set baud rate
+    UART1_CLEAR_DLAB();
+    
+    UART1_ENABLE_AND_RESET_FIFO();  // Enable and reset TX and RX FIFO
+}

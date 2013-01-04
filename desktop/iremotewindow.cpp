@@ -273,3 +273,41 @@ void IRemoteWindow::on_runButton_clicked()
 {
     iremote->actionRun();
 }
+
+void IRemoteWindow::on_settingsSubmitButton_clicked()
+{
+    IRemote::WlanAuthType authType = IRemote::OpenAuthType;
+
+    switch (ui->wlanSecurityCombo->currentIndex())
+    {
+    case 0: authType = IRemote::OpenAuthType;
+        break;
+    case 1: authType = IRemote::WEP128AuthType;
+        break;
+    case 2: authType = IRemote::WPA1AuthType;
+        break;
+    case 3: authType = IRemote::MixedWPA1AndWPA2PSKAuthType;
+        break;
+    case 4: authType = IRemote::WPA2PSKAuthType;
+        break;
+    case 5: authType = IRemote::AdhocAuthType;
+        break;
+    case 6: authType = IRemote::WPE64AuthType;
+        break;
+    }
+
+    iremote->setWlanSsid(ui->wlanSsidEdit->text());
+    iremote->setWlanAuth(authType);
+    iremote->setWlanHostname(ui->wlanHostnameEdit->text());
+    if ((authType == IRemote::WEP128AuthType) ||
+            (authType == IRemote::WPE64AuthType))
+    {
+        iremote->setWlanKey(ui->wlanPassphraseEdit->text());
+    }
+    else if ((authType == IRemote::WPA1AuthType) ||
+             (authType == IRemote::MixedWPA1AndWPA2PSKAuthType) ||
+             (authType == IRemote::WPA2PSKAuthType))
+    {
+        iremote->setWlanPhrase(ui->wlanPassphraseEdit->text());
+    }
+}

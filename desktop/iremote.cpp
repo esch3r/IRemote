@@ -110,6 +110,31 @@ bool IRemote::isNetworkConnected()
     return (tcpSocket != NULL);
 }
 
+void IRemote::setWlanSsid(const QString &ssid)
+{
+    sendData(QString("set w s %1\r").arg(ssid).toLocal8Bit());
+}
+
+void IRemote::setWlanPhrase(const QString &phrase)
+{
+    sendData(QString("set w p %1\r").arg(phrase).toLocal8Bit());
+}
+
+void IRemote::setWlanKey(const QString &key)
+{
+    sendData(QString("set w k %1\r").arg(key).toLocal8Bit());
+}
+
+void IRemote::setWlanHostname(const QString &hostname)
+{
+    sendData(QString("set w h %1\r").arg(hostname).toLocal8Bit());
+}
+
+void IRemote::setWlanAuth(IRemote::WlanAuthType mode)
+{
+    sendData(QString("set w a %1\r").arg((int)mode).toLocal8Bit());
+}
+
 void IRemote::actionRun()
 {
     sendData("run\r");

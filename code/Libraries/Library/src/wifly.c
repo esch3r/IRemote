@@ -1,4 +1,5 @@
 #include "wifly.h"
+#include <timer.h>
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -8,15 +9,27 @@
 #define WIFLY_GETCHAR   getcharUart1
 #define WIFLY_INIT      initializeUart1
 
+#define WIFLY_STANDARD_BAUD 9600
+
 char commChar = '$';
 char *commCloseString = "*CLOS*";
 char *commOpenString = "*OPEN*";
 char *commRemoteString = "*HELLO*";
 
 
-int8 initializeWiFly(void)
+int8 initializeWiFly(uint32 baudrate)
 {
-    return WIFLY_INIT(9600);  // 9600 Baud, 1 Stop bit, No parity, No Hardware flow control
+    if (WIFLY_INIT(WIFLY_STANDARD_BAUD) == -1)  // 9600 Baud, 1 Stop bit, No parity, No Hardware flow control
+        return -1;
+    
+    actionWiFlyEnterCommandMode();              // Enter command mode
+    setWiFlyUartBaud(baudrate);              // Set baudrate instantly to target rate
+    fileIoWiFlySaveDefault();
+    actionWiFlyReboot();
+    delayMs(500);
+    setBaudrateUart1(baudrate);
+    
+    return 0;
 }
 
 void setWiFlyAdhocBeacon(uint32 ms)

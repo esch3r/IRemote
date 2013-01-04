@@ -55,6 +55,8 @@ private slots:
 
     void on_runButton_clicked();
 
+    void on_settingsSubmitButton_clicked();
+
 private:
     Ui::IRemoteWindow *ui;
 

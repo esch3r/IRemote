@@ -152,4 +152,6 @@ int8 printfUart2(char* format, ...);
  */
 int8 printfUart3(char* format, ...);
 
+void setBaudrateUart1(uint32 baudrate);
+
 #endif /*UART_H_*/
