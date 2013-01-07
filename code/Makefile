@@ -50,6 +50,7 @@ CSRC += $(DRVPATH)/ledDriver.c
 
 #CSRC += $(LIBRARYPATH)/capcom.c
 CSRC += $(LIBRARYPATH)/timer.c
+CSRC += $(LIBRARYPATH)/timeout.c
 CSRC += $(LIBRARYPATH)/led.c
 CSRC += $(LIBRARYPATH)/uart.c
 CSRC += $(LIBRARYPATH)/circularbuffer.c

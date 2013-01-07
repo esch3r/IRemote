@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 
-void initializeIrControl(void);
+int8 initializeIrControl(void);
 
 void startIrCapture(void);
 void stopIrCapture(void);

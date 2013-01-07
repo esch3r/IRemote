@@ -2,12 +2,13 @@
  * This is a file 
  */
 
-#define COMMAND_BUFFER_SIZE 200
-#define DATA_BUFFER_SIZE    200
+#define COMMAND_BUFFER_SIZE 250
+#define DATA_BUFFER_SIZE    250
 
 #include <led.h>
 #include <iap.h>
 #include <wifly.h>
+#include <timeout.h>
 #include "irControl.h"
 #include "iremote.h"
 
@@ -18,21 +19,28 @@ typedef enum {
     ApplicationStateWiFlyTest = 100
 } ApplicationState;
 
+typedef enum {
+    NetworkStateConnected = 0,
+    NetworkStateDisconnected = 1
+} NetworkState;
+
 void testFunc();
 void startState(ApplicationState state);
-void processCommand(void);
+void processCommand(char* buffer);
+void processWiFly(char* buffer);
+void errorCommand();
+void errorWiFly();
 
-uint8 testMode = 0;
 IrCommand *currentCommand;
-uint8 applicationState = ApplicationStateIdle;
-
-char commandBuffer[COMMAND_BUFFER_SIZE];
-uint8 commandBufferPos = 0;
+ApplicationState applicationState = ApplicationStateIdle;
+NetworkState networkState = NetworkStateDisconnected;
 
 char dataBuffer[DATA_BUFFER_SIZE];
 
 int main(void)
 {   
+    initializeTimeout(TIMER1);
+        
     initializeLeds();
     clearAllLeds();
     
@@ -42,12 +50,23 @@ int main(void)
     delayMs(500);
     
     initializeSerialConnection();
-    initializeNetworkConnection();
+    
+    if (initializeNetworkConnection() == -1)
+    {
+        printfData("ERR: Network initalization failed");
+    }
     initializeIrControl();
+    
+    setProcessFunctionUart0(&processCommand);
+    setErrorFunctionUart0(&errorCommand);
+    setProcessFunctionWiFly(&processCommand);
+    setErrorFunctionWiFly(&errorWiFly);
      
     printfData("Welcome to IRemote!\r");    // Send a welcome message
     printfData("Id: %i, Version: %i, Serial: %i\r",readIdIap(),readVersionIap(),readSerialIap());
    
+    blinkLed2(1);
+    
     // Testing IAP functions
     //    uint32 testVar;
     //printfUart0("Sector 26: %i, Sector 27: %i\n",checkBlankIap(26),checkBlankIap(27));
@@ -63,35 +82,15 @@ int main(void)
     //setGpioDirection(2,10,GpioDirectionInput);
     //enableGpioInterrupt(2,10,GpioInterruptRisingEdge,&testFunc);
     
-    setGpioDirection(0,9,GpioDirectionOutput);   // Output pin for testing purposes
+    //setGpioDirection(0,9,GpioDirectionOutput);   // Output pin for testing purposes
     
     for (;;) 
     {
+            
         if (applicationState == ApplicationStateIdle)
         {
-            static char receivedData;
-            while (getcharUart0(&receivedData) == 0)
-            {
-                if (receivedData != 13) // Carriage Return (CR)
-                {
-                    commandBuffer[commandBufferPos] = receivedData;
-                    if (commandBufferPos < COMMAND_BUFFER_SIZE-1)
-                    {
-                        commandBufferPos++;
-                    }
-                    else
-                    {
-                        printfData("ERR: command to long");
-                        commandBufferPos = 0;
-                    }
-                }
-                else
-                {
-                    commandBuffer[commandBufferPos] = '\0';
-                    processCommand();
-                    commandBufferPos = 0;
-                }
-            }
+            processTaskUart0();     // serial task
+            processTaskWiFly();     // wifly task
         }
         else if (applicationState == ApplicationStateCaptureCommand)
         {
@@ -115,10 +114,20 @@ int main(void)
             while (getcharWiFly(&receivedData) == 0)
                 putcharUart0(receivedData);
         }
-        delayMs(100);
+        delayMs(50);
      }
 
     return 0 ;
+}
+
+void errorCommand()
+{
+    printfData("ERR: Command too long\r");
+}
+
+void errorWiFly()
+{
+    printfData("ERR: WiFly command too long\r");
 }
 
 void startState(ApplicationState state)
@@ -129,6 +138,8 @@ void startState(ApplicationState state)
     if (state == ApplicationStateIdle)
     {
         applicationState = ApplicationStateIdle;
+        
+        printfData("Going into idle\r");
     }
     else if (state == ApplicationStateCaptureCommand)
     {
@@ -182,11 +193,20 @@ void printAcknowledgement(void)
     printfData("ACK\r");
 }
 
-void processCommand(void )
+void printError(char *message)
+{
+    printfData("ERR: %s\r", message);
+}
+
+void processWiFly(char *buffer)
+{
+    
+}
+void processCommand(char *buffer)
 {
     char *dataPointer;
     
-    dataPointer = strtok(commandBuffer," ");
+    dataPointer = strtok(buffer," ");
     
     if (compareBaseCommand("run", dataPointer))
     {
@@ -202,6 +222,11 @@ void processCommand(void )
     {
         // We have a capture command
         startState(ApplicationStateCaptureCommand);
+    }
+    else if (compareBaseCommand("stop", dataPointer))
+    {
+        // We have a capture command
+        startState(ApplicationStateIdle);
     }
     else if (compareBaseCommand("set", dataPointer))
     {
@@ -227,11 +252,13 @@ void processCommand(void )
                 dataPointer = strtok(NULL," ");
                 if (dataPointer != NULL)
                 {
-                    strncpy(dataBuffer, dataPointer, DATA_BUFFER_SIZE);
-                    actionWiFlyEnterCommandMode();
-                    setWiFlyWlanSsid(dataBuffer);
-                    actionWiFlyExitCommandMode();
-                    printAcknowledgement();
+                    //strncpy(dataBuffer, dataPointer, DATA_BUFFER_SIZE);
+                    //printfData("%s %s\r", dataBuffer, dataPointer);
+                    if (setWiFlyWlanSsid(dataPointer) == 0)
+                        printAcknowledgement();
+                    else
+                        printError("setting SSID failed");
+                    
                     return;
                 }
                 else
@@ -247,10 +274,10 @@ void processCommand(void )
                 if (dataPointer != NULL)
                 {
                     strncpy(dataBuffer, dataPointer, DATA_BUFFER_SIZE);
-                    actionWiFlyEnterCommandMode();
-                    setWiFlyWlanPhrase(dataBuffer);
-                    actionWiFlyExitCommandMode();
-                    printAcknowledgement();
+                    if (setWiFlyWlanPhrase(dataBuffer) == 0)
+                        printAcknowledgement();
+                    else
+                        printError("setting passphrase failed");
                     return;
                 }
                 else
@@ -266,10 +293,10 @@ void processCommand(void )
                 if (dataPointer != NULL)
                 {
                     strncpy(dataBuffer, dataPointer, DATA_BUFFER_SIZE);
-                    actionWiFlyEnterCommandMode();
-                    setWiFlyWlanKey(dataBuffer);
-                    actionWiFlyExitCommandMode();
-                    printAcknowledgement();
+                    if (setWiFlyWlanKey(dataBuffer) == 0)
+                        printAcknowledgement();
+                    else
+                        printError("setting key failed");
                     return;
                 }
                 else
@@ -285,10 +312,10 @@ void processCommand(void )
                 if (dataPointer != NULL)
                 {
                     strncpy(dataBuffer, dataPointer, DATA_BUFFER_SIZE);
-                    actionWiFlyEnterCommandMode();
-                    setWiFlyDnsName(dataBuffer);
-                    actionWiFlyExitCommandMode();
-                    printAcknowledgement();
+                    if (setWiFlyDnsName(dataBuffer) == 0)
+                        printAcknowledgement();
+                    else
+                        printError("setting hostname failed");
                     return;
                 }
                 else
@@ -304,10 +331,10 @@ void processCommand(void )
                 if (dataPointer != NULL)
                 {
                     strncpy(dataBuffer, dataPointer, DATA_BUFFER_SIZE);
-                    actionWiFlyEnterCommandMode();
-                    setWiFlyWlanAuth(atoi(dataBuffer));
-                    actionWiFlyExitCommandMode();
-                    printAcknowledgement();
+                    if (setWiFlyWlanAuth(atoi(dataBuffer)) == 0)
+                        printAcknowledgement();
+                    else
+                        printError("setting auth mode failed");
                     return;
                 }
                 else
@@ -315,6 +342,89 @@ void processCommand(void )
                     printUnknownCommand();
                     return;
                 }
+            }
+            else
+            {
+                printUnknownCommand();
+                return;
+            }
+        }
+        else
+        {
+            printUnknownCommand();
+            return;
+        }
+    }
+    else if (compareBaseCommand("start", dataPointer))
+    {
+        // starting a start command
+        dataPointer = strtok(NULL," ");
+        if (dataPointer == NULL)
+        {
+            printUnknownCommand();
+            return;
+        }
+        else if (compareExtendedCommand("wlan",dataPointer))
+        {
+            // set wlan
+            dataPointer = strtok(NULL," ");
+            if (dataPointer == NULL)
+            {
+                printUnknownCommand();
+                return;
+            }
+            else if (compareExtendedCommand("config",dataPointer))
+            {
+                if (actionWiFlyEnterCommandMode(FALSE) == 0)
+                    printAcknowledgement();
+                else
+                    printError("entering command mode failed");
+                    
+                return;
+            }
+            else
+            {
+                printUnknownCommand();
+                return;
+            }
+        }
+        else
+        {
+            printUnknownCommand();
+            return;
+        }
+    }
+    else if (compareBaseCommand("save", dataPointer))
+    {
+        // starting a save command
+        dataPointer = strtok(NULL," ");
+        if (dataPointer == NULL)
+        {
+            printUnknownCommand();
+            return;
+        }
+        else if (compareExtendedCommand("wlan",dataPointer))
+        {
+            // set wlan
+            dataPointer = strtok(NULL," ");
+            if (dataPointer == NULL)
+            {
+                printUnknownCommand();
+                return;
+            }
+            else if (compareExtendedCommand("config",dataPointer))
+            {
+                if (fileIoWiFlySaveDefault() == 0)
+                {
+                    if (actionWiFlyReboot() == 0)
+                        printAcknowledgement();
+                    else
+                        printError("reboot failed");
+                }
+                else
+                    printError("saving config failed");
+                    
+                return;
             }
             else
             {

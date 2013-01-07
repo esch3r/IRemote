@@ -21,23 +21,26 @@
 #define USE_UART_BUFFER 1
 #endif
 
+/** Defines wheter a UART task to process incoming commands should be used or not. */
+#ifndef USE_UART_TASK
+#define USE_UART_TASK 1
+#endif
+
 #define UART_PRINTF_BUFFER_SIZE 256
+#define UART_TASK_BUFFER_SIZE   256
+
+#define UART0_COMMAND_CHAR  13  // Carriage Return (CR)
+#define UART1_COMMAND_CHAR  13
+#define UART2_COMMAND_CHAR  13
+#define UART3_COMMAND_CHAR  13
+
+#define UART1_SECONDARY_COMMAND_CHAR    '\a'
 
 #include <uartDriver.h>
 #include <circularbuffer.h>
 #include <types.h>
-
-CircularBuffer uart0ReadBuffer;
-CircularBuffer uart0WriteBuffer;
-
-CircularBuffer uart1ReadBuffer;
-CircularBuffer uart1WriteBuffer;
-
-CircularBuffer uart2ReadBuffer;
-CircularBuffer uart2WriteBuffer;
-
-CircularBuffer uart3ReadBuffer;
-CircularBuffer uart3WriteBuffer;
+#include <stdarg.h>
+#include <stdio.h>
 
 /** Initializes UART0.
  *  The UART is configured with following configuration: 8 bits, no Parity, 1 Stop bit
@@ -152,6 +155,92 @@ int8 printfUart2(char* format, ...);
  */
 int8 printfUart3(char* format, ...);
 
+/** Cleans in and output buffers of UART0. */
+void flushUart0(void);  
+/** Cleans in and output buffers of UART1. */
+void flushUart1(void);  
+/** Cleans in and output buffers of UART2. */
+void flushUart2(void);  
+/** Cleans in and output buffers of UART3. */
+void flushUart3(void);  
+
+
+/** Changes the baudrate of UART0
+ *  @param baudrate The target baudrate.
+ */
+void setBaudrateUart0(uint32 baudrate);
+/** Changes the baudrate of UART1
+ *  @param baudrate The target baudrate.
+ */
 void setBaudrateUart1(uint32 baudrate);
+/** Changes the baudrate of UART2
+ *  @param baudrate The target baudrate.
+ */
+void setBaudrateUart2(uint32 baudrate);
+/** Changes the baudrate of UART3
+ *  @param baudrate The target baudrate.
+ */
+void setBaudrateUart3(uint32 baudrate);
+
+#if (USE_UART_TASK == 1)
+/** Sets the command processing function for UART0, 
+ *  only needed if process tasks are used.
+ *  @param func Pointer to the function that should be called when a command arives
+ */ 
+void setProcessFunctionUart0(void (* func)(char *));
+/** Sets the command processing function for UART1, 
+ *  only needed if process tasks are used.
+ *  @param func Pointer to the function that should be called when a command arives
+ */ 
+void setProcessFunctionUart1(void (* func)(char *));
+/** Sets the command processing function for UART2, 
+ *  only needed if process tasks are used.
+ *  @param func Pointer to the function that should be called when a command arives
+ */ 
+void setProcessFunctionUart2(void (* func)(char *));
+/** Sets the command processing function for UART3, 
+ *  only needed if process tasks are used.
+ *  @param func Pointer to the function that should be called when a command arives
+ */ 
+void setProcessFunctionUart3(void (* func)(char *));
+
+/** Sets the command error function for UART0, 
+ *  only needed if process tasks are used.
+ *  @param func Pointer to the function that should be called when a error occures
+ */ 
+void setErrorFunctionUart0(void (* func)());
+/** Sets the command error function for UART1, 
+ *  only needed if process tasks are used.
+ *  @param func Pointer to the function that should be called when a error occures
+ */ 
+void setErrorFunctionUart1(void (* func)());
+/** Sets the command error function for UART2, 
+ *  only needed if process tasks are used.
+ *  @param func Pointer to the function that should be called when a error occures
+ */ 
+void setErrorFunctionUart2(void (* func)());
+/** Sets the command error function for UART3, 
+ *  only needed if process tasks are used.
+ *  @param func Pointer to the function that should be called when a error occures
+ */ 
+void setErrorFunctionUart3(void (* func)());
+
+/** Task function for UART0. This function processes incoming characters
+ *  to find commands that end with a command char (see defines).
+ */
+void processTaskUart0();
+/** Task function for UART1. This function processes incoming characters
+ *  to find commands that end with a command char (see defines).
+ */
+void processTaskUart1();
+/** Task function for UART2. This function processes incoming characters
+ *  to find commands that end with a command char (see defines).
+ */
+void processTaskUart2();
+/** Task function for UART3. This function processes incoming characters
+ *  to find commands that end with a command char (see defines).
+ */
+void processTaskUart3();
+#endif
 
 #endif /*UART_H_*/

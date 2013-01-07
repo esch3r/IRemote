@@ -1,11 +1,49 @@
 #include <uart.h>
-#include <circularbuffer.h>
-#include <led.h>
-#include <stdarg.h>
-#include <stdio.h>
+#include <stdlib.h>
+
+CircularBuffer uart0ReadBuffer;
+CircularBuffer uart0WriteBuffer;
+
+CircularBuffer uart1ReadBuffer;
+CircularBuffer uart1WriteBuffer;
+
+CircularBuffer uart2ReadBuffer;
+CircularBuffer uart2WriteBuffer;
+
+CircularBuffer uart3ReadBuffer;
+CircularBuffer uart3WriteBuffer;
+
+char *taskBuffer0;
+char *taskBuffer1;
+char *taskBuffer2;
+char *taskBuffer3;
+
+uint16 taskBufferPos0 = 0;
+uint16 taskBufferPos1 = 0;
+uint16 taskBufferPos2 = 0;
+uint16 taskBufferPos3 = 0;
+
+void (* taskFunctionPointer0)(char *);
+void (* taskFunctionPointer1)(char *);
+void (* taskFunctionPointer2)(char *);
+void (* taskFunctionPointer3)(char *);
+
+void (* errorFunctionPointer0)(void);
+void (* errorFunctionPointer1)(void);
+void (* errorFunctionPointer2)(void);
+void (* errorFunctionPointer3)(void);
 
 int8 initializeUart0(uint32 baudrate)
 {
+#if (USE_UART_TASK == 1)
+    taskBuffer0 = calloc(UART_TASK_BUFFER_SIZE, sizeof(char));
+    if (taskBuffer0 == NULL)
+        return -1;
+    
+    taskFunctionPointer0 = NULL;
+    errorFunctionPointer0 = NULL;
+#endif
+    
     UART0_POWER_ON();               // Turn on power to UART0
     UART0_ENABLE_CLK();             // Turn on UART0 peripheral clock
     
@@ -33,6 +71,15 @@ int8 initializeUart0(uint32 baudrate)
 
 int8 initializeUart1(uint32 baudrate)
 {
+#if (USE_UART_TASK == 1)
+    taskBuffer1 = calloc(UART_TASK_BUFFER_SIZE, sizeof(char));
+    if (taskBuffer1 == NULL)
+        return -1;
+    
+    taskFunctionPointer1 = NULL;
+    errorFunctionPointer1 = NULL;
+#endif
+    
     UART1_POWER_ON();               // Turn on power to UART1
     UART1_ENABLE_CLK();             // Turn on UART1 peripheral clock
     
@@ -60,6 +107,15 @@ int8 initializeUart1(uint32 baudrate)
 
 int8 initializeUart2(uint32 baudrate)
 {
+#if (USE_UART_TASK == 1)
+    taskBuffer2 = calloc(UART_TASK_BUFFER_SIZE, sizeof(char));
+    if (taskBuffer2 == NULL)
+        return -1;
+    
+    taskFunctionPointer2 = NULL;
+    errorFunctionPointer2 = NULL;
+#endif
+    
     UART2_POWER_ON();               // Turn on power to UART2
     UART2_ENABLE_CLK();             // Turn on UART2 peripheral clock
     
@@ -87,6 +143,15 @@ int8 initializeUart2(uint32 baudrate)
 
 int8 initializeUart3(uint32 baudrate)
 {
+#if (USE_UART_TASK == 1)
+    taskBuffer3 = calloc(UART_TASK_BUFFER_SIZE, sizeof(char));
+    if (taskBuffer3 == NULL)
+        return -1;
+    
+    taskFunctionPointer3 = NULL;
+    errorFunctionPointer3 = NULL;
+#endif
+    
     UART3_POWER_ON();               // Turn on power to UART3
     UART3_ENABLE_CLK();             // Turn on UART3 peripheral clock
     
@@ -436,6 +501,51 @@ int8 printfUart3(char *format, ...)
     return 0;
 }
 
+void flushUart0(void)
+{
+    char byteRead;
+    while (getCb(&uart0ReadBuffer, (void*)&byteRead) == 0)
+        ;
+    while (getCb(&uart0WriteBuffer, (void*)&byteRead) == 0)
+        ;
+}
+
+void flushUart1(void)
+{
+    char byteRead;
+    while (getCb(&uart1ReadBuffer, (void*)&byteRead) == 0)
+        ;
+    while (getCb(&uart1WriteBuffer, (void*)&byteRead) == 0)
+        ;
+}
+
+void flushUart2(void)
+{
+    char byteRead;
+    while (getCb(&uart2ReadBuffer, (void*)&byteRead) == 0)
+        ;
+    while (getCb(&uart2WriteBuffer, (void*)&byteRead) == 0)
+        ;
+}
+
+void flushUart3(void)
+{
+    char byteRead;
+    while (getCb(&uart3ReadBuffer, (void*)&byteRead) == 0)
+        ;
+    while (getCb(&uart3WriteBuffer, (void*)&byteRead) == 0)
+        ;
+}
+
+void setBaudrateUart0(uint32 baudrate)
+{
+    UART0_SET_DLAB();               // set Divisor Latch Accress Bit
+    UART0_SET_BAUDRATE(baudrate);   // Set baud rate
+    UART0_CLEAR_DLAB();
+    
+    UART0_ENABLE_AND_RESET_FIFO();  // Enable and reset TX and RX FIFO
+}
+
 void setBaudrateUart1(uint32 baudrate)
 {
     UART1_SET_DLAB();               // set Divisor Latch Accress Bit
@@ -444,3 +554,173 @@ void setBaudrateUart1(uint32 baudrate)
     
     UART1_ENABLE_AND_RESET_FIFO();  // Enable and reset TX and RX FIFO
 }
+
+void setBaudrateUart2(uint32 baudrate)
+{
+    UART2_SET_DLAB();               // set Divisor Latch Accress Bit
+    UART2_SET_BAUDRATE(baudrate);   // Set baud rate
+    UART2_CLEAR_DLAB();
+    
+    UART2_ENABLE_AND_RESET_FIFO();  // Enable and reset TX and RX FIFO
+}
+
+void setBaudrateUart3(uint32 baudrate)
+{
+    UART3_SET_DLAB();               // set Divisor Latch Accress Bit
+    UART3_SET_BAUDRATE(baudrate);   // Set baud rate
+    UART3_CLEAR_DLAB();
+    
+    UART3_ENABLE_AND_RESET_FIFO();  // Enable and reset TX and RX FIFO
+}
+
+#if (USE_UART_TASK == 1)
+
+void setProcessFunctionUart0(void (* func)(char *))
+{
+    taskFunctionPointer0 = func;
+}
+
+void setProcessFunctionUart1(void (* func)(char *))
+{
+    taskFunctionPointer1 = func;
+}
+
+void setProcessFunctionUart2(void (* func)(char *))
+{
+    taskFunctionPointer2 = func;
+}
+
+void setProcessFunctionUart3(void (* func)(char *))
+{
+    taskFunctionPointer3 = func;
+}
+
+void setErrorFunctionUart0(void (* func)())
+{
+    errorFunctionPointer0 = func;
+}
+
+void setErrorFunctionUart1(void (* func)())
+{
+    errorFunctionPointer1 = func;
+}
+
+void setErrorFunctionUart2(void (* func)())
+{
+    errorFunctionPointer2 = func;
+}
+
+void setErrorFunctionUart3(void (* func)())
+{
+    errorFunctionPointer3 = func;
+}
+
+void processTaskUart0()
+{
+    static char receivedData;
+    while (getcharUart0(&receivedData) == 0)
+    {
+        if (receivedData != UART0_COMMAND_CHAR)
+        {
+            taskBuffer0[taskBufferPos0] = receivedData;
+            if (taskBufferPos0 < UART_TASK_BUFFER_SIZE-1)
+            {
+                taskBufferPos0++;
+            }
+            else
+            {
+                (*errorFunctionPointer0)();
+                taskBufferPos0 = 0;
+            }
+        }
+        else
+        {
+            taskBuffer0[taskBufferPos0] = '\0';
+            (*taskFunctionPointer0)(taskBuffer0);
+            taskBufferPos0 = 0;
+        }
+    }
+}
+
+void processTaskUart1()
+{
+    static char receivedData;
+    while (getcharUart1(&receivedData) == 0)
+    {
+        if ((receivedData != UART1_COMMAND_CHAR) && 
+            (receivedData != UART1_SECONDARY_COMMAND_CHAR))
+        {
+            taskBuffer1[taskBufferPos1] = receivedData;
+            if (taskBufferPos1 < UART_TASK_BUFFER_SIZE-1)
+            {
+                taskBufferPos1++;
+            }
+            else
+            {
+                (*errorFunctionPointer1)();
+                taskBufferPos1 = 0;
+            }
+        }
+        else
+        {
+            taskBuffer1[taskBufferPos1] = '\0';
+            (*taskFunctionPointer1)(taskBuffer1);
+            taskBufferPos1 = 0;
+        }
+    }
+}
+
+void processTaskUart2()
+{
+    static char receivedData;
+    while (getcharUart2(&receivedData) == 0)
+    {
+        if (receivedData != UART2_COMMAND_CHAR)
+        {
+            taskBuffer2[taskBufferPos2] = receivedData;
+            if (taskBufferPos2 < UART_TASK_BUFFER_SIZE-1)
+            {
+                taskBufferPos2++;
+            }
+            else
+            {
+                (*errorFunctionPointer2)();
+                taskBufferPos2 = 0;
+            }
+        }
+        else
+        {
+            taskBuffer2[taskBufferPos2] = '\0';
+            (*taskFunctionPointer2)(taskBuffer2);
+            taskBufferPos2 = 0;
+        }
+    }
+}
+
+void processTaskUart3()
+{
+    static char receivedData;
+    while (getcharUart3(&receivedData) == 0)
+    {
+        if (receivedData != UART3_COMMAND_CHAR)
+        {
+            taskBuffer3[taskBufferPos3] = receivedData;
+            if (taskBufferPos3 < UART_TASK_BUFFER_SIZE-1)
+            {
+                taskBufferPos3++;
+            }
+            else
+            {
+                (*errorFunctionPointer3)();
+                taskBufferPos3 = 0;
+            }
+        }
+        else
+        {
+            taskBuffer3[taskBufferPos3] = '\0';
+            (*taskFunctionPointer3)(taskBuffer3);
+            taskBufferPos3 = 0;
+        }
+    }
+}
+#endif

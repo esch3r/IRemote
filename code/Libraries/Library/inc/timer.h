@@ -33,11 +33,6 @@
 #include <types.h>
 #include <timerDriver.h>
 
-void (* functionPointer0)(void);
-void (* functionPointer1)(void);
-void (* functionPointer2)(void);
-void (* functionPointer3)(void);
-
 /** Initializes some hardware timer.
  *  @param khz The frequency the timer should run with. 
  *  @param intervalUs Tick interval in µs.
@@ -310,9 +305,26 @@ int8 singleShotTimer2(uint32 ms, void (* func)(void));
  */
 int8 singleShotTimer3(uint32 ms, void (* func)(void));
 
+/** Returns the counter value of a timer.
+ *  @param id Id of the target timer
+ *  @return counter value
+ */
+inline uint32 getCounterValueTimer(uint8 id);
+/** Returns the counter value of TIMER0.
+ *  @return counter value
+ */
 inline uint32 getCounterValueTimer0();
+/** Returns the counter value of TIMER1.
+ *  @return counter value
+ */
 inline uint32 getCounterValueTimer1();
+/** Returns the counter value of TIMER2.
+ *  @return counter value
+ */
 inline uint32 getCounterValueTimer2();
+/** Returns the counter value of TIMER3.
+ *  @return counter value
+ */
 inline uint32 getCounterValueTimer3();
 
 int8 initializeCapCom0(uint32 khz, uint8 pin, void (* func)(void));

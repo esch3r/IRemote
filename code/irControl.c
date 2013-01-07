@@ -11,16 +11,18 @@ uint8   currentRepeatCount = 0;
 
 IrCommand *tmpCommand = NULL;
 
-void initializeIrControl(void)
+int8 initializeIrControl(void)
 {
-    initializeCb(&buffer0,100,sizeof(uint16));
+    if (initializeCb(&buffer0,IR_MAX_TRANSITIONS,sizeof(uint16)) == -1)
+        return -1;
         
-    initializePWM(38000,0.5,1);
+    if (initializePWM(38000,0.5,1) == -1)
+        return -1;
         
-    setGpioDirection(IR_CAPTURE_PORT, IR_CAPTURE_PIN, GpioDirectionInput);  // TSOP input pin
-    
-    initializeTimer3(1000,1E9);
-    
+    setGpioDirection(IR_CAPTURE_PORT, IR_CAPTURE_PIN, GpioDirectionInput); // TSOP input pin
+
+    if (initializeTimer3(1000,1E9) == -1)
+        return -1;
 }
 
 void outputCommand(IrCommand *command)

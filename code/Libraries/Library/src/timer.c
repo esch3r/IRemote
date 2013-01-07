@@ -1,4 +1,10 @@
 #include <timer.h>
+#include <led.h>
+
+void (* functionPointer0)(void) = NULL;
+void (* functionPointer1)(void) = NULL;
+void (* functionPointer2)(void) = NULL;
+void (* functionPointer3)(void) = NULL;
 
 int8 initializeTimer0(uint32 khz, uint32 intervalUs)
 {
@@ -281,6 +287,20 @@ int8 singleShotTimer0(uint32 ms, void (* func)(void))
     functionPointer0 = func;
         
     TIMER0_START();                                     /* Start timer */
+    
+    return 0;
+}
+
+inline uint32 getCounterValueTimer(uint8 id)
+{
+    if (id == 0)
+        return TIMER0_COUNTER_VALUE();
+    else if (id == 1)
+        return TIMER1_COUNTER_VALUE();
+    else if (id == 2)
+        return TIMER2_COUNTER_VALUE();
+    else if (id == 3)
+        return TIMER3_COUNTER_VALUE();
     
     return 0;
 }

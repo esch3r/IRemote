@@ -1,419 +1,537 @@
 #include "wifly.h"
-#include <timer.h>
-#include <stdarg.h>
-#include <stdio.h>
 
-#define WIFLY_PRINTF    printfUart1
-#define WIFLY_WRITEDATA writeDataUart1
-#define WIFLY_PUTCHAR   putcharUart1
-#define WIFLY_GETCHAR   getcharUart1
-#define WIFLY_INIT      initializeUart1
+#define WIFLY_PRINTF                printfUart1
+#define WIFLY_WRITEDATA             writeDataUart1
+#define WIFLY_PUTCHAR               putcharUart1
+#define WIFLY_GETCHAR               getcharUart1
+#define WIFLY_INIT                  initializeUart1
+#define WIFLY_SET_PROCESS_FUNCTION  setProcessFunctionUart1
+#define WIFLY_SET_ERROR_FUNCTION    setErrorFunctionUart1
+#define WIFLY_PROCESS_TASK          processTaskUart1
+#define WIFLY_SET_BAUDRATE          setBaudrateUart1
+#define WIFLY_FLUSH                 flushUart1
 
 #define WIFLY_STANDARD_BAUD 9600
 
-char commChar = '$';
-char *commCloseString = "*CLOS*";
-char *commOpenString = "*OPEN*";
-char *commRemoteString = "*HELLO*";
+#define WIFLY_COMMAND_MODE_ENTER_RETRY_ATTEMPTS 5
+#define WIFLY_COMMAND_MODE_GUARD_TIME           250     // ms
+#define WIFLY_COMMAND_SETTLE_TIME               20
+#define WIFLY_VERSION_LENGTH                    4
+#define WIFLY_SET_OK                            "AOK"
+#define WIFLY_COMMAND_BUFFER_SIZE               256
+#define WIFLY_RESPONSE_BUFFER_SIZE              256
+#define WIFLY_RESPONSE_TIMEOUT                  1000
 
+char commChar = '$';
+char commCloseString[10];
+char commOpenString[10];
+char commRemoteString[10];
+char wiFlyVersion[WIFLY_VERSION_LENGTH + 3];    // <,>, and \0
+
+char commandBuffer[WIFLY_COMMAND_BUFFER_SIZE];
+char responseBuffer[WIFLY_RESPONSE_BUFFER_SIZE];
+uint16 responseBufferPos;
+
+void (* taskFunctionPointer)(char *);
+
+WiFlyState wiFlyState = WiFlyStateDisconnected;
+
+int8 findInResponse(const char* toMatch, uint32 timeout);
+int8 responseMatched(const char* toMatch);
+int8 findWiFlyVersion(uint32 timeout);
+int8 setCommand(char *command);
+int8 getCommand(char* command);
+int8 otherCommand(char *command, char* awaitedResponse);
+
+void internalProcessTask(char* command);
 
 int8 initializeWiFly(uint32 baudrate)
 {
-    if (WIFLY_INIT(WIFLY_STANDARD_BAUD) == -1)  // 9600 Baud, 1 Stop bit, No parity, No Hardware flow control
+    if (WIFLY_INIT(baudrate) == -1)     // 9600 Baud, 1 Stop bit, No parity, No Hardware flow control
         return -1;
     
-    actionWiFlyEnterCommandMode();              // Enter command mode
+    WIFLY_FLUSH();                      // Trash unusefull chars
+    
+    if (actionWiFlyEnterCommandMode(FALSE) == -1)      // Configure the wlan module
+        return -1;
+    
+    setWiFlyCommOpen("*OPEN*\a");        // Set the open command
+    setWiFlyCommClose("*CLOS*\a");       // Set the close command
+    setWiFlyCommRemote("*HELLO*\a");     // Set the remote command
+    
+    actionWiFlyExitCommandMode();
+    
+    WIFLY_SET_PROCESS_FUNCTION(&internalProcessTask);
+    
+    /*actionWiFlyEnterCommandMode();           // Enter command mode
     setWiFlyUartBaud(baudrate);              // Set baudrate instantly to target rate
     fileIoWiFlySaveDefault();
     actionWiFlyReboot();
-    delayMs(500);
-    setBaudrateUart1(baudrate);
+    WIFLY_SET_BAUDRATE(baudrate);*/
+    
+    wiFlyState = WiFlyStateDisconnected;
     
     return 0;
 }
 
-void setWiFlyAdhocBeacon(uint32 ms)
+int8 setWiFlyAdhocBeacon(uint32 ms)
 {
-    WIFLY_PRINTF("set a b %u\r", ms);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set a b %u\r", ms);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyAdhocProbe(uint32 num)
+int8 setWiFlyAdhocProbe(uint32 num)
 {
-    WIFLY_PRINTF("set a p %u\r", num);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set a p %u\r", num);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyBroadcastAddress(char *address)
+int8 setWiFlyBroadcastAddress(char *address)
 {
-    WIFLY_PRINTF("set b a %s\r", address);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set b a %s\r", address);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyBroadcastInterval(uint32 value)
+int8 setWiFlyBroadcastInterval(uint32 value)
 {
-    WIFLY_PRINTF("set b i %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set b i %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyBroadcastPort(uint16 port)
+int8 setWiFlyBroadcastPort(uint16 port)
 {
-    WIFLY_PRINTF("set b p %u\r", port);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set b p %u\r", port);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyComm(char c)
+int8 setWiFlyComm(char c)
 {
-    WIFLY_PRINTF("set c %c\r", c);
     commChar = c;
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set c %c\r", c);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyCommClose(char *string)
+int8 setWiFlyCommClose(char *string)
 {
-    WIFLY_PRINTF("set c c %s\r", string);
-    commCloseString = string;
+    strncpy(commCloseString, string, 10);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set c c %s\r", string);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyCommOpen(char *string)
+int8 setWiFlyCommOpen(char *string)
 {
-    WIFLY_PRINTF("set c o %s\r", string);
-    commOpenString = string;
+    strncpy(commOpenString, string, 10);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set c o %s\r", string);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyCommRemote(char *string)
+int8 setWiFlyCommRemote(char *string)
 {
-    WIFLY_PRINTF("set c r %s\r", string);
-    commRemoteString = string;
+    strncpy(commRemoteString, string, 10);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set c r %s\r", string);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyCommIdle(uint32 secs)
+int8 setWiFlyCommIdle(uint32 secs)
 {
-    WIFLY_PRINTF("set c i %u\r", secs);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set c i %u\r", secs);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyCommMatch(uint32 value)
+int8 setWiFlyCommMatch(uint32 value)
 {
-    WIFLY_PRINTF("set c m %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set c m %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyCommSize(uint32 value)
+int8 setWiFlyCommSize(uint32 value)
 {
-    WIFLY_PRINTF("set c s %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set c s %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyCommTime(uint32 num)
+int8 setWiFlyCommTime(uint32 num)
 {
-    WIFLY_PRINTF("set c t %u\r", num);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set c t %u\r", num);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyDnsAddr(char *addr)
+int8 setWiFlyDnsAddr(char *addr)
 {
-    WIFLY_PRINTF("set d a %s\r", addr);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set d a %s\r", addr);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyDnsName(char *string)
+int8 setWiFlyDnsName(char *string)
 {
-    WIFLY_PRINTF("set d n %s\r", string);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set d n %s\r", string);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyDnsBackup(char *string)
+int8 setWiFlyDnsBackup(char *string)
 {
-    WIFLY_PRINTF("set d b %s\r", string);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set d b %s\r", string);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyFtpAddr(char *addr)
+int8 setWiFlyFtpAddr(char *addr)
 {
-    WIFLY_PRINTF("set f a %s\r", addr);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set f a %s\r", addr);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyFtpDir(char *string)
+int8 setWiFlyFtpDir(char *string)
 {
-    WIFLY_PRINTF("set f d %s\r", string);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set f d %s\r", string);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyFtpFilename(char *file)
+int8 setWiFlyFtpFilename(char *file)
 {
-    WIFLY_PRINTF("set f f %s\r", file);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set f f %s\r", file);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyFtpMode(uint32 mask)
+int8 setWiFlyFtpMode(uint32 mask)
 {
-    WIFLY_PRINTF("set f m %x\r", mask);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set f m %x\r", mask);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyFtpRemote(uint32 port)
+int8 setWiFlyFtpRemote(uint32 port)
 {
-    WIFLY_PRINTF("set f r %u\r", port);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set f r %u\r", port);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyFtpTime(uint32 value)
+int8 setWiFlyFtpTime(uint32 value)
 {
-    WIFLY_PRINTF("set f t %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set f t %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyFtpUser(char *name)
+int8 setWiFlyFtpUser(char *name)
 {
-    WIFLY_PRINTF("set f u %s\r", name);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set f u %s\r", name);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyFtpPass(char *pass)
+int8 setWiFlyFtpPass(char *pass)
 {
-    WIFLY_PRINTF("set f p %s\r", pass);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set f p %s\r", pass);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyIpAddress(char *addr)
+int8 setWiFlyIpAddress(char *addr)
 {
-    WIFLY_PRINTF("set i a %s\r", addr);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set i a %s\r", addr);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyIpBackup(char *addr)
+int8 setWiFlyIpBackup(char *addr)
 {
-    WIFLY_PRINTF("set i b %s\r", addr);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set i b %s\r", addr);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyIpDhcp(uint32 value)
+int8 setWiFlyIpDhcp(uint32 value)
 {
-    WIFLY_PRINTF("set i d %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set i d %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyIpFlags(uint32 value)
+int8 setWiFlyIpFlags(uint32 value)
 {
-    WIFLY_PRINTF("set i f %x\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set i f %x\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyIpGateway(char *addr)
+int8 setWiFlyIpGateway(char *addr)
 {
-    WIFLY_PRINTF("set i g %s\r", addr);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set i g %s\r", addr);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyIpHost(char *addr)
+int8 setWiFlyIpHost(char *addr)
 {
-    WIFLY_PRINTF("set i h %s\r", addr);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set i h %s\r", addr);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyIpLocalport(uint32 num)
+int8 setWiFlyIpLocalport(uint32 num)
 {
-    WIFLY_PRINTF("set i l %u\r", num);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set i l %u\r", num);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyIpNetmask(char *value)
+int8 setWiFlyIpNetmask(char *value)
 {
-    WIFLY_PRINTF("set i n %s\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set i n %s\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyIpProtocol(uint32 value)
+int8 setWiFlyIpProtocol(uint32 value)
 {
-    WIFLY_PRINTF("set i p %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set i p %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyIpRemote(uint32 value)
+int8 setWiFlyIpRemote(uint32 value)
 {
-    WIFLY_PRINTF("set i r %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set i r %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyIpTcpMode(uint32 mask)
+int8 setWiFlyIpTcpMode(uint32 mask)
 {
-    WIFLY_PRINTF("set i t %x\r", mask);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set i t %x\r", mask);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyOptJointmr(uint32 msecs)
+int8 setWiFlyOptJointmr(uint32 msecs)
 {
-    WIFLY_PRINTF("set o j %u\r", msecs);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set o j %u\r", msecs);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyOptFormat(uint32 value)
+int8 setWiFlyOptFormat(uint32 value)
 {
-    WIFLY_PRINTF("set o f %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set o f %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyOptReplace(char character)
+int8 setWiFlyOptReplace(char character)
 {
-    WIFLY_PRINTF("set o r %c\r", character);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set o r %c\r", character);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyOptDeviceid(char *string)
+int8 setWiFlyOptDeviceid(char *string)
 {
-    WIFLY_PRINTF("set o d %s\r", string);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set o d %s\r", string);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyOptPassword(char *string)
+int8 setWiFlyOptPassword(char *string)
 {
-    WIFLY_PRINTF("set o p %s\r", string);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set o p %s\r", string);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlySysAutoconn(uint32 value)
+int8 setWiFlySysAutoconn(uint32 value)
 {
-    WIFLY_PRINTF("set s a %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set s a %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlySysAutosleep(uint32 value)
+int8 setWiFlySysAutosleep(uint32 value)
 {
-    WIFLY_PRINTF("set s a %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set s a %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlySysIofunc(uint32 value)
+int8 setWiFlySysIofunc(uint32 value)
 {
-    WIFLY_PRINTF("set s i %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set s i %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlySysMask(uint32 mask)
+int8 setWiFlySysMask(uint32 mask)
 {
-    WIFLY_PRINTF("set s m %x\r", mask);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set s m %x\r", mask);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlySysPrintlvl(uint32 value)
+int8 setWiFlySysPrintlvl(uint32 value)
 {
-    WIFLY_PRINTF("set s p %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set s p %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlySysOutput(uint32 value, uint32 mask)
+int8 setWiFlySysOutput(uint32 value, uint32 mask)
 {
-    WIFLY_PRINTF("set s o %x %x\r", value, mask);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set s o %x %x\r", value, mask);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlySysSleep(uint32 value)
+int8 setWiFlySysSleep(uint32 value)
 {
-    WIFLY_PRINTF("set s s %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set s s %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlySysTrigger(uint32 value)
+int8 setWiFlySysTrigger(uint32 value)
 {
-    WIFLY_PRINTF("set s t %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set s t %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlySysValue(uint32 value)
+int8 setWiFlySysValue(uint32 value)
 {
-    WIFLY_PRINTF("set s v %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set s v %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlySysWake(uint32 secs)
+int8 setWiFlySysWake(uint32 secs)
 {
-    WIFLY_PRINTF("set s w %u\r", secs);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set s w %u\r", secs);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyTimeAddress(char *addr)
+int8 setWiFlyTimeAddress(char *addr)
 {
-    WIFLY_PRINTF("set t a %s\r", addr);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set t a %s\r", addr);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyTimePort(uint32 num)
+int8 setWiFlyTimePort(uint32 num)
 {
-    WIFLY_PRINTF("set t p %u\r", num);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set t p %u\r", num);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyTimeEnable(uint32 value)
+int8 setWiFlyTimeEnable(uint32 value)
 {
-    WIFLY_PRINTF("set t e %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set t e %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyTimeRaw(uint32 value)
+int8 setWiFlyTimeRaw(uint32 value)
 {
-    WIFLY_PRINTF("set t r %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set t r %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyUartBaud(uint32 rate)
+int8 setWiFlyUartBaud(uint32 rate)
 {
-    WIFLY_PRINTF("set u b %u\r", rate);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set u b %u\r", rate);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyUartInstant(uint32 rate)
+int8 setWiFlyUartInstant(uint32 rate)
 {
-    WIFLY_PRINTF("set u i %u\r", rate);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set u i %u\r", rate);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyUartRaw(uint32 rate)
+int8 setWiFlyUartRaw(uint32 rate)
 {
-    WIFLY_PRINTF("set u r %u\r", rate);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set u r %u\r", rate);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyUartFlow(uint8 flow)
+int8 setWiFlyUartFlow(uint8 flow)
 {
-    WIFLY_PRINTF("set u f %u\r", flow);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set u f %u\r", flow);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyUartMode(uint16 mode)
+int8 setWiFlyUartMode(uint16 mode)
 {
-    WIFLY_PRINTF("set u m %x\r", mode);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set u m %x\r", mode);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyUartTx(uint8 enabled)
+int8 setWiFlyUartTx(uint8 enabled)
 {
-    WIFLY_PRINTF("set u t %u\r", enabled);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set u t %u\r", enabled);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyWlanAuth(uint8 value)
+int8 setWiFlyWlanAuth(uint8 value)
 {
-    WIFLY_PRINTF("set w a %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set w a %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyWlanChannel(uint8 value)
+int8 setWiFlyWlanChannel(uint8 value)
 {
-    WIFLY_PRINTF("set w c %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set w c %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyWlanExtAntenna(uint8 enabled)
+int8 setWiFlyWlanExtAntenna(uint8 enabled)
 {
-    WIFLY_PRINTF("set w e %u\r", enabled);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set w e %u\r", enabled);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyWlanJoin(uint8 value)
+int8 setWiFlyWlanJoin(uint8 value)
 {
-    WIFLY_PRINTF("set w j %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set w j %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyWlanHide(uint8 enabled)
+int8 setWiFlyWlanHide(uint8 enabled)
 {
-    WIFLY_PRINTF("set w h %u\r", enabled);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set w h %u\r", enabled);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyWlanKey(char *value)
+int8 setWiFlyWlanKey(char *value)
 {
-    WIFLY_PRINTF("set w k %s\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set w k %s\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyWlanLinkmon(uint32 value)
+int8 setWiFlyWlanLinkmon(uint32 value)
 {
-    WIFLY_PRINTF("set w l %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set w l %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyWlanMask(uint32 mask)
+int8 setWiFlyWlanMask(uint32 mask)
 {
-    WIFLY_PRINTF("set w m %x\r", mask);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set w m %x\r", mask);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyWlanNum(uint8 value)
+int8 setWiFlyWlanNum(uint8 value)
 {
-    WIFLY_PRINTF("set w n %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set w n %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyWlanPhrase(char *string)
+int8 setWiFlyWlanPhrase(char *string)
 {
-    WIFLY_PRINTF("set w p %s\r", string);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set w p %s\r", string);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyWlanRate(uint8 value)
+int8 setWiFlyWlanRate(uint8 value)
 {
-    WIFLY_PRINTF("set w r %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set w r %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyWlanSsid(char *string)
+int8 setWiFlyWlanSsid(char *string)
 {
-    WIFLY_PRINTF("set w s %s\r", string);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set w s %s\r", string);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyWlanTx(uint8 value)
+int8 setWiFlyWlanTx(uint8 value)
 {
-    WIFLY_PRINTF("set w t %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set w t %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyWlanWindow(uint32 value)
+int8 setWiFlyWlanWindow(uint32 value)
 {
-    WIFLY_PRINTF("set w w %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set w w %u\r", value);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyQSensor(uint32 mask)
+int8 setWiFlyQSensor(uint32 mask)
 {
-    WIFLY_PRINTF("set q s %x\r", mask);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set q s %x\r", mask);
+    return setCommand(commandBuffer);
 }
 
-void setWiFlyQPower(uint8 value)
+int8 setWiFlyQPower(uint8 value)
 {
-    WIFLY_PRINTF("set q p %u\r", value);
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "set q p %u\r", value);
+    return setCommand(commandBuffer);
 }
 
 void getWiFlyAdhoc()
@@ -534,14 +652,53 @@ void showWiFlyQ0x1(uint8 mask)
     WIFLY_PRINTF("show q 0x1%u\r", mask);
 }
 
-void actionWiFlyEnterCommandMode()
+int8 actionWiFlyEnterCommandMode(uint8 isAfterReboot)
 {
-    WIFLY_PRINTF("%c%c%c",commChar,commChar,commChar);
+    uint8 retryCount;
+    
+    for (retryCount = 0; 
+         retryCount < WIFLY_COMMAND_MODE_ENTER_RETRY_ATTEMPTS; 
+         retryCount++)
+    {
+        if (isAfterReboot == 1)
+        {
+            delayMs(1000);  // This delay is so characters aren't missed after a reboot.
+        }
+        
+        delayMs(WIFLY_COMMAND_MODE_GUARD_TIME);
+    
+        WIFLY_FLUSH();
+        WIFLY_PRINTF("%c%c%c",commChar,commChar,commChar);  // Print the command chars
+        
+        delayMs(WIFLY_COMMAND_MODE_GUARD_TIME);
+        
+        WIFLY_PRINTF("\r\r");                               // Print 2 carriage return to make shure it has entered command mode
+
+        // This is used to determine whether command mode has been entered
+        // successfully.
+        WIFLY_PRINTF("ver\r");
+        
+        if (findInResponse("WiFly Ver ", 1000) == 0)
+        {
+            return findWiFlyVersion(1000);
+        }
+    }
+    
+    return -1;
 }
 
-void actionWiFlyExitCommandMode()
+int8 actionWiFlyExitCommandMode()
 {
+    WIFLY_FLUSH();
     WIFLY_PRINTF("exit\r");
+    delayMs(WIFLY_COMMAND_SETTLE_TIME);
+    
+    if (findInResponse("EXIT", 1000) == 0)
+    { 
+        return 0;
+    }
+
+    return -1;
 }
 
 void actionWiFlycloseTcpConnection()
@@ -599,9 +756,31 @@ void actionWiFlyPing(char *parameters, uint16 num)
     WIFLY_PRINTF("ping  %s %u\r", parameters, num);
 }
 
-void actionWiFlyReboot()
+#define WIFLY_SOFTWARE_REBOOT_RETRY_ATTEMPTS 5
+int8 actionWiFlyReboot()
 {
-    WIFLY_PRINTF("reboot\r");
+    uint8 retryCount;
+    
+    for (retryCount = 0; retryCount < WIFLY_SOFTWARE_REBOOT_RETRY_ATTEMPTS; retryCount++)
+    {
+        if (actionWiFlyEnterCommandMode(1) == -1)
+        {
+            return -1;  // If the included retries have failed we give up
+        }
+        
+        WIFLY_PRINTF("reboot\r");
+            
+        // For some reason the full "*Reboot*" message doesn't always
+        // seem to be received so we look for the later "*READY*" message instead.
+    
+        if (findInResponse("*READY*", 2000))
+        {
+            wiFlyState = WiFlyStateDisconnected;    // Now it also should be disconnected
+            return 0;
+        }
+    }
+    
+    return -1;
 }
 
 void actionWiFlyScan(uint32 time, uint8 passive)
@@ -637,14 +816,17 @@ void fileIoWiFlyLs()
     WIFLY_PRINTF("ls\r");
 }
 
-void fileIoWiFlySaveDefault()
+int8 fileIoWiFlySaveDefault()
 {
-    WIFLY_PRINTF("save\r");
+    return otherCommand("save config\r", "Storing in config");
 }
 
-void fileIoWiFlySave(char *name)
+int8 fileIoWiFlySave(char *name)
 {
-    WIFLY_PRINTF("save %s\r", name);
+    char buffer[100];
+    snprintf(commandBuffer, WIFLY_COMMAND_BUFFER_SIZE, "save %s\r", name);
+    snprintf(buffer, 100, "Storing in %s", name);
+    return otherCommand(commandBuffer, buffer);
 }
 
 void fileIoWiFlyBootImage(uint16 num)
@@ -691,4 +873,184 @@ int8 printfWiFly(char *format, ...)
     }
     
     return 0;
+}
+
+void setProcessFunctionWiFly(void (* func)(char *))
+{
+    taskFunctionPointer = func;
+    //WIFLY_SET_PROCESS_FUNCTION(func);
+}
+
+void setErrorFunctionWiFly(void (* func)())
+{
+    WIFLY_SET_ERROR_FUNCTION(func);
+}
+
+inline void processTaskWiFly()
+{
+    WIFLY_PROCESS_TASK();
+}
+
+int8 findInResponse(const char* toMatch, uint32 timeout)
+{
+    uint32 timeoutTarget;
+    uint16 offset;
+    char   byteRead;
+    
+    responseBufferPos = 0;                                  //clear the responseBuffer
+    
+    for (offset = 0; offset < strlen(toMatch); offset++)
+    {
+        timeoutTarget = timeoutMsecs() + timeout;
+        
+        while (getcharWiFly(&byteRead) != 0)
+        {
+            // Wait with timeout
+            if (timeout > 0)
+            {
+                if (timeoutMsecs() > timeoutTarget)
+                {
+                    return -1;
+                }
+            }
+            delayMs(2); // Improves reliability, 1ms just makes this thing freak out
+        }
+        
+        delayMs(10);    // Seems to be necessary, don't know why
+        
+        if (byteRead != toMatch[offset]) {
+            offset = 0;
+            
+            responseBuffer[responseBufferPos] = byteRead;   // Store unmachtech bytes
+            if (responseBufferPos < WIFLY_RESPONSE_BUFFER_SIZE-1)
+                responseBufferPos++;
+            else
+                responseBufferPos = 0;
+            
+            // Ignore character read if it's not a match for the start of the string
+            if (byteRead != toMatch[offset])
+            {
+                offset = -1;
+            }
+            continue;
+        }
+    }
+    
+    responseBuffer[responseBufferPos] = '\0';   // Add the string terminator
+    return 0;
+}
+
+
+int8 findWiFlyVersion(uint32 timeout)
+{
+    uint32 timeoutTarget;
+    char   byteRead;    
+    uint8 i;
+    
+    for (i = 0; i < WIFLY_VERSION_LENGTH; i++)
+    {
+        timeoutTarget = timeoutMsecs() + timeout;
+        
+        while (getcharWiFly(&byteRead) != 0)
+        {
+            // Wait with timeout
+            if (timeout > 0)
+            {
+                if (timeoutMsecs() > timeoutTarget)
+                {
+                    return -1;
+                }
+            }
+            delayMs(1); // Improves reliability
+        }
+        
+        wiFlyVersion[1 + i] = byteRead;
+    }
+    wiFlyVersion[0] = '<';
+    wiFlyVersion[WIFLY_VERSION_LENGTH + 1] = '>';
+    wiFlyVersion[WIFLY_VERSION_LENGTH + 2] = '\0';
+    
+    return 0;
+}
+
+int8 responseMatched(const char* toMatch)
+{
+    int8 matchFound = 0;
+    uint32 timeout;
+    uint16 offset;
+    char byteRead;
+    
+    for (offset = 0; offset < strlen(toMatch); offset++)
+    {
+        timeout = timeoutMsecs();
+        while (getcharWiFly(&byteRead) != 0)
+        {
+            // Wait, with optional timeout
+            if ((timeoutMsecs() - timeout) > 5000)
+            {
+                return -1;
+            }
+            delayMs(1);
+        }
+        
+        if (byteRead != toMatch[offset])
+        {
+            matchFound = -1;
+            break;
+        }
+    }
+    
+    return matchFound;
+}
+
+int8 setCommand(char* command)
+{
+    WIFLY_FLUSH();          // Empty buffers
+    WIFLY_PRINTF(command);  // Send command
+    delayMs(WIFLY_COMMAND_SETTLE_TIME);
+    return findInResponse(WIFLY_SET_OK, WIFLY_RESPONSE_TIMEOUT);
+}
+
+int8 getCommand(char* command)
+{
+    WIFLY_FLUSH();          // Empty buffers
+    WIFLY_PRINTF(command);  // Send command
+    return findInResponse(wiFlyVersion, WIFLY_RESPONSE_TIMEOUT);
+}
+
+int8 otherCommand(char* command, char* awaitedResponse)
+{
+    WIFLY_FLUSH();          // Empty buffers
+    WIFLY_PRINTF(command);  // Send command
+    return findInResponse(awaitedResponse, WIFLY_RESPONSE_TIMEOUT);
+}
+
+char* getWiFlyResponse()
+{
+    return responseBuffer;
+}
+
+void internalProcessTask(char *command)
+{
+    if (command[0] == '*')
+    {
+        if (command[1] == commOpenString[1])
+        {
+            wiFlyState = WiFlyStateConnected;
+        }
+        else if (command[1] == commCloseString[1])
+        {
+            wiFlyState = WiFlyStateDisconnected;
+        }
+    }
+    else if (wiFlyState == WiFlyStateConnected)
+    {
+        (*taskFunctionPointer)(command);
+    }
+    // else it is unnecessary
+}
+
+uint8 isWiFlyConnected()
+{
+    return (wiFlyState == WiFlyStateConnected);
 }

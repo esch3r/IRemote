@@ -16,7 +16,7 @@
 #define TIMER0_RESET()                  LPC_TIM0->TCR = 0x02
 #define TIMER0_START()                  LPC_TIM0->TCR = 0x01
 #define TIMER0_STOP()                   LPC_TIM0->TCR = 0x00
-#define TIMER0_RUNNING()                (LPC_TIM0->TCR & 0x01)
+#define TIMER0_RUNNING()                (LPC_TIM0->TCR & 0x01)  // Here the PCONP should not be checked, but why???
 #define TIMER0_SET_PRESCALER(x)         LPC_TIM0->PR = (uint32)(x)
 #define TIMER0_SET_KHZ(x)               TIMER0_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E3))-1)
 #define TIMER0_SET_MHZ(x)               TIMER0_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E6))-1)
@@ -37,7 +37,7 @@
 #define TIMER1_RESET()                  LPC_TIM1->TCR = 0x02
 #define TIMER1_START()                  LPC_TIM1->TCR = 0x01
 #define TIMER1_STOP()                   LPC_TIM1->TCR = 0x00
-#define TIMER1_RUNNING()                (LPC_SC->PCONP & (1 << 2)) && (LPC_TIM1->TCR & 0x01)
+#define TIMER1_RUNNING()                (LPC_TIM1->TCR & 0x01)
 #define TIMER1_SET_PRESCALER(x)         LPC_TIM1->PR = (uint32)(x)
 #define TIMER1_SET_KHZ(x)               TIMER1_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E3))-1)
 #define TIMER1_SET_MHZ(x)               TIMER1_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E6))-1)
@@ -58,7 +58,7 @@
 #define TIMER2_RESET()                  LPC_TIM2->TCR = 0x02
 #define TIMER2_START()                  LPC_TIM2->TCR = 0x01
 #define TIMER2_STOP()                   LPC_TIM2->TCR = 0x00
-#define TIMER2_RUNNING()                (LPC_SC->PCONP & (1 << 22)) && (LPC_TIM2->TCR & 0x01)
+#define TIMER2_RUNNING()                (LPC_SC->PCONP & (1 << 22)) && (LPC_TIM2->TCR & 0x01)   // Here the PCONP must be checked, but why???
 #define TIMER2_SET_PRESCALER(x)         LPC_TIM2->PR = (uint32)(x)
 #define TIMER2_SET_KHZ(x)               TIMER2_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E3))-1)
 #define TIMER2_SET_MHZ(x)               TIMER2_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E6))-1)
@@ -74,7 +74,7 @@
 #define TIMER2_IRQHANDLER()             TIMER2_IRQHandler(void)
 #define TIMER2_COUNTER_VALUE()          LPC_TIM2->TC
 
-#define TIMER3_ENABLE_CLK()             LPC_SC->PCONP |= (1 << 23); LPC_SC->PCLKSEL0 &= ~(1 << 15); LPC_SC->PCLKSEL1 |= (1 << 14)
+#define TIMER3_ENABLE_CLK()             LPC_SC->PCONP |= (1 << 23); LPC_SC->PCLKSEL1 &= ~(1 << 15); LPC_SC->PCLKSEL1 |= (1 << 14)
 #define TIMER3_DISABLE_CLK()            //LPC_SC->PCONP &= ~(1 << 23)
 #define TIMER3_RESET()                  LPC_TIM3->TCR = 0x02
 #define TIMER3_START()                  LPC_TIM3->TCR = 0x01

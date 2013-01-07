@@ -7,12 +7,9 @@ ActiveConnection activeConnections = 0;
 
 int8 initializeSerialConnection(void)
 {
-    char tmpChar;
-        
     if (initializeUart0(115200) == 0)
     {
-        while (getcharUart0(&tmpChar) == 0)     // Trash all unusefull characters
-            ;
+        flushUart0();                           // Trash all unusefull characters
         activeConnections |= SerialConnection;
         return 0;
     }
@@ -24,13 +21,17 @@ int8 initializeNetworkConnection(void)
 {
     if (initializeWiFly(115200) == 0)
     {
-        actionWiFlyEnterCommandMode();      // Configure the wlan module
-        //delayMs(100);                        // Wait for command mode to enter
-        setWiFlyWlanJoin(2);                // Auto join
-        setWiFlyDnsName("IRemoteBox");      // Sets the default hostname
-        actionWiFlyExitCommandMode();
-        
-        return 0;
+        if (actionWiFlyEnterCommandMode(FALSE) == 0)      // Configure the wlan module
+        {
+            setWiFlySysPrintlvl(0);             // Turn off unessesary messages
+            setWiFlyWlanJoin(2);                // Auto join
+            setWiFlyDnsName("IRemoteBox");      // Sets the default hostname
+            setWiFlyDnsBackup("IRemote");       // Sets the backup hostname
+            actionWiFlyExitCommandMode();
+            return 0;
+        }
+        else
+            return -1;
     }
     
     return -1;
@@ -42,6 +43,15 @@ int8 printfData(char* format, ... )
     
     va_list arg_ptr;
     uint8 i = 0;
+    
+    if (isWiFlyConnected())
+    {
+        activeConnections |= NetworkConnection;
+    }
+    else
+    {
+        activeConnections &= ~NetworkConnection;
+    }
     
     va_start(arg_ptr,format);
     vsnprintf(buffer, PRINTF_BUFFER_SIZE, format, arg_ptr);
@@ -73,6 +83,15 @@ int8 printfData(char* format, ... )
 
 int8 writeData(void *data, uint32 length)
 {
+    if (isWiFlyConnected())
+    {
+        activeConnections |= NetworkConnection;
+    }
+    else
+    {
+        activeConnections &= ~NetworkConnection;
+    }
+    
     if (activeConnections & NetworkConnection)
     {
         return writeDataWiFly(data, length);
