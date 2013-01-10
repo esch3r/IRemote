@@ -280,8 +280,6 @@ void processCommand(char *buffer)
                 dataPointer = strtok(NULL," ");
                 if (dataPointer != NULL)
                 {
-                    //strncpy(dataBuffer, dataPointer, DATA_BUFFER_SIZE);
-                    //printfData("%s %s\r", dataBuffer, dataPointer);
                     if (setWiFlyWlanSsid(dataPointer) == 0)
                         printAcknowledgement();
                     else
@@ -301,7 +299,6 @@ void processCommand(char *buffer)
                 dataPointer = strtok(NULL," ");
                 if (dataPointer != NULL)
                 {
-                    //strncpy(dataBuffer, dataPointer, DATA_BUFFER_SIZE);
                     if (setWiFlyWlanPhrase(dataPointer) == 0)
                         printAcknowledgement();
                     else
@@ -320,7 +317,6 @@ void processCommand(char *buffer)
                 dataPointer = strtok(NULL," ");
                 if (dataPointer != NULL)
                 {
-                    //strncpy(dataBuffer, dataPointer, DATA_BUFFER_SIZE);
                     if (setWiFlyWlanKey(dataPointer) == 0)
                         printAcknowledgement();
                     else
@@ -335,11 +331,10 @@ void processCommand(char *buffer)
             }
             else if (compareExtendedCommand("hostname",dataPointer))
             {
-                // set ssid
+                // set hostname
                 dataPointer = strtok(NULL," ");
                 if (dataPointer != NULL)
                 {
-                    //strncpy(dataBuffer, dataPointer, DATA_BUFFER_SIZE);
                     if (setWiFlyDnsName(dataPointer) == 0)
                         printAcknowledgement();
                     else
@@ -354,15 +349,86 @@ void processCommand(char *buffer)
             }
             else if (compareExtendedCommand("auth",dataPointer))
             {
-                // set ssid
+                // set auth
                 dataPointer = strtok(NULL," ");
                 if (dataPointer != NULL)
                 {
-                    //strncpy(dataBuffer, dataPointer, DATA_BUFFER_SIZE);
                     if (setWiFlyWlanAuth(atoi(dataPointer)) == 0)
                         printAcknowledgement();
                     else
                         printError("setting auth mode failed");
+                    return;
+                }
+                else
+                {
+                    printUnknownCommand();
+                    return;
+                }
+            }
+            else if (compareExtendedCommand("dhcp",dataPointer))
+            {
+                // set auth
+                dataPointer = strtok(NULL," ");
+                if (dataPointer != NULL)
+                {
+                    if (setWiFlyIpDhcp(atoi(dataPointer)) == 0)
+                        printAcknowledgement();
+                    else
+                        printError("setting dhcp mode failed");
+                    return;
+                }
+                else
+                {
+                    printUnknownCommand();
+                    return;
+                }
+            }
+            else if (compareExtendedCommand("ip",dataPointer))
+            {
+                // set auth
+                dataPointer = strtok(NULL," ");
+                if (dataPointer != NULL)
+                {
+                    if (setWiFlyIpAddress(dataPointer) == 0)
+                        printAcknowledgement();
+                    else
+                        printError("setting ip address failed");
+                    return;
+                }
+                else
+                {
+                    printUnknownCommand();
+                    return;
+                }
+            }
+            else if (compareExtendedCommand("mask",dataPointer))
+            {
+                // set auth
+                dataPointer = strtok(NULL," ");
+                if (dataPointer != NULL)
+                {
+                    if (setWiFlyIpNetmask(dataPointer) == 0)
+                        printAcknowledgement();
+                    else
+                        printError("setting mask failed");
+                    return;
+                }
+                else
+                {
+                    printUnknownCommand();
+                    return;
+                }
+            }
+            else if (compareExtendedCommand("gateway",dataPointer))
+            {
+                // set auth
+                dataPointer = strtok(NULL," ");
+                if (dataPointer != NULL)
+                {
+                    if (setWiFlyIpGateway(dataPointer) == 0)
+                        printAcknowledgement();
+                    else
+                        printError("setting gateway failed");
                     return;
                 }
                 else
