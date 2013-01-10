@@ -39,10 +39,10 @@ int8 initializeNetworkConnection(void)
 
 int8 printfData(char* format, ... )
 {
-    char buffer[PRINTF_BUFFER_SIZE];
+    static char buffer[PRINTF_BUFFER_SIZE];
     
     va_list arg_ptr;
-    uint8 i = 0;
+    uint16 i = 0;
     
     if (isWiFlyConnected())
     {
@@ -76,6 +76,29 @@ int8 printfData(char* format, ... )
             i++;
         }
         return 0;
+    }
+    
+    return -1;
+}
+
+int8 putcharData(char c)
+{
+    if (isWiFlyConnected())
+    {
+        activeConnections |= NetworkConnection;
+    }
+    else
+    {
+        activeConnections &= ~NetworkConnection;
+    }
+    
+    if (activeConnections & NetworkConnection)
+    {
+        return putcharWiFly(c);
+    }
+    else if (activeConnections & SerialConnection)
+    {
+        return putcharUart0(c);
     }
     
     return -1;

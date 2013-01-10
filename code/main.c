@@ -2,8 +2,7 @@
  * This is a file 
  */
 
-#define COMMAND_BUFFER_SIZE 250
-#define DATA_BUFFER_SIZE    250
+//#define DATA_BUFFER_SIZE    420
 
 #include <led.h>
 #include <iap.h>
@@ -35,7 +34,7 @@ IrCommand *currentCommand;
 ApplicationState applicationState = ApplicationStateIdle;
 NetworkState networkState = NetworkStateDisconnected;
 
-char dataBuffer[DATA_BUFFER_SIZE];
+//char dataBuffer[DATA_BUFFER_SIZE];
 
 int main(void)
 {   
@@ -61,6 +60,8 @@ int main(void)
     setErrorFunctionUart0(&errorCommand);
     setProcessFunctionWiFly(&processCommand);
     setErrorFunctionWiFly(&errorWiFly);
+    
+    currentCommand = createIrCommand();
      
     printfData("Welcome to IRemote!\r");    // Send a welcome message
     printfData("Id: %i, Version: %i, Serial: %i\r",readIdIap(),readVersionIap(),readSerialIap());
@@ -202,6 +203,20 @@ void processWiFly(char *buffer)
 {
     
 }
+
+uint32 hex2int(char *a, unsigned int len)
+{
+    uint32 i;
+    uint32 val = 0;
+
+    for(i=0;i<len;i++)
+       if(a[i] <= 57)
+        val += (a[i]-48)*(1<<(4*(len-1-i)));
+       else
+        val += (a[i]-87)*(1<<(4*(len-1-i)));
+    return val;
+}
+
 void processCommand(char *buffer)
 {
     char *dataPointer;
@@ -214,7 +229,13 @@ void processCommand(char *buffer)
         dataPointer = strtok(NULL," ");
         if (dataPointer != NULL)
         {
-            memcpy(currentCommand, dataPointer, sizeof(IrCommand));
+            uint16 commandSize = strlen(dataPointer);
+            uint16 i;
+            for (i = 0; i < commandSize; i+=2)
+            {
+                //sscanf(dataPointer+i, "%02x", (unsigned int *)(&byte));
+                ((char*)currentCommand)[i/2] = (char)hex2int(dataPointer+i,2);
+            }
         }
         startState(ApplicationStateRunCommand);
     }
@@ -273,8 +294,8 @@ void processCommand(char *buffer)
                 dataPointer = strtok(NULL," ");
                 if (dataPointer != NULL)
                 {
-                    strncpy(dataBuffer, dataPointer, DATA_BUFFER_SIZE);
-                    if (setWiFlyWlanPhrase(dataBuffer) == 0)
+                    //strncpy(dataBuffer, dataPointer, DATA_BUFFER_SIZE);
+                    if (setWiFlyWlanPhrase(dataPointer) == 0)
                         printAcknowledgement();
                     else
                         printError("setting passphrase failed");
@@ -292,8 +313,8 @@ void processCommand(char *buffer)
                 dataPointer = strtok(NULL," ");
                 if (dataPointer != NULL)
                 {
-                    strncpy(dataBuffer, dataPointer, DATA_BUFFER_SIZE);
-                    if (setWiFlyWlanKey(dataBuffer) == 0)
+                    //strncpy(dataBuffer, dataPointer, DATA_BUFFER_SIZE);
+                    if (setWiFlyWlanKey(dataPointer) == 0)
                         printAcknowledgement();
                     else
                         printError("setting key failed");
@@ -311,8 +332,8 @@ void processCommand(char *buffer)
                 dataPointer = strtok(NULL," ");
                 if (dataPointer != NULL)
                 {
-                    strncpy(dataBuffer, dataPointer, DATA_BUFFER_SIZE);
-                    if (setWiFlyDnsName(dataBuffer) == 0)
+                    //strncpy(dataBuffer, dataPointer, DATA_BUFFER_SIZE);
+                    if (setWiFlyDnsName(dataPointer) == 0)
                         printAcknowledgement();
                     else
                         printError("setting hostname failed");
@@ -330,8 +351,8 @@ void processCommand(char *buffer)
                 dataPointer = strtok(NULL," ");
                 if (dataPointer != NULL)
                 {
-                    strncpy(dataBuffer, dataPointer, DATA_BUFFER_SIZE);
-                    if (setWiFlyWlanAuth(atoi(dataBuffer)) == 0)
+                    //strncpy(dataBuffer, dataPointer, DATA_BUFFER_SIZE);
+                    if (setWiFlyWlanAuth(atoi(dataPointer)) == 0)
                         printAcknowledgement();
                     else
                         printError("setting auth mode failed");
@@ -379,6 +400,15 @@ void processCommand(char *buffer)
                     printAcknowledgement();
                 else
                     printError("entering command mode failed");
+                    
+                return;
+            }
+            else if (compareExtendedCommand("adhoc",dataPointer))
+            {
+                if (createWiFlyAdhocNetwork("IRemoteBox") == 0)
+                    printAcknowledgement();
+                else
+                    printError("entering adhoc mode failed");
                     
                 return;
             }

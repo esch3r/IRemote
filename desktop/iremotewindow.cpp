@@ -60,6 +60,20 @@ void IRemoteWindow::loadSettings()
     }
     settings.endArray();
 
+    size = settings.beginReadArray("irCommand");
+    for (int i = 0; i < size; i++)
+    {
+        QByteArray bytes;
+        QString name;
+        IrCommand command;
+
+        settings.setArrayIndex(i);
+        name = settings.value("name").toString();
+        bytes = settings.value("command").toByteArray();
+        memcpy(&command, bytes.data(), sizeof(IrCommand));
+        addIrCommand(name, command);
+    }
+
     pictureFileName = settings.value("pictureFileName","").toString();
     if (!pictureFileName.isEmpty())
         loadPicture(pictureFileName);
@@ -79,6 +93,22 @@ void IRemoteWindow::saveSettings()
     }
     settings.endArray();
 
+    int i = 0;
+    settings.beginWriteArray("irCommand");
+        QMapIterator<QString, IrCommand> iterator(irCommandMap);
+         while (iterator.hasNext()) {
+             QByteArray bytes;
+             iterator.next();
+             bytes.append((char*)(&(iterator.value())), sizeof(IrCommand));
+
+             settings.setArrayIndex(i);
+             settings.setValue("name", iterator.key());
+             settings.setValue("command", bytes);
+
+             i++;
+         }
+     settings.endArray();
+
     settings.setValue("pictureFileName",pictureFileName);
 }
 
@@ -97,7 +127,7 @@ void IRemoteWindow::irCommandReceived(IrCommand irCommand)
     QString name = QInputDialog::getText(this, tr("New Command"), tr("Insert the name of the new command"));
     if (!name.isEmpty())
     {
-        irCommandMap.insert(name, irCommand);
+        addIrCommand(name, irCommand);
     }
 }
 
@@ -164,6 +194,29 @@ void IRemoteWindow::addTableRow(QString buttonName, QString commandName)
     newItem = new QTableWidgetItem(commandName);
     ui->tableWidget->setItem(row, column, newItem);
 
+}
+
+void IRemoteWindow::addIrCommand(const QString name, IrCommand command)
+{
+    irCommandMap.insert(name, command);
+    if (ui->commandList->findItems(name, Qt::MatchCaseSensitive).isEmpty())
+    {
+        ui->commandList->addItem(name);
+    }
+}
+
+void IRemoteWindow::removeIrCommand(const QString name)
+{
+    irCommandMap.remove(name);
+    foreach (QListWidgetItem* item, ui->commandList->findItems(name, Qt::MatchCaseSensitive))
+    {
+        ui->commandList->removeItemWidget(item);
+    }
+}
+
+IrCommand IRemoteWindow::getIrCommand(const QString name)
+{
+    return irCommandMap.value(name);
 }
 
 void IRemoteWindow::on_tableWidget_cellChanged(int row, int column)
@@ -271,7 +324,8 @@ void IRemoteWindow::on_captureButton_clicked()
 
 void IRemoteWindow::on_runButton_clicked()
 {
-    iremote->actionRun();
+    IrCommand command = getIrCommand(ui->commandList->currentItem()->text());
+    iremote->actionRun(command);
 }
 
 void IRemoteWindow::on_settingsSubmitButton_clicked()
@@ -295,7 +349,7 @@ void IRemoteWindow::on_settingsSubmitButton_clicked()
     case 6: authType = IRemote::WPE64AuthType;
         break;
     }
-
+    iremote->startWlanConfig();
     iremote->setWlanSsid(ui->wlanSsidEdit->text());
     iremote->setWlanAuth(authType);
     iremote->setWlanHostname(ui->wlanHostnameEdit->text());
@@ -310,4 +364,15 @@ void IRemoteWindow::on_settingsSubmitButton_clicked()
     {
         iremote->setWlanPhrase(ui->wlanPassphraseEdit->text());
     }
+    iremote->saveWlanConfig();
+}
+
+void IRemoteWindow::on_commandList_doubleClicked(const QModelIndex &index)
+{
+    Q_UNUSED(index);
+
+    IrCommand command = getIrCommand(ui->commandList->currentItem()->text());
+    ShowCommandDialog dialog;
+    dialog.loadIrCommand(command);
+    dialog.exec();
 }

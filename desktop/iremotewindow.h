@@ -8,6 +8,7 @@
 #include "graphicbutton.h"
 #include <QSignalMapper>
 #include <iremote.h>
+#include "showcommanddialog.h"
 
 typedef struct {
     GraphicButton *button;
@@ -57,6 +58,8 @@ private slots:
 
     void on_settingsSubmitButton_clicked();
 
+    void on_commandList_doubleClicked(const QModelIndex &index);
+
 private:
     Ui::IRemoteWindow *ui;
 
@@ -75,6 +78,10 @@ private:
     void removeCommand(int id);
     void loadPicture(QString fileName);
     void addTableRow(QString buttonName, QString commandName);
+
+    void addIrCommand(const QString name, IrCommand command);
+    void removeIrCommand(const QString name);
+    IrCommand getIrCommand(const QString name);
 
     void loadSettings();
     void saveSettings();

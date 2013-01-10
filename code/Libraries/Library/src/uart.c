@@ -419,10 +419,10 @@ int8 getcharUart3(char *c)
 
 int8 printfUart0(char *format, ...)
 {
-    char buffer[UART_PRINTF_BUFFER_SIZE];
+    static char buffer[UART_PRINTF_BUFFER_SIZE];
     
     va_list arg_ptr;
-    uint8 i = 0;
+    uint16 i = 0;
     
     va_start(arg_ptr,format);
     vsnprintf(buffer,UART_PRINTF_BUFFER_SIZE, format, arg_ptr);
@@ -440,10 +440,10 @@ int8 printfUart0(char *format, ...)
 
 int8 printfUart1(char *format, ...)
 {
-    char buffer[UART_PRINTF_BUFFER_SIZE];
+    static char buffer[UART_PRINTF_BUFFER_SIZE];
     
     va_list arg_ptr;
-    uint8 i = 0;
+    uint16 i = 0;
     
     va_start(arg_ptr,format);
     vsnprintf(buffer, UART_PRINTF_BUFFER_SIZE, format, arg_ptr);
@@ -461,10 +461,10 @@ int8 printfUart1(char *format, ...)
 
 int8 printfUart2(char *format, ...)
 {
-    char buffer[UART_PRINTF_BUFFER_SIZE];
+    static char buffer[UART_PRINTF_BUFFER_SIZE];
     
     va_list arg_ptr;
-    uint8 i = 0;
+    uint16 i = 0;
     
     va_start(arg_ptr,format);
     vsnprintf(buffer, UART_PRINTF_BUFFER_SIZE, format, arg_ptr);
@@ -482,10 +482,10 @@ int8 printfUart2(char *format, ...)
 
 int8 printfUart3(char *format, ...)
 {
-    char buffer[UART_PRINTF_BUFFER_SIZE];
+    static char buffer[UART_PRINTF_BUFFER_SIZE];
     
     va_list arg_ptr;
-    uint8 i = 0;
+    uint16 i = 0;
     
     va_start(arg_ptr,format);
     vsnprintf(buffer, UART_PRINTF_BUFFER_SIZE, format, arg_ptr);
@@ -620,7 +620,8 @@ void processTaskUart0()
     static char receivedData;
     while (getcharUart0(&receivedData) == 0)
     {
-        if (receivedData != UART0_COMMAND_CHAR)
+        if ((receivedData != UART0_COMMAND_CHAR) && 
+            (receivedData != UART0_SECONDARY_COMMAND_CHAR))
         {
             taskBuffer0[taskBufferPos0] = receivedData;
             if (taskBufferPos0 < UART_TASK_BUFFER_SIZE-1)
@@ -675,7 +676,8 @@ void processTaskUart2()
     static char receivedData;
     while (getcharUart2(&receivedData) == 0)
     {
-        if (receivedData != UART2_COMMAND_CHAR)
+        if ((receivedData != UART2_COMMAND_CHAR) && 
+            (receivedData != UART2_SECONDARY_COMMAND_CHAR))
         {
             taskBuffer2[taskBufferPos2] = receivedData;
             if (taskBufferPos2 < UART_TASK_BUFFER_SIZE-1)
@@ -702,7 +704,8 @@ void processTaskUart3()
     static char receivedData;
     while (getcharUart3(&receivedData) == 0)
     {
-        if (receivedData != UART3_COMMAND_CHAR)
+        if ((receivedData != UART3_COMMAND_CHAR) && 
+            (receivedData != UART3_SECONDARY_COMMAND_CHAR))
         {
             taskBuffer3[taskBufferPos3] = receivedData;
             if (taskBufferPos3 < UART_TASK_BUFFER_SIZE-1)

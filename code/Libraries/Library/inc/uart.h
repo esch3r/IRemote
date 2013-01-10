@@ -10,11 +10,11 @@
 
 /** Size of UARTs circular buffer for reading */
 #ifndef UART_READ_BUFFER_SIZE
-#define UART_READ_BUFFER_SIZE 250
+#define UART_READ_BUFFER_SIZE 420
 #endif
 /** Size of UARTs circular buffer for writing */
 #ifndef UART_WRITE_BUFFER_SIZE
-#define UART_WRITE_BUFFER_SIZE 250
+#define UART_WRITE_BUFFER_SIZE 420
 #endif
 /** Defines wheter the UART buffer should be used or not */
 #ifndef USE_UART_BUFFER
@@ -26,15 +26,18 @@
 #define USE_UART_TASK 1
 #endif
 
-#define UART_PRINTF_BUFFER_SIZE 256
-#define UART_TASK_BUFFER_SIZE   256
+#define UART_PRINTF_BUFFER_SIZE 420
+#define UART_TASK_BUFFER_SIZE   450
 
 #define UART0_COMMAND_CHAR  13  // Carriage Return (CR)
 #define UART1_COMMAND_CHAR  13
 #define UART2_COMMAND_CHAR  13
 #define UART3_COMMAND_CHAR  13
 
+#define UART0_SECONDARY_COMMAND_CHAR    '\a'
 #define UART1_SECONDARY_COMMAND_CHAR    '\a'
+#define UART2_SECONDARY_COMMAND_CHAR    '\a'
+#define UART3_SECONDARY_COMMAND_CHAR    '\a'
 
 #include <uartDriver.h>
 #include <circularbuffer.h>

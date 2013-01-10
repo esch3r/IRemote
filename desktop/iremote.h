@@ -19,6 +19,7 @@ typedef struct {
 class IRemote : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(int responseTimeout READ responseTimeout WRITE setResponseTimeout NOTIFY responseTimeoutChanged)
 
     Q_FLAGS(ActiveConnection ActiveConnections)
 
@@ -47,22 +48,29 @@ public:
 
     bool connectSerialPort(const QString &device);
     void closeSerialPort();
-    bool connectNetwork(QString hostname, int port);
+    void connectNetwork(QString hostname, int port);
     void closeNetwork();
 
     bool isSerialPortConnected();
     bool isNetworkConnected();
 
-    void setWlanSsid(const QString &ssid);
-    void setWlanPhrase(const QString &phrase);
-    void setWlanKey(const QString &key);
-    void setWlanHostname(const QString &hostname);
-    void setWlanAuth(WlanAuthType mode);
+    bool startWlanConfig();
+    bool saveWlanConfig();
+    bool setWlanSsid(const QString &ssid);
+    bool setWlanPhrase(const QString &phrase);
+    bool setWlanKey(const QString &key);
+    bool setWlanHostname(const QString &hostname);
+    bool setWlanAuth(WlanAuthType mode);
 
     void actionRun();
     void actionRun(IrCommand irCommand);
     void actionCapture();
     
+    int responseTimeout() const
+    {
+        return m_responseTimeout;
+    }
+
 signals:
     void irCommandReceived(IrCommand irCommand);
     void serialPortConnected();
@@ -70,22 +78,38 @@ signals:
     void serialPortDisconnected();
     void networkDisconnected();
 
+    void responseTimeoutChanged(int arg);
+
 public slots:
+
+void setResponseTimeout(int arg)
+{
+    if (m_responseTimeout != arg) {
+        m_responseTimeout = arg;
+        emit responseTimeoutChanged(arg);
+    }
+}
 
 private slots:
     void incomingSerialData();
     void incomingNetworkData();
+    void tcpSocketConnected();
+    void tcpSocketDisconnected();
+    void tcpSocketError(QAbstractSocket::SocketError error);
 
 private:
     SerialPort *serialPort;
     QTcpSocket *tcpSocket;
     QByteArray dataBuffer;
+    bool waitingForRespose;
 
     ActiveConnections activeConnections;
 
     void receivedCommand(QByteArray command);
     void sendData(const QByteArray &data);
+    bool findInResponse(QString toMatch, int timeout);
     
+    int m_responseTimeout;
 };
 
 #endif // IREMOTE_H

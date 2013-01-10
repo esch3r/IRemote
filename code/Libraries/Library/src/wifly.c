@@ -23,9 +23,9 @@
 #define WIFLY_RESPONSE_TIMEOUT                  1000
 
 char commChar = '$';
-char commCloseString[10];
-char commOpenString[10];
-char commRemoteString[10];
+char commCloseString[35];
+char commOpenString[35];
+char commRemoteString[35];
 char wiFlyVersion[WIFLY_VERSION_LENGTH + 3];    // <,>, and \0
 
 char commandBuffer[WIFLY_COMMAND_BUFFER_SIZE];
@@ -55,9 +55,9 @@ int8 initializeWiFly(uint32 baudrate)
     if (actionWiFlyEnterCommandMode(FALSE) == -1)      // Configure the wlan module
         return -1;
     
-    setWiFlyCommOpen("*OPEN*\a");        // Set the open command
-    setWiFlyCommClose("*CLOS*\a");       // Set the close command
-    setWiFlyCommRemote("*HELLO*\a");     // Set the remote command
+    setWiFlyCommOpen("\a*OPEN*\a");        // Set the open command
+    setWiFlyCommClose("\a*CLOS*\a");       // Set the close command
+    setWiFlyCommRemote("\a*HELLO*\a");     // Set the remote command
     
     actionWiFlyExitCommandMode();
     
@@ -856,10 +856,10 @@ inline int8 getcharWiFly(char* c)
 
 int8 printfWiFly(char *format, ...)
 {
-    char buffer[WIFLY_PRINTF_BUFFER_SIZE];
+    static char buffer[WIFLY_PRINTF_BUFFER_SIZE];
     
     va_list arg_ptr;
-    uint8 i = 0;
+    uint16 i = 0;
     
     va_start(arg_ptr,format);
     vsnprintf(buffer, WIFLY_PRINTF_BUFFER_SIZE, format, arg_ptr);
@@ -1034,11 +1034,11 @@ void internalProcessTask(char *command)
 {
     if (command[0] == '*')
     {
-        if (command[1] == commOpenString[1])
+        if (command[1] == commOpenString[2])
         {
             wiFlyState = WiFlyStateConnected;
         }
-        else if (command[1] == commCloseString[1])
+        else if (command[1] == commCloseString[2])
         {
             wiFlyState = WiFlyStateDisconnected;
         }
@@ -1053,4 +1053,60 @@ void internalProcessTask(char *command)
 uint8 isWiFlyConnected()
 {
     return (wiFlyState == WiFlyStateConnected);
+}
+
+int8 setWiFlyAdhocParams()
+{
+    if (setWiFlyWlanJoin(0) == -1)
+        return -1;
+    if (setWiFlyWlanAuth(0) == -1)
+        return -1;
+    if (setWiFlyIpDhcp(2) == -1)
+        return -1;
+    
+    return 0;
+}
+
+int8 createWiFlyAdhocNetwork(char *ssid)
+{
+    if (actionWiFlyEnterCommandMode(FALSE) == -1)
+        return -1;
+    
+    if (actionWiFlyReboot() == -1)
+        return -1;
+    
+    if (actionWiFlyEnterCommandMode(TRUE) == -1)
+        return -1;
+    
+    if (setWiFlyWlanAuth(0) == -1)
+        return -1;
+    
+    if (setWiFlyWlanJoin(4) == -1)  // Turn on Adhoc mode
+        return -1;
+    
+    if (setWiFlyWlanSsid(ssid) == -1)   // Set SSID of Adhoc Network
+        return -1;
+    
+    if (setWiFlyWlanChannel(1) == -1)   // Set Channel for Adhoc Network
+        return -1;
+    
+    if (setWiFlyIpAddress("169.254.1.1") == -1) // Set Ip for Adhoc Network
+        return -1;
+    
+    if (setWiFlyIpNetmask("255.255.0.0") == -1)
+        return -1;
+    
+    if (setWiFlyIpDhcp(0) == -1)
+        return -1;
+    
+    if (setWiFlyCommRemote(0) == -1)    // Turn off remote message
+        return -1;
+    
+    if (fileIoWiFlySaveDefault() == -1)
+        return -1;
+    
+    if (actionWiFlyReboot() == -1)
+        return -1;
+    
+    return 0;
 }

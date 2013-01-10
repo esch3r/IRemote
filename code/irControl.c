@@ -23,16 +23,22 @@ int8 initializeIrControl(void)
 
     if (initializeTimer3(1000,1E9) == -1)
         return -1;
+    
+    return 0;
 }
 
 void outputCommand(IrCommand *command)
 {
     if (frameReceived == 1)
     {
-        frameReceived = 0;
+        uint16 commandSize = sizeof(IrCommand);
+        uint16 i;
         
         printfData("*DATA");
-        writeData((void*)command, sizeof(IrCommand));
+        for (i = 0; i < commandSize; i++)
+        {
+            printfData("%02x",(uint8)(((char*)command)[i]));
+        }
         printfData("\r");
     }
 }
@@ -59,17 +65,22 @@ void startIrCapture(void)
     enableGpioInterrupt(IR_CAPTURE_PORT, IR_CAPTURE_PIN, GpioInterruptFallingAndRisingEdge, &captureFunction);
     //startTimer3();
     resetTimer3();
+    
+    printfUart0("Start capture\r");
 }
 
 void stopIrCapture(void)
 {
     stopTimer3();
     disableGpioInterrupt(IR_CAPTURE_PORT, IR_CAPTURE_PIN);
+    printfUart0("Stop capture %u\r", frameReceived);
 }
 
 void captureFunction(void)
 {
-    uint16 timeDiff;
+    static uint16 timeDiff;
+    
+    printfUart0("Capture: %u %u\r", firstCapture, timeDiff);
     
     if (firstCapture != 1)                     // Check for first run, ignore value
     {
@@ -77,7 +88,7 @@ void captureFunction(void)
 
         if (timeDiff >= IR_TIMEOUT)     // Detected a timeout => frameReceived
         {
-            if (saveIrFrame(&buffer0, tmpCommand) == -1)
+            if ((saveIrFrame(&buffer0, tmpCommand) == -1) || (frameReceived != 1))
             {
                 firstCapture = 1;
             }
