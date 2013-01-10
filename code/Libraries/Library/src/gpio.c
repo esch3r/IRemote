@@ -140,9 +140,11 @@ void disableGpioInterrupt(uint8 port, uint8 pin)
     {
         case 0: GPIO0_DISABLE_IRQ_RISING_EDGE(pin);
                 GPIO0_DISABLE_IRQ_FALLING_EDGE(pin);
+                GPIO0_CLEAR_IRQ(pin);
                 return;
         case 2: GPIO2_DISABLE_IRQ_RISING_EDGE(pin);
                 GPIO2_DISABLE_IRQ_FALLING_EDGE(pin);
+                GPIO2_CLEAR_IRQ(pin);
                 return;
         default: return;
     }

@@ -1,10 +1,13 @@
 #include "iremote.h"
+#include <QtGui>
 
 IRemote::IRemote(QObject *parent) :
     QObject(parent)
 {
     serialPort = NULL;
     tcpSocket = NULL;
+
+    waitingForRespose = false;
 }
 
 IRemote::~IRemote()
@@ -45,6 +48,7 @@ bool IRemote::connectSerialPort(const QString &device)
         activeConnections |= SerialConnection;
 
         emit serialPortConnected();
+        serialPort->write("\r");
 
         qDebug() << "IRemote: connected to serial device";
         return true;
@@ -66,7 +70,7 @@ void IRemote::closeSerialPort()
     emit serialPortDisconnected();
 }
 
-bool IRemote::connectNetwork(QString hostname, int port)
+void IRemote::connectNetwork(QString hostname, int port)
 {
     if (tcpSocket != NULL)
         closeNetwork();
@@ -74,28 +78,21 @@ bool IRemote::connectNetwork(QString hostname, int port)
     tcpSocket = new QTcpSocket(this);
     tcpSocket->connectToHost(hostname, port);
 
-    if (tcpSocket->waitForConnected(10000))
-    {
-        connect(tcpSocket, SIGNAL(readyRead()),
-                this, SLOT(incomingNetworkData()));
-        activeConnections |= NetworkConnection;
-
-        emit networkConnected();
-
-        qDebug() << "IRemote: connected to network device";
-        return true;
-    }
-    else
-    {
-        qDebug() << "IRemote: not connected to network device";
-        return false;
-    }
+    connect(tcpSocket, SIGNAL(connected()),
+            this, SLOT(tcpSocketConnected()));
+    connect(tcpSocket, SIGNAL(disconnected()),
+            this, SLOT(tcpSocketDisconnected()));
+    connect(tcpSocket, SIGNAL(readyRead()),
+            this, SLOT(incomingNetworkData()));
+    connect(tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)),
+            this, SLOT(tcpSocketError(QAbstractSocket::SocketError)));
 }
 
 void IRemote::closeNetwork()
 {
-    tcpSocket->close();
-    tcpSocket->deleteLater();
+    if (tcpSocket->state() == QAbstractSocket::ConnectedState)
+        tcpSocket->disconnectFromHost();
+    tcpSocket = NULL;
     activeConnections &= ~NetworkConnection;
     emit networkDisconnected();
 }
@@ -110,29 +107,46 @@ bool IRemote::isNetworkConnected()
     return (tcpSocket != NULL);
 }
 
-void IRemote::setWlanSsid(const QString &ssid)
+bool IRemote::startWlanConfig()
+{
+    sendData(QString("start w c\r").toLocal8Bit());
+    return findInResponse("ACK", m_responseTimeout);
+}
+
+bool IRemote::saveWlanConfig()
+{
+    sendData(QString("save w c\r").toLocal8Bit());
+    return findInResponse("ACK", m_responseTimeout*2);
+}
+
+bool IRemote::setWlanSsid(const QString &ssid)
 {
     sendData(QString("set w s %1\r").arg(ssid).toLocal8Bit());
+    return findInResponse("ACK", m_responseTimeout);
 }
 
-void IRemote::setWlanPhrase(const QString &phrase)
+bool IRemote::setWlanPhrase(const QString &phrase)
 {
     sendData(QString("set w p %1\r").arg(phrase).toLocal8Bit());
+    return findInResponse("ACK", m_responseTimeout);
 }
 
-void IRemote::setWlanKey(const QString &key)
+bool IRemote::setWlanKey(const QString &key)
 {
     sendData(QString("set w k %1\r").arg(key).toLocal8Bit());
+    return findInResponse("ACK", m_responseTimeout);
 }
 
-void IRemote::setWlanHostname(const QString &hostname)
+bool IRemote::setWlanHostname(const QString &hostname)
 {
     sendData(QString("set w h %1\r").arg(hostname).toLocal8Bit());
+    return findInResponse("ACK", m_responseTimeout);
 }
 
-void IRemote::setWlanAuth(IRemote::WlanAuthType mode)
+bool IRemote::setWlanAuth(IRemote::WlanAuthType mode)
 {
     sendData(QString("set w a %1\r").arg((int)mode).toLocal8Bit());
+    return findInResponse("ACK", m_responseTimeout);
 }
 
 void IRemote::actionRun()
@@ -142,9 +156,17 @@ void IRemote::actionRun()
 
 void IRemote::actionRun(IrCommand irCommand)
 {
+    int commandSize = sizeof(IrCommand);
     QByteArray data;
+
     data.append("run ");
-    data.append((char*)(&irCommand), sizeof(IrCommand));
+    for (int i = 0; i < commandSize; i++)
+    {
+        data.append(QString("%1").arg((quint8)(((char*)(&irCommand))[i]),
+                                      2,
+                                      16,
+                                      QLatin1Char('0')));
+    }
     data.append("\r");
 
     sendData(data);
@@ -157,6 +179,9 @@ void IRemote::actionCapture()
 
 void IRemote::incomingSerialData()
 {
+    if (waitingForRespose)
+        return;
+
     QByteArray data;
     while (serialPort->bytesAvailable() != 0)
     {
@@ -167,7 +192,6 @@ void IRemote::incomingSerialData()
        }
        else
        {
-           qDebug() << dataBuffer;
            receivedCommand(dataBuffer);
            dataBuffer.clear();
        }
@@ -176,6 +200,9 @@ void IRemote::incomingSerialData()
 
 void IRemote::incomingNetworkData()
 {
+    if (waitingForRespose)
+        return;
+
     QByteArray data;
     while (tcpSocket->bytesAvailable() != 0)
     {
@@ -186,11 +213,31 @@ void IRemote::incomingNetworkData()
        }
        else
        {
-           qDebug() << dataBuffer;
            receivedCommand(dataBuffer);
            dataBuffer.clear();
        }
     }
+}
+
+void IRemote::tcpSocketConnected()
+{
+    activeConnections |= NetworkConnection;
+    emit networkConnected();
+
+    qDebug() << "IRemote: connected to network device";
+}
+
+void IRemote::tcpSocketDisconnected()
+{
+    qDebug() << "IRemote: disconnected network device";
+}
+
+void IRemote::tcpSocketError(QAbstractSocket::SocketError error)
+{
+    if (error == QAbstractSocket::NetworkError)
+        qDebug() << "IRemote: network error";
+
+    qDebug() << error;
 }
 
 void IRemote::receivedCommand(QByteArray command)
@@ -201,9 +248,16 @@ void IRemote::receivedCommand(QByteArray command)
     {
         if (command.indexOf(dataCode) == 0)
         {
+            QByteArray resultingCommand;
+            bool ok;
+
             command.remove(0,dataCode.length());
+            for (int i = 0; i < command.size(); i+=2)   // mash 2 bytes to 1
+            {
+                resultingCommand.append(command.mid(i,2).toUInt(&ok, 16));
+            }
             IrCommand irCommand;
-            memcpy(&irCommand,command.data(), sizeof(IrCommand));
+            memcpy(&irCommand,resultingCommand.data(), sizeof(IrCommand));
             irCommandReceived(irCommand);
         }
     }
@@ -219,6 +273,53 @@ void IRemote::sendData(const QByteArray &data)
     }
     else if (activeConnections & SerialConnection)
     {
+        serialPort->flush();
         serialPort->write(data);
     }
+}
+
+bool IRemote::findInResponse(QString toMatch, int timeout)
+{
+    QTime timeoutTime;
+    int offset;
+    char byteRead;
+
+    waitingForRespose = true;
+
+    for (offset = 0; offset < toMatch.length(); offset++)
+    {
+        timeoutTime.restart();
+
+        while (!serialPort->bytesAvailable())
+        {
+            if (timeout > 0)
+            {
+                if (timeoutTime.elapsed() > timeout)
+                {
+                    waitingForRespose = false;
+                    return false;
+                }
+            }
+            QTime time;
+            time.start();
+            while (time.elapsed() < 1)
+                ;
+        }
+
+        serialPort->read(&byteRead, 1);
+
+        if (byteRead != toMatch.at(offset))
+        {
+            offset = 0;
+
+            if (byteRead != toMatch.at(0))
+            {
+                offset = -1;
+            }
+            continue;
+        }
+    }
+
+    waitingForRespose = false;
+    return true;
 }

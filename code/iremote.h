@@ -7,7 +7,7 @@
 
 #pragma once
 
-#define PRINTF_BUFFER_SIZE  256
+#define PRINTF_BUFFER_SIZE  420
 
 #include <wifly.h>
 #include <uart.h>
@@ -21,4 +21,5 @@ int8 initializeSerialConnection(void);
 int8 initializeNetworkConnection(void);
     
 int8 printfData(char* format, ...);
+int8 putcharData(char c);
 int8 writeData(void *data, uint32 length);

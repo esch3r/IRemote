@@ -7,7 +7,7 @@
 
 #pragma once
 
-#define WIFLY_PRINTF_BUFFER_SIZE    256
+#define WIFLY_PRINTF_BUFFER_SIZE    420
 
 #include <uart.h>
 #include <types.h>
@@ -576,3 +576,7 @@ void processTaskWiFly();
 char* getWiFlyResponse();
 
 uint8 isWiFlyConnected();
+
+int8 setWiFlyAdhocParams();
+
+int8 createWiFlyAdhocNetwork(char *ssid);
