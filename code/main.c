@@ -47,6 +47,7 @@ int main(void)
     clearAllLeds();
     
    initializeButton(10,1,2,10);
+   
                               
     
     //Program started notifier

@@ -61,6 +61,7 @@ CSRC += $(LIBRARYPATH)/gpio.c
 CSRC += $(LIBRARYPATH)/pincon.c
 CSRC += $(LIBRARYPATH)/iap.c
 CSRC += $(LIBRARYPATH)/wifly.c
+CSRC += $(LIBRARYPATH)/button.c
 CSRC += irData.c
 CSRC += irControl.c
 CSRC += iremote.c
