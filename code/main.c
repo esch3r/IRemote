@@ -9,8 +9,11 @@
 #include <iap.h>
 #include <wifly.h>
 #include <timeout.h>
+#include <button.h>
+#include <pwm.h>
 #include "irControl.h"
 #include "iremote.h"
+
 
 typedef enum {
     ApplicationStateIdle = 0,
@@ -43,6 +46,9 @@ int main(void)
         
     initializeLeds();
     clearAllLeds();
+    
+   initializeButton(10,1,2,10);
+                              
     
     //Program started notifier
     delayMs(500);
