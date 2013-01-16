@@ -563,13 +563,18 @@ void IRemoteWindow::on_settingsSubmitButton_clicked()
         break;
     }
     iremote->setWlanDhcpMethod(dhcpMethod);
-    iremote->setWlanIpAddress(ui->ipAddressEdit->text());
-    iremote->setWlanSubnetMask(ui->subnetMaskEdit->text());
-    iremote->setWlanGateway(ui->gatewayEdit->text());
 
-    iremote->setIrRepeat(ui->irRepeatSpin->value());
-    iremote->setIrTimeout(ui->irTimeoutSpin->value());
+    if (dhcpMethod == IRemote::DhcpOffMethod)
+    {
+        iremote->setWlanIpAddress(ui->ipAddressEdit->text());
+        iremote->setWlanSubnetMask(ui->subnetMaskEdit->text());
+        iremote->setWlanGateway(ui->gatewayEdit->text());
+    }
 
+    //iremote->setIrRepeat(ui->irRepeatSpin->value());
+    //iremote->setIrTimeout(ui->irTimeoutSpin->value());
+
+    qDebug() << "test";
     iremote->saveWlanConfig();
 }
 

@@ -33,10 +33,10 @@
 #define PWM1_SET_MR0(freq)         LPC_PWM1->MR0 = (uint32)(PWM_CLK/freq);           //match for main edge
 #define PWM1_SET_MR1(freq)         LPC_PWM1->MR1 = (uint32)(duty*(PWM_CLK/freq));    //match for midle edge
 #define PWM1_START                        LPC_PWM1->TCR |= (1<<3) | (1 << 0)                //start PWM mode and counter
-#define PWM1_ENABLE_OUTPUT(ch)      LPC_PWM1->PCR |= (1<<(ch+8))                     //Output enabled for PWM1-5
-#define PWM1_DISABLE_OUTPUT(ch)     LPC_PWM1->PCR &= ~(1<<(ch+8))                    // Output disabled for PWM1-5
+#define PWM1_ENABLE_OUTPUT(ch)      LPC_PWM1->PCR |= (1<<(ch+9))                     //Output enabled for PWM1-5
+#define PWM1_DISABLE_OUTPUT(ch)     LPC_PWM1->PCR &= ~(1<<(ch+9))                    // Output disabled for PWM1-5
 #define PWM1_SET_0                        LPC_PWM1->TC = LPC_PWM1->MR1-1                    // Nasty but awesome workaround to set the output to 0
-#define PWM1_TOGGLE_OUTPUT(ch)     (LPC_PWM1->PCR & (1<<(ch+8))) ? stopPwm(ch) : startPWM(ch);  // Toggles output for PWM1
+#define PWM1_TOGGLE_OUTPUT(ch)     (LPC_PWM1->PCR & (1<<(ch+9))) ? stopPwm(ch) : startPWM(ch);  // Toggles output for PWM1
 
 /** Initializes the pulsewith generator.
  *@param freq  Is the frequency for the gernerated signal.

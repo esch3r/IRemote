@@ -1067,6 +1067,14 @@ int8 setWiFlyAdhocParams()
     return 0;
 }
 
+int8 setWiflyInfrastructureParams()
+{
+    if (setWiFlyWlanChannel(0) == -1)
+        return -1;
+    
+    return 0;
+}
+
 int8 createWiFlyAdhocNetwork(char *ssid)
 {
     if (actionWiFlyEnterCommandMode(FALSE) == -1)

@@ -470,7 +470,12 @@ void processCommand(char *buffer)
             else if (compareExtendedCommand("config",dataPointer))
             {
                 if (actionWiFlyEnterCommandMode(FALSE) == 0)
-                    printAcknowledgement();
+                {
+                    if (setWiflyInfrastructureParams() == 0)
+                        printAcknowledgement();
+                    else
+                        printError("setting infrastructure settings failed");
+                }
                 else
                     printError("entering command mode failed");
                     

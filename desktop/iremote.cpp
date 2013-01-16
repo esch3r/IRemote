@@ -4,6 +4,8 @@
 IRemote::IRemote(QObject *parent) :
     QObject(parent)
 {
+    m_responseTimeout = 2000;
+
     serialPort = NULL;
     tcpSocket = NULL;
 
@@ -188,7 +190,7 @@ bool IRemote::setIrTimeout(int ms)
 bool IRemote::actionRun()
 {
     sendData("run\r");
-    return findInResponse("Start running command", m_responseTimeout);
+    return findInResponse("Going into idle", m_responseTimeout);
 }
 
 bool IRemote::actionRun(IrCommand irCommand)
@@ -289,6 +291,9 @@ void IRemote::receivedCommand(QByteArray command)
 {
     const QByteArray dataCode("*DATA");
 
+    if (command.size() == 0)
+        return;
+
     if (command.at(0) == '*')   // this command sends us something necessary
     {
         if (command.indexOf(dataCode) == 0)
@@ -339,16 +344,19 @@ bool IRemote::findInResponse(QString toMatch, int timeout)
     {
         timeoutTime.restart();
 
-        if (activeConnections & NetworkConnection)
-        {
-            bytesAvailable = tcpSocket->bytesAvailable();
-        }
-        else if (activeConnections & SerialConnection)
-        {
-            bytesAvailable = serialPort->bytesAvailable();
-        }
+        bytesAvailable = false;
+
         while (!bytesAvailable)
         {
+            if (activeConnections & NetworkConnection)
+            {
+                bytesAvailable = tcpSocket->bytesAvailable();
+            }
+            else if (activeConnections & SerialConnection)
+            {
+                bytesAvailable = serialPort->bytesAvailable();
+            }
+
             if (timeout > 0)
             {
                 if (timeoutTime.elapsed() > timeout)
@@ -360,7 +368,7 @@ bool IRemote::findInResponse(QString toMatch, int timeout)
             QTime time;
             time.start();
             while (time.elapsed() < 1)
-                ;
+                qApp->processEvents();
         }
 
         if (activeConnections & NetworkConnection)

@@ -6,7 +6,7 @@ uint8   currentPosition = 0;
 uint8   commandRunning = 0;
 CircularBuffer buffer0;
 
-uint8   repeatCount = 5;
+uint8   repeatCount = 4;
 uint8   currentRepeatCount = 0;
 
 IrCommand *tmpCommand = NULL;
@@ -15,9 +15,15 @@ int8 initializeIrControl(void)
 {
     if (initializeCb(&buffer0,IR_MAX_TRANSITIONS,sizeof(uint16)) == -1)
         return -1;
-        
-    if (initializePWM(38000,0.5,1) == -1)
+    
+    setGpioDirection(1, 18, GpioDirectionOutput);
+    setPinMode(1,18, PinModePullDown);
+    
+    if (initializePWM(38000,0.5,IR_PWM_PIN) == -1)
         return -1;
+    
+    //startPWM(0);
+    
         
     setGpioDirection(IR_CAPTURE_PORT, IR_CAPTURE_PIN, GpioDirectionInput); // TSOP input pin
 
@@ -65,22 +71,17 @@ void startIrCapture(void)
     enableGpioInterrupt(IR_CAPTURE_PORT, IR_CAPTURE_PIN, GpioInterruptFallingAndRisingEdge, &captureFunction);
     //startTimer3();
     resetTimer3();
-    
-    printfUart0("Start capture\r");
 }
 
 void stopIrCapture(void)
 {
     stopTimer3();
     disableGpioInterrupt(IR_CAPTURE_PORT, IR_CAPTURE_PIN);
-    printfUart0("Stop capture %u\r", frameReceived);
 }
 
 void captureFunction(void)
 {
     static uint16 timeDiff;
-    
-    printfUart0("Capture: %u %u\r", firstCapture, timeDiff);
     
     if (firstCapture != 1)                     // Check for first run, ignore value
     {
@@ -148,7 +149,7 @@ void runIrCommand(IrCommand* command)
 void stopIrCommand(void )
 {
     stopTimer3();
-    stopPwm(1);
+    stopPwm(IR_PWM_PIN);
     currentRepeatCount++;
     
     if (currentRepeatCount == repeatCount)  // Repeat the command a few times
@@ -166,7 +167,7 @@ void stopIrCommand(void )
 
 void runFunction(void )
 {
-    togglePwm(1);
+    togglePwm(IR_PWM_PIN);
     if (currentPosition < tmpCommand->length)
     {
         setIntervalUsTimer3(tmpCommand->data[currentPosition]);

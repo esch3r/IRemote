@@ -578,5 +578,5 @@ char* getWiFlyResponse();
 uint8 isWiFlyConnected();
 
 int8 setWiFlyAdhocParams();
-
+int8 setWiflyInfrastructureParams();
 int8 createWiFlyAdhocNetwork(char *ssid);

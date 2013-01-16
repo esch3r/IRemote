@@ -12,6 +12,7 @@
 #define IR_WAIT_TIMEOUT 15   // Time that should pass until a capture event will be aborted
 #define IR_CAPTURE_PORT 2
 #define IR_CAPTURE_PIN 6
+#define IR_PWM_PIN 0
 
 #include <pwm.h>
 #include <timer.h>
