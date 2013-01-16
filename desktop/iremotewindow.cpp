@@ -9,6 +9,10 @@ IRemoteWindow::IRemoteWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    currentProfile = NULL;
+    scenePixmap = NULL;
+    signalMapper = NULL;
+
     int width = 300;
     int height = 600;
 
@@ -19,12 +23,6 @@ IRemoteWindow::IRemoteWindow(QWidget *parent) :
     ui->graphicsView->setRenderHint(QPainter::Antialiasing);
     ui->graphicsView->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     ui->graphicsView->setBackgroundBrush(QColor(230, 200, 167));
-
-    signalMapper = new QSignalMapper(this);
-    connect(signalMapper, SIGNAL(mapped(int)),
-            this, SLOT(buttonClicked(int)));
-
-    loadSettings();
 
     iremote = new IRemote();
     connect(iremote, SIGNAL(irCommandReceived(IrCommand)),
@@ -37,10 +35,16 @@ IRemoteWindow::IRemoteWindow(QWidget *parent) :
             this, SLOT(serialPortConnected()));
     connect(iremote, SIGNAL(serialPortDisconnected()),
             this, SLOT(serialPortDisconnected()));
+
+    QSettings tmpConfig(QSettings::IniFormat, QSettings::UserScope, "iremote", "settings");
+    settingsDir = QFileInfo(tmpConfig.fileName()).absolutePath() + "/";
+
+    loadSettings();
 }
 
 IRemoteWindow::~IRemoteWindow()
 {
+    unloadProfile();
     saveSettings();
 
     delete ui;
@@ -48,19 +52,33 @@ IRemoteWindow::~IRemoteWindow()
 
 void IRemoteWindow::loadSettings()
 {
-    QSettings settings;
-    int size = settings.beginReadArray("command");
-    for (int i = 0; i < size; i++)
+    QSettings settings(settingsDir + "settings.ini", QSettings::IniFormat);
+
+    int profileSize = settings.beginReadArray("profile");
+    for (int num = 0; num < profileSize; num++)
     {
-        settings.setArrayIndex(i);
-        GraphicButton *button = createButton(settings.value("buttonName").toString(),
-                                      settings.value("buttonRect").toRectF(),
-                                      settings.value("buttonPos").toPointF(),i);
-        addCommand(settings.value("commandName").toString(), button);
+        settings.setArrayIndex(num);
+        profiles.append(Profile());
+        profiles.last().profileName = settings.value("profileName").toString();
+        profiles.last().pictureFileName = settings.value("pictureFileName").toString();
+        currentProfile = &(profiles.last());
+
+        int size = settings.beginReadArray("command");
+        for (int i = 0; i < size; i++)
+        {
+            settings.setArrayIndex(i);
+            CommandCombination commandCombination;
+            commandCombination.commandName = settings.value("commandName").toString();
+            commandCombination.buttonData.name = settings.value("buttonName").toString();
+            commandCombination.buttonData.rect = settings.value("buttonRect").toRectF();
+            commandCombination.buttonData.pos = settings.value("buttonPos").toPointF();
+            profiles.last().commandList.append(commandCombination);
+        }
+        settings.endArray();
     }
     settings.endArray();
 
-    size = settings.beginReadArray("irCommand");
+    int size = settings.beginReadArray("irCommand");
     for (int i = 0; i < size; i++)
     {
         QByteArray bytes;
@@ -73,23 +91,66 @@ void IRemoteWindow::loadSettings()
         memcpy(&command, bytes.data(), sizeof(IrCommand));
         addIrCommand(name, command);
     }
+    settings.endArray();
 
-    pictureFileName = settings.value("pictureFileName","").toString();
-    if (!pictureFileName.isEmpty())
-        loadPicture(pictureFileName);
+    if (profiles.size() > 1)
+    {
+        currentProfile = &(profiles[profiles.size()-1]);
+        refreshProfiles();
+        loadProfile();
+    }
+
+    // GUI settings
+    settings.beginGroup("serial");
+        ui->serialDeviceCombo->setCurrentIndex(settings.value("device", 0).toInt());
+    settings.endGroup();
+
+    settings.beginGroup("network");
+        ui->networkAddressEdit->setText(settings.value("address", "192.168.1.5").toString());
+        ui->networkPortSpin->setValue(settings.value("port", 2000).toInt());
+    settings.endGroup();
+
+    settings.beginGroup("wlan");
+        ui->wlanHostnameEdit->setText(settings.value("hostname", "IRemoteBox").toString());
+        ui->wlanSsidEdit->setText(settings.value("ssid", "").toString());
+        ui->wlanSecurityCombo->setCurrentIndex(settings.value("auth", 0).toInt());
+        ui->wlanPassphraseEdit->setText(settings.value("passphrase", "").toString());
+    settings.endGroup();
+
+    settings.beginGroup("ip");
+        ui->ipAddressEdit->setText(settings.value("address", "169.254.1.1").toString());
+        ui->ipMethodCombo->setCurrentIndex(settings.value("method", 0).toInt());
+        ui->subnetMaskEdit->setText(settings.value("subnetMask", "255.255.0.0").toString());
+        ui->gatewayEdit->setText(settings.value("gateway", "").toString());
+    settings.endGroup();
+
+    settings.beginGroup("ir");
+        ui->irRepeatSpin->setValue(settings.value("repeat", 5).toInt());
+        ui->irTimeoutSpin->setValue(settings.value("timeout", 50).toInt());
+    settings.endGroup();
 }
 
 void IRemoteWindow::saveSettings()
 {
-    QSettings settings;
-    settings.beginWriteArray("command");
-    for (int i = 0; i < commandList.size(); i++)
+    QSettings settings(settingsDir + "settings.ini", QSettings::IniFormat);
+
+    settings.beginWriteArray("profile");
+    for (int num = 0; num < profiles.size(); num++)
     {
-        settings.setArrayIndex(i);
-        settings.setValue("commandName", commandList.at(i).commandName);
-        settings.setValue("buttonName", commandList.at(i).button->buttonName());
-        settings.setValue("buttonRect", commandList.at(i).button->rect());
-        settings.setValue("buttonPos", commandList.at(i).button->pos());
+        settings.setArrayIndex(num);
+        settings.setValue("profileName", profiles.at(num).profileName);
+        settings.setValue("pictureFileName", profiles.at(num).pictureFileName);
+
+        settings.beginWriteArray("command");
+        for (int i = 0; i < profiles.at(num).commandList.size(); i++)
+        {
+            settings.setArrayIndex(i);
+            settings.setValue("commandName", profiles.at(num).commandList.at(i).commandName);
+            settings.setValue("buttonName", profiles.at(num).commandList.at(i).buttonData.name);
+            settings.setValue("buttonRect", profiles.at(num).commandList.at(i).buttonData.rect);
+            settings.setValue("buttonPos", profiles.at(num).commandList.at(i).buttonData.pos);
+        }
+        settings.endArray();
     }
     settings.endArray();
 
@@ -109,12 +170,41 @@ void IRemoteWindow::saveSettings()
          }
      settings.endArray();
 
-    settings.setValue("pictureFileName",pictureFileName);
+     // GUI settings
+     settings.beginGroup("serial");
+        settings.setValue("device", ui->serialDeviceCombo->currentIndex());
+     settings.endGroup();
+
+     settings.beginGroup("network");
+         settings.setValue("address", ui->networkAddressEdit->text());
+         settings.setValue("port", ui->networkPortSpin->value());
+     settings.endGroup();
+
+     settings.beginGroup("wlan");
+         settings.setValue("hostname", ui->wlanHostnameEdit->text());
+         settings.setValue("ssid", ui->wlanSsidEdit->text());
+         settings.setValue("auth", ui->wlanSecurityCombo->currentIndex());
+         settings.setValue("passphrase", ui->wlanPassphraseEdit->text());
+     settings.endGroup();
+
+     settings.beginGroup("ip");
+         settings.setValue("address", ui->ipAddressEdit->text());
+         settings.setValue("method", ui->ipMethodCombo->currentIndex());
+         settings.setValue("subnetMask", ui->subnetMaskEdit->text());
+         settings.setValue("gateway", ui->gatewayEdit->text());
+     settings.endGroup();
+
+     settings.beginGroup("ir");
+         settings.setValue("repeat", ui->irRepeatSpin->value());
+         settings.setValue("timeout", ui->irTimeoutSpin->value());
+     settings.endGroup();
+
+    settings.sync();
 }
 
 void IRemoteWindow::buttonClicked(int id)
 {
-    QString commandName = commandList.at(id).commandName;
+    QString commandName = currentProfile->commandList.at(id).commandName;
 
     if (irCommandMap.find(commandName) != irCommandMap.end())
     {
@@ -128,6 +218,82 @@ void IRemoteWindow::irCommandReceived(IrCommand irCommand)
     if (!name.isEmpty())
     {
         addIrCommand(name, irCommand);
+    }
+}
+
+void IRemoteWindow::loadProfile()
+{
+    if (signalMapper != NULL)
+    {
+        signalMapper->deleteLater();
+    }
+        signalMapper = new QSignalMapper(this);
+        connect(signalMapper, SIGNAL(mapped(int)),
+                this, SLOT(buttonClicked(int)));
+
+    ui->tableWidget->clearContents();
+    ui->tableWidget->setRowCount(0);
+
+    for (int i = 0; i < currentProfile->commandList.size(); i++)
+    {
+        GraphicButton *button = createButton(currentProfile->commandList.at(i).buttonData.name,
+                                             currentProfile->commandList.at(i).buttonData.rect,
+                                             currentProfile->commandList.at(i).buttonData.pos,
+                                             i);
+        currentProfile->commandList[i].button = button;
+        addTableRow(button->buttonName(), currentProfile->commandList.at(i).commandName);
+    }
+
+    if (!currentProfile->pictureFileName.isEmpty())
+        loadPicture(currentProfile->pictureFileName);
+}
+
+void IRemoteWindow::unloadProfile()
+{
+    for (int i = 0; i < currentProfile->commandList.size(); i++)
+    {
+        GraphicButton *button = currentProfile->commandList.at(i).button;
+        currentProfile->commandList[i].buttonData.name = button->buttonName();
+        currentProfile->commandList[i].buttonData.rect = button->rect();
+        currentProfile->commandList[i].buttonData.pos = button->pos();
+        scene->removeItem(currentProfile->commandList.at(i).button);
+        currentProfile->commandList[i].button = NULL;
+    }
+
+    unloadPicture();
+}
+
+void IRemoteWindow::addProfile(QString name)
+{
+    Profile profile;
+    profile.profileName = name;
+
+    profiles.append(profile);
+}
+
+void IRemoteWindow::removeProfile(int id)
+{
+    if (profiles.size() > id)
+    {
+        unloadProfile();
+        currentProfile = NULL;
+        profiles.removeAt(id);
+    }
+}
+
+void IRemoteWindow::refreshProfiles()
+{
+    int previousIndex = ui->profileCombo->currentIndex();
+
+    ui->profileCombo->clear();
+    for (int i = 0; i < profiles.size(); i++)
+    {
+        ui->profileCombo->addItem(profiles.at(i).profileName);
+    }
+
+    if ((previousIndex > -1) && (profiles.size() > previousIndex))
+    {
+        ui->profileCombo->setCurrentIndex(previousIndex);
     }
 }
 
@@ -147,22 +313,25 @@ GraphicButton *IRemoteWindow::createButton(QString name, QRectF rect, QPointF po
     return item;
 }
 
-void IRemoteWindow::addCommand(QString commandName, GraphicButton *button)
+void IRemoteWindow::addCommand(QString commandName)
 {
     CommandCombination command;
-    command.button = button;
+    command.buttonData.name = "";
+    command.buttonData.rect = QRect(0,0,50,50);
+    command.buttonData.pos = QPointF(10,10);
     command.commandName = commandName;
-    commandList.append(command);
 
-    addTableRow(button->buttonName(), command.commandName);
+    unloadProfile();
+    currentProfile->commandList.append(command);
+    loadProfile();
 }
 
 void IRemoteWindow::removeCommand(int id)
 {
     ui->tableWidget->removeRow(id);
-    scene->removeItem(commandList.at(id).button);
-    commandList.at(id).button->deleteLater();
-    commandList.removeAt(id);
+    scene->removeItem(currentProfile->commandList.at(id).button);
+    currentProfile->commandList.at(id).button->deleteLater();
+    currentProfile->commandList.removeAt(id);
 }
 
 void IRemoteWindow::loadPicture(QString fileName)
@@ -173,8 +342,19 @@ void IRemoteWindow::loadPicture(QString fileName)
                            scene->height(),
                            Qt::KeepAspectRatio,
                            Qt::SmoothTransformation);
-    QGraphicsPixmapItem *pixmapItem = scene->addPixmap(pixmap);
-    pixmapItem->setZValue(-1);
+
+    if (scenePixmap == NULL)
+        scenePixmap = scene->addPixmap(pixmap);
+    else
+        scenePixmap->setPixmap(pixmap);
+
+    scenePixmap->setZValue(-1);
+}
+
+void IRemoteWindow::unloadPicture()
+{
+    if (scenePixmap != NULL)
+        scenePixmap->setPixmap(QPixmap());
 }
 
 void IRemoteWindow::addTableRow(QString buttonName, QString commandName)
@@ -222,18 +402,18 @@ IrCommand IRemoteWindow::getIrCommand(const QString name)
 void IRemoteWindow::on_tableWidget_cellChanged(int row, int column)
 {
     QString cellContent = ui->tableWidget->item(row,column)->text();
-    if (column == 0)
-        commandList.at(row).button->setButtonName(cellContent);
-    else if (column == 1)
-        commandList[row].commandName = cellContent;
+    if ((column == 0) && (currentProfile->commandList.size() > row))
+        currentProfile->commandList.at(row).button->setButtonName(cellContent);
+    else if ((column == 1) && (currentProfile->commandList.size() > row))
+        currentProfile->commandList[row].commandName = cellContent;
 }
 
 void IRemoteWindow::on_tableWidget_cellClicked(int row, int column)
 {
     Q_UNUSED(column);
-    for (int i = 0; i < commandList.size(); i++)
+    for (int i = 0; i < currentProfile->commandList.size(); i++)
     {
-        commandList.at(i).button->setFocused((row == i));
+        currentProfile->commandList.at(i).button->setFocused((row == i));
     }
 }
 
@@ -248,19 +428,22 @@ void IRemoteWindow::on_removeButton_clicked()
 
 void IRemoteWindow::on_addButton_clicked()
 {
+    if (currentProfile == NULL)
+        return;
+
     if (!ui->editableCheck->isChecked())
         ui->editableCheck->click();
 
-    int id = commandList.size();
-    GraphicButton *button = createButton(QString("Button %1").arg(commandList.size()),
-                                       QRect(0,0,40,20),QPointF(0,0),
-                                       id);
-    addCommand(QString("%1").arg(id), button);
+    int id = currentProfile->commandList.size();
+    addCommand(QString("%1").arg(id));
 }
 
 void IRemoteWindow::on_editableCheck_clicked()
 {
-    foreach(CommandCombination command, commandList)
+    if (currentProfile == NULL)
+        return;
+
+    foreach(CommandCombination command, currentProfile->commandList)
     {
         command.button->setEditable(ui->editableCheck->isChecked());
     }
@@ -273,7 +456,7 @@ void IRemoteWindow::on_imageButton_clicked()
     if (!fileName.isNull())
     {
         loadPicture(fileName);
-        pictureFileName = fileName;
+        currentProfile->pictureFileName = fileName;
     }
 }
 
@@ -324,6 +507,9 @@ void IRemoteWindow::on_captureButton_clicked()
 
 void IRemoteWindow::on_runButton_clicked()
 {
+    if (ui->commandList->currentRow() < 0)
+        return;
+
     IrCommand command = getIrCommand(ui->commandList->currentItem()->text());
     iremote->actionRun(command);
 }
@@ -364,6 +550,26 @@ void IRemoteWindow::on_settingsSubmitButton_clicked()
     {
         iremote->setWlanPhrase(ui->wlanPassphraseEdit->text());
     }
+
+    IRemote::IpDhcpMethod dhcpMethod = IRemote::DhcpOnMethod;
+
+    switch (ui->ipMethodCombo->currentIndex())
+    {
+    case 0: dhcpMethod = IRemote::DhcpOnMethod;
+        break;
+    case 1: dhcpMethod = IRemote::DhcpOffMethod;
+        break;
+    case 2: dhcpMethod = IRemote::AutoIpMethod;
+        break;
+    }
+    iremote->setWlanDhcpMethod(dhcpMethod);
+    iremote->setWlanIpAddress(ui->ipAddressEdit->text());
+    iremote->setWlanSubnetMask(ui->subnetMaskEdit->text());
+    iremote->setWlanGateway(ui->gatewayEdit->text());
+
+    iremote->setIrRepeat(ui->irRepeatSpin->value());
+    iremote->setIrTimeout(ui->irTimeoutSpin->value());
+
     iremote->saveWlanConfig();
 }
 
@@ -372,7 +578,63 @@ void IRemoteWindow::on_commandList_doubleClicked(const QModelIndex &index)
     Q_UNUSED(index);
 
     IrCommand command = getIrCommand(ui->commandList->currentItem()->text());
-    ShowCommandDialog dialog;
-    dialog.loadIrCommand(command);
-    dialog.exec();
+    ShowCommandDialog *dialog = new ShowCommandDialog(this);
+    dialog->loadIrCommand(command);
+    dialog->show();
+}
+
+void IRemoteWindow::on_ipMethodCombo_currentIndexChanged(int index)
+{
+    bool enabled = !((index == 0) || (index == 2));    //DHCP or Auto-Ip
+
+    ui->ipAddressEdit->setEnabled(enabled);
+    ui->subnetMaskEdit->setEnabled(enabled);
+    ui->gatewayEdit->setEnabled(enabled);
+}
+
+void IRemoteWindow::on_profileAddButton_clicked()
+{
+    QString name = QInputDialog::getText(this, tr("New Profile"), tr("Insert the name of the new profile"));
+    if (!name.isEmpty())
+    {
+        addProfile(name);
+        refreshProfiles();
+    }
+}
+
+void IRemoteWindow::on_profileRemoveButton_clicked()
+{
+    if (ui->profileCombo->currentIndex() > -1)
+    {
+        removeProfile(ui->profileCombo->currentIndex());
+        refreshProfiles();
+    }
+}
+
+void IRemoteWindow::on_profileCombo_currentIndexChanged(int index)
+{
+    if (index == -1)
+        return;
+
+    if (currentProfile != NULL)
+        unloadProfile();
+
+    currentProfile = &(profiles[index]);
+    loadProfile();
+}
+
+void IRemoteWindow::on_wlanSecurityCombo_currentIndexChanged(int index)
+{
+    if (index == -1)
+        return;
+
+    bool enabled = (!((index == 0) || (index == 5)));   //Open mode or Adhoc
+
+    ui->wlanPassphraseEdit->setEnabled(enabled);
+}
+
+void IRemoteWindow::on_wlanAdhocButton_clicked()
+{
+    iremote->startWlanAdhoc();
+    ui->networkAddressEdit->setText("169.254.1.1");
 }

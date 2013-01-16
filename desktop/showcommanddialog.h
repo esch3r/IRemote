@@ -21,6 +21,9 @@ public:
 
     void loadIrCommand(const IrCommand &command);
     
+private slots:
+    void on_tableButton_clicked();
+
 private:
     Ui::ShowCommandDialog *ui;
 };

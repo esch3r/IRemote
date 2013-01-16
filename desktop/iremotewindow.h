@@ -11,9 +11,22 @@
 #include "showcommanddialog.h"
 
 typedef struct {
+    QString name;
+    QRectF rect;
+    QPointF pos;
+} Button;
+
+typedef struct {
     GraphicButton *button;
+    Button buttonData;
     QString commandName;
 } CommandCombination;
+
+typedef struct {
+    QList<CommandCombination> commandList;
+    QString profileName;
+    QString pictureFileName;
+} Profile;
 
 namespace Ui {
 class IRemoteWindow;
@@ -60,23 +73,40 @@ private slots:
 
     void on_commandList_doubleClicked(const QModelIndex &index);
 
+    void on_ipMethodCombo_currentIndexChanged(int index);
+
+    void on_profileAddButton_clicked();
+
+    void on_profileRemoveButton_clicked();
+
+    void on_profileCombo_currentIndexChanged(int index);
+
+    void on_wlanSecurityCombo_currentIndexChanged(int index);
+
+    void on_wlanAdhocButton_clicked();
+
 private:
     Ui::IRemoteWindow *ui;
 
     QGraphicsScene *scene;
-    //QList<GraphicButton*> graphicButtonList;
-    QList<CommandCombination> commandList;
-    QString pictureFileName;
-
+    QGraphicsPixmapItem *scenePixmap;
     IRemote *iremote;
+
+    QList<Profile> profiles;
+
+    Profile *currentProfile;
+
     QMap<QString,IrCommand>    irCommandMap;
 
     QSignalMapper *signalMapper;
 
+    QString settingsDir;
+
     GraphicButton *createButton(QString name, QRectF rect, QPointF pos, int id);
-    void addCommand(QString commandName, GraphicButton *button);
+    void addCommand(QString commandName);
     void removeCommand(int id);
     void loadPicture(QString fileName);
+    void unloadPicture();
     void addTableRow(QString buttonName, QString commandName);
 
     void addIrCommand(const QString name, IrCommand command);
@@ -85,6 +115,13 @@ private:
 
     void loadSettings();
     void saveSettings();
+
+    void loadProfile();
+    void unloadProfile();
+
+    void addProfile(QString name);
+    void removeProfile(int id);
+    void refreshProfiles();
 };
 
 #endif // IREMOTEWINDOW_H

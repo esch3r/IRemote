@@ -149,12 +149,49 @@ bool IRemote::setWlanAuth(IRemote::WlanAuthType mode)
     return findInResponse("ACK", m_responseTimeout);
 }
 
-void IRemote::actionRun()
+bool IRemote::setWlanDhcpMethod(IRemote::IpDhcpMethod method)
 {
-    sendData("run\r");
+    sendData(QString("set w d %1").arg((int)method).toLocal8Bit());
+    return findInResponse("ACK", m_responseTimeout);
 }
 
-void IRemote::actionRun(IrCommand irCommand)
+bool IRemote::setWlanIpAddress(QString address)
+{
+    sendData(QString("set w i %1").arg(address).toLocal8Bit());
+    return findInResponse("ACK", m_responseTimeout);
+}
+
+bool IRemote::setWlanSubnetMask(QString address)
+{
+    sendData(QString("set w m %1").arg(address).toLocal8Bit());
+    return findInResponse("ACK", m_responseTimeout);
+}
+
+bool IRemote::setWlanGateway(QString address)
+{
+    sendData(QString("set w g %1").arg(address).toLocal8Bit());
+    return findInResponse("ACK", m_responseTimeout);
+}
+
+bool IRemote::setIrRepeat(int times)
+{
+    sendData(QString("set i r %1").arg(times).toLocal8Bit());
+    return findInResponse("ACK", m_responseTimeout);
+}
+
+bool IRemote::setIrTimeout(int ms)
+{
+    sendData(QString("set i t %1").arg(ms).toLocal8Bit());
+    return findInResponse("ACK", m_responseTimeout);
+}
+
+bool IRemote::actionRun()
+{
+    sendData("run\r");
+    return findInResponse("Start running command", m_responseTimeout);
+}
+
+bool IRemote::actionRun(IrCommand irCommand)
 {
     int commandSize = sizeof(IrCommand);
     QByteArray data;
@@ -170,11 +207,19 @@ void IRemote::actionRun(IrCommand irCommand)
     data.append("\r");
 
     sendData(data);
+    return findInResponse("Start running command", m_responseTimeout);
 }
 
-void IRemote::actionCapture()
+bool IRemote::actionCapture()
 {
     sendData("capture\r");
+    return findInResponse("Start capturing data", m_responseTimeout);
+}
+
+bool IRemote::startWlanAdhoc()
+{
+    sendData("start w a\r");
+    return findInResponse("ACK", m_responseTimeout);
 }
 
 void IRemote::incomingSerialData()
@@ -280,9 +325,13 @@ void IRemote::sendData(const QByteArray &data)
 
 bool IRemote::findInResponse(QString toMatch, int timeout)
 {
+    if (!((activeConnections & NetworkConnection) || (activeConnections & SerialConnection)))
+        return false;
+
     QTime timeoutTime;
     int offset;
     char byteRead;
+    bool bytesAvailable = false;
 
     waitingForRespose = true;
 
@@ -290,7 +339,15 @@ bool IRemote::findInResponse(QString toMatch, int timeout)
     {
         timeoutTime.restart();
 
-        while (!serialPort->bytesAvailable())
+        if (activeConnections & NetworkConnection)
+        {
+            bytesAvailable = tcpSocket->bytesAvailable();
+        }
+        else if (activeConnections & SerialConnection)
+        {
+            bytesAvailable = serialPort->bytesAvailable();
+        }
+        while (!bytesAvailable)
         {
             if (timeout > 0)
             {
@@ -306,7 +363,14 @@ bool IRemote::findInResponse(QString toMatch, int timeout)
                 ;
         }
 
-        serialPort->read(&byteRead, 1);
+        if (activeConnections & NetworkConnection)
+        {
+            tcpSocket->read(&byteRead, 1);
+        }
+        else if (activeConnections & SerialConnection)
+        {
+            serialPort->read(&byteRead, 1);
+        }
 
         if (byteRead != toMatch.at(offset))
         {

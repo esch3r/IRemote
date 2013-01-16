@@ -43,6 +43,13 @@ public:
         WPE64AuthType = 7
     };
 
+    enum IpDhcpMethod {
+        DhcpOffMethod = 0,
+        DhcpOnMethod = 1,
+        AutoIpMethod = 2,
+        DhcpCacheMethod = 3
+    };
+
     explicit IRemote(QObject *parent = 0);
     ~IRemote();
 
@@ -61,10 +68,18 @@ public:
     bool setWlanKey(const QString &key);
     bool setWlanHostname(const QString &hostname);
     bool setWlanAuth(WlanAuthType mode);
+    bool setWlanDhcpMethod(IpDhcpMethod method);
+    bool setWlanIpAddress(QString address);
+    bool setWlanSubnetMask(QString address);
+    bool setWlanGateway(QString address);
 
-    void actionRun();
-    void actionRun(IrCommand irCommand);
-    void actionCapture();
+    bool setIrRepeat(int times);
+    bool setIrTimeout(int ms);
+
+    bool actionRun();
+    bool actionRun(IrCommand irCommand);
+    bool actionCapture();
+    bool startWlanAdhoc();
     
     int responseTimeout() const
     {
