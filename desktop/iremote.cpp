@@ -10,6 +10,11 @@ IRemote::IRemote(QObject *parent) :
     tcpSocket = NULL;
 
     waitingForRespose = false;
+
+    responseTimer = new QTimer(this);
+    responseTimer->setInterval(1);
+    connect(responseTimer, SIGNAL(timeout()),
+            this, SLOT(responseTimerTick()));
 }
 
 IRemote::~IRemote()
@@ -287,6 +292,74 @@ void IRemote::tcpSocketError(QAbstractSocket::SocketError error)
     qDebug() << error;
 }
 
+void IRemote::responseTimerTick()
+{
+    if (!((activeConnections & NetworkConnection) || (activeConnections & SerialConnection)))
+    {
+        responseTimer->stop();
+        error("No network connection");
+        return;
+    }
+
+    char byteRead;
+
+    if (currentResponseTimeout > 0) // check time
+    {
+        if (responseTime.elapsed() > currentResponseTimeout)
+        {
+            responseTimer->stop();
+            error("Response timeout");
+            return;
+        }
+    }
+
+    if (activeConnections & NetworkConnection)  // get data
+    {
+        if (tcpSocket->bytesAvailable())
+        {
+            tcpSocket->read(&byteRead, 1);
+        }
+        else
+            return;
+    }
+    else if (activeConnections & SerialConnection)
+    {
+        if (serialPort->bytesAvailable())
+        {
+            serialPort->read(&byteRead, 1);
+        }
+        else
+            return;
+    }
+
+    responseTime.restart();     // reset time
+
+    if (byteRead != responseString.at(responseOffset))
+    {
+        responseOffset = 0;
+
+        if (byteRead != responseString.at(0))
+        {
+            responseOffset = -1;
+        }
+        //responseOffset++;
+        //return;
+    }
+
+    if (responseOffset < (responseString.length()-1))
+        responseOffset++;
+    else    // matched
+    {
+        responseTimer->stop();
+        waitingForRespose = false;
+        doQueue();
+        qDebug() << "test";
+        return;
+    }
+
+    responseTimerTick();    // next step
+}
+
 void IRemote::receivedCommand(QByteArray command)
 {
     const QByteArray dataCode("*DATA");
@@ -330,68 +403,17 @@ void IRemote::sendData(const QByteArray &data)
 
 bool IRemote::findInResponse(QString toMatch, int timeout)
 {
-    if (!((activeConnections & NetworkConnection) || (activeConnections & SerialConnection)))
-        return false;
-
-    QTime timeoutTime;
-    int offset;
-    char byteRead;
-    bool bytesAvailable = false;
+    responseString = toMatch;
+    responseOffset = 0;
+    currentResponseTimeout = timeout;
+    responseTime.restart();
 
     waitingForRespose = true;
 
-    for (offset = 0; offset < toMatch.length(); offset++)
-    {
-        timeoutTime.restart();
+    responseTimer->start();
+}
 
-        bytesAvailable = false;
 
-        while (!bytesAvailable)
-        {
-            if (activeConnections & NetworkConnection)
-            {
-                bytesAvailable = tcpSocket->bytesAvailable();
-            }
-            else if (activeConnections & SerialConnection)
-            {
-                bytesAvailable = serialPort->bytesAvailable();
-            }
-
-            if (timeout > 0)
-            {
-                if (timeoutTime.elapsed() > timeout)
-                {
-                    waitingForRespose = false;
-                    return false;
-                }
-            }
-            QTime time;
-            time.start();
-            while (time.elapsed() < 1)
-                qApp->processEvents();
-        }
-
-        if (activeConnections & NetworkConnection)
-        {
-            tcpSocket->read(&byteRead, 1);
-        }
-        else if (activeConnections & SerialConnection)
-        {
-            serialPort->read(&byteRead, 1);
-        }
-
-        if (byteRead != toMatch.at(offset))
-        {
-            offset = 0;
-
-            if (byteRead != toMatch.at(0))
-            {
-                offset = -1;
-            }
-            continue;
-        }
-    }
-
-    waitingForRespose = false;
-    return true;
+void IRemote::doQueue()
+{
 }
