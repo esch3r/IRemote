@@ -93,11 +93,10 @@ void IRemoteWindow::loadSettings()
     }
     settings.endArray();
 
-    if (profiles.size() > 1)
+    currentProfile = NULL;
+    if (profiles.size() > 0)
     {
-        currentProfile = &(profiles[profiles.size()-1]);
         refreshProfiles();
-        loadProfile();
     }
 
     // GUI settings

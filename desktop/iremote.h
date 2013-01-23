@@ -5,8 +5,11 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#include <QQueue>
 #include <QtAddOnSerialPort/serialport.h>
 #include <QtAddOnSerialPort/serialportinfo.h>
+#include <QTimer>
+#include <QtGui>
 
 QT_USE_NAMESPACE_SERIALPORT
 
@@ -16,6 +19,11 @@ typedef struct {
     quint16  id;
 } IrCommand;
 
+typedef struct {
+    QString command;
+    QString response;
+} QueueCommand;
+
 class IRemote : public QObject
 {
     Q_OBJECT
@@ -23,9 +31,7 @@ class IRemote : public QObject
 
     Q_FLAGS(ActiveConnection ActiveConnections)
 
-
 public:
-
 
     enum ActiveConnection {
         SerialConnection = 0x01,
@@ -95,6 +101,11 @@ signals:
 
     void responseTimeoutChanged(int arg);
 
+    void queueFinished();
+    void queueStarted();
+
+    void error(QString text);
+
 public slots:
 
 void setResponseTimeout(int arg)
@@ -111,6 +122,7 @@ private slots:
     void tcpSocketConnected();
     void tcpSocketDisconnected();
     void tcpSocketError(QAbstractSocket::SocketError error);
+    void responseTimerTick();
 
 private:
     SerialPort *serialPort;
@@ -120,9 +132,19 @@ private:
 
     ActiveConnections activeConnections;
 
+    QQueue<QueueCommand> commandQueue;
+    QTimer *responseTimer;
+    QString responseString;
+    int     currentResponseTimeout;
+    QTime   responseTime;
+    int     responseOffset;
+
     void receivedCommand(QByteArray command);
     void sendData(const QByteArray &data);
     bool findInResponse(QString toMatch, int timeout);
+
+    void startQueue();
+    void doQueue();
     
     int m_responseTimeout;
 };

@@ -8,7 +8,7 @@
 #ifndef _IRCONTROL_H_
 #define _IRCONTROL_H_
 
-#define IR_TIMEOUT  20000   // Time that should pass until a timeout (end of frame) occurs
+#define IR_TIMEOUT  50000   // Time that should pass until a timeout (end of frame) occurs
 #define IR_WAIT_TIMEOUT 15   // Time that should pass until a capture event will be aborted
 #define IR_CAPTURE_PORT 2
 #define IR_CAPTURE_PIN 6
