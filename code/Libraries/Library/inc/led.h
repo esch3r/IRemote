@@ -13,7 +13,16 @@
 #define LED_RUNNING_TIME 30
 
 #include <ledDriver.h>
+#include <gpio.h>
 #include <types.h>
+
+typedef struct {
+    uint8 port;
+    uint8 pin;
+    bool  lowActive;
+} LedConfig;
+
+void initializeLed(uint8 port, uint8 pin, bool lowActive);
 
 /** Initializes the Leds. Per default red and green Leds will be enabled. */
 uint8 initializeLeds(void);

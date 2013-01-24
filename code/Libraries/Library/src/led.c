@@ -1,6 +1,19 @@
 #include <led.h>
 #include <timer.h>
 
+LedConfig leds[MAXLEDS];
+
+uint8 ledCount = 0;
+
+void initializeLed(uint8 port, uint8 pin, bool lowActive)
+{
+    setGpioDirection(port, pin, GpioDirectionOutput);
+    leds[ledCount].port = port;
+    leds[ledCount].pin = pin;
+    leds[ledCount].lowActive = lowActive;
+    ledCount++;
+}
+
 uint8 initializeLeds(void)
 {
     return initLeds();
@@ -24,62 +37,65 @@ void setRedLedsEnabled(bool enabled)
 
 void setLed(uint8 id)
 {
-    SET_LED(id);
+    if (leds[id].lowActive == FALSE)
+        setGpio(leds[id].port, leds[id].pin);
+    else
+        clearGpio(leds[id].port, leds[id].pin);
 }
 
 void clearLed(uint8 id)
 {
-    CLEAR_LED(id);
+     if (leds[id].lowActive == FALSE)
+        clearGpio(leds[id].port, leds[id].pin);
+    else
+        setGpio(leds[id].port, leds[id].pin);
 }
 
 void toggleLed(uint8 id)
 {
-    if (READ_LED(id))
-        CLEAR_LED(id);
-    else
-        SET_LED(id);
+    toggleGpio(leds[id].port, leds[id].pin);
 }
 
 bool readLed(uint8 id)
 {
-    return READ_LED(id);
+    return readGpio(leds[id].port, leds[id].pin);
 }
 
 void blinkLed(uint8 id)
 {
-    SET_LED(id);
+    setLed(id);
     delayMs(LED_BLINK_TIME);
-    CLEAR_LED(id);
+    clearLed(id);
     
     return;
 }
 
 void blinkLed2(uint8 id)
 {
-    SET_LED(id);
+    setLed(id);
     delayMs(LED_BLINK_TIME);
-    CLEAR_LED(id);
+    clearLed(id);
     delayMs(LED_BLINK_TIME);
-    SET_LED(id);
+    setLed(id);
     delayMs(LED_BLINK_TIME);
-    CLEAR_LED(id);
+    clearLed(id);
     
     return;
 }
 
 void blinkLed3(uint8 id)
 {
-    SET_LED(id);
+    setLed(id);
     delayMs(LED_BLINK_TIME);
-    CLEAR_LED(id);
+    clearLed(id);
     delayMs(LED_BLINK_TIME);
-    SET_LED(id);
+    setLed(id);
     delayMs(LED_BLINK_TIME);
-    CLEAR_LED(id);
+    clearLed(id);
     delayMs(LED_BLINK_TIME);
-    SET_LED(id);
+    setLed(id);
     delayMs(LED_BLINK_TIME);
-    CLEAR_LED(id);
+    clearLed(id);
     
     return;
 }
@@ -87,9 +103,9 @@ void blinkLed3(uint8 id)
 void clearAllLeds()
 {
     uint8 i;
-    for (i = 1; i <= LEDCOUNT; i++)
+    for (i = 0; i < ledCount; i++)
     {
-        CLEAR_LED(i);
+        clearLed(i);
     }
     
     return;
@@ -98,9 +114,9 @@ void clearAllLeds()
 void setAllLeds()
 {
     uint8 i;
-    for (i = 1; i <= LEDCOUNT; i++)
-    {    clearAllLeds();
-        SET_LED(i);
+    for (i = 0; i < ledCount; i++)
+    {
+        setLed(i);
     }
     
     return;
@@ -110,10 +126,10 @@ void allLedsUp()
 {
     uint8 i;
     
-    for (i = 1; i <= LEDCOUNT; i++)
+    for (i = 0; i < ledCount; i++)
     {
         clearAllLeds();
-        SET_LED(i);
+        setLed(i);
         /* busy waiting */
         delayMs(LED_RUNNING_TIME);
     }
@@ -125,10 +141,10 @@ void allLedsDown()
 {
     uint8 i;
     
-    for (i = LEDCOUNT; i > 0; i--)
+    for (i = ledCount-1; i >= 0; i--)
     {
         clearAllLeds();
-        SET_LED(i);
+        setLed(i);
         /* busy waiting */
         delayMs(LED_RUNNING_TIME);
     }

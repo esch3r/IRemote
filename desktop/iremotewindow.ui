@@ -331,7 +331,14 @@
             </widget>
            </item>
            <item row="0" column="0" colspan="5">
-            <widget class="QListWidget" name="commandList"/>
+            <widget class="QListWidget" name="commandList">
+             <property name="editTriggers">
+              <set>QAbstractItemView::SelectedClicked</set>
+             </property>
+             <property name="sortingEnabled">
+              <bool>true</bool>
+             </property>
+            </widget>
            </item>
            <item row="2" column="3" colspan="2">
             <widget class="QPushButton" name="removeCommandButton">

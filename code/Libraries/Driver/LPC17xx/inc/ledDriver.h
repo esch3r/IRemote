@@ -1,6 +1,8 @@
 #ifndef _LEDDRIVER_H_
 #define _LEDDRIVER_H_
 
+#define MAXLEDS 8
+
 #define LEDCOUNT 1
 #define LEDOFFSET 28
 #define MAXLED LEDCOUNT+LEDOFFSET

@@ -43,17 +43,25 @@ int main(void)
 {   
     initializeTimeout(TIMER1);
         
-    initializeLeds();
+    //initializeLeds();
+    initializeLed(1,29, TRUE);    // led 0 - onoard
+    initializeLed(0,0, FALSE);     // led 1 - green
+    initializeLed(0,1, FALSE);     // led 2 - yellow
+    initializeLed(0,10, FALSE);    // led 3 - red
     clearAllLeds();
+   
     
    initializeButton(10,1,2,10);
    
-                              
-    
+   
     //Program started notifier
     delayMs(500);
-    blinkLed3(1);
+    blinkLed(3);
+    blinkLed(2);
+    blinkLed(1);
     delayMs(500);
+    
+    initializeIrControl();
     
     initializeSerialConnection();
     
@@ -61,7 +69,6 @@ int main(void)
     {
         printfData("ERR: Network initalization failed");
     }
-    initializeIrControl();
     
     setProcessFunctionUart0(&processCommand);
     setErrorFunctionUart0(&errorCommand);
@@ -73,7 +80,7 @@ int main(void)
     printfData("Welcome to IRemote!\r");    // Send a welcome message
     printfData("Id: %i, Version: %i, Serial: %i\r",readIdIap(),readVersionIap(),readSerialIap());
    
-    blinkLed2(1);
+    blinkLed2(0);
     
     // Testing IAP functions
     //    uint32 testVar;
@@ -154,7 +161,7 @@ void startState(ApplicationState state)
         applicationState = ApplicationStateCaptureCommand;
         
         printfData("Start capturing data\r");
-        blinkLed2(1);
+        blinkLed2(0);
         startIrCapture();
     }
     else if (state == ApplicationStateRunCommand)
@@ -162,7 +169,7 @@ void startState(ApplicationState state)
         applicationState = ApplicationStateRunCommand;
                 
         printfData("Start running command\r");
-        blinkLed(1);
+        blinkLed(0);
         runIrCommand(currentCommand);
     }
     else if (state == ApplicationStateWiFlyTest)
@@ -230,7 +237,12 @@ void processCommand(char *buffer)
     
     dataPointer = strtok(buffer," ");
     
-    if (compareBaseCommand("run", dataPointer))
+    if (compareBaseCommand("alive", dataPointer))
+    {
+        // We have a keep alive command
+        printfData("yes\r");
+    }
+    else if (compareBaseCommand("run", dataPointer))
     {
         // We have a run command
         dataPointer = strtok(NULL," ");
