@@ -12,7 +12,7 @@
 #include <LPC17xx.h>
 
 #define PCONP_PWM     (1 << 6) 		//set pwm1/clock control bit
-#define PWM_PDN        (1 << 21)     // 1 ADC on, 0 ADC off
+#define PWM_PDN        (1 << 21)     // 1 PWM1 on, 0 PWM1 off
 #define PCLK_PWM       (1 << 24)     // 0b00 CCLK/4, 0b01 CCLK, 0b10 CCLK/2, 0b11 CCLK/8
 #define PWM_SET_CORE_CLK()  LPC_SC->PCLKSEL0 |= (0b00<< 12); //set 12:13 for PWM1
 #define SYSTEM_CLK      SystemCoreClock

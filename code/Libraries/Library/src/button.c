@@ -9,10 +9,11 @@ CircularBuffer buttonBuffer;
 
 
 typedef struct {
-	uint8 id;
-	uint8 port;
-	uint8 pin;
-	uint8 unset;
+    uint8 id;
+    uint8 port;
+    uint8 pin;
+    uint8 unset;
+    uint8 type;
 } Button;
 
 typedef struct {
@@ -24,20 +25,25 @@ Button	buttons[10];
 ButtonValue val[20];
 int8	buttonCount = 0;
 
-uint8 initializeButton(uint8 Mhz,uint8 ID, uint8 Port, uint8 Pin){
+uint8 initializeButton(uint8 khz,uint8 ID, uint8 Port, uint8 Pin,uint8 Type){
 
 	setGpioDirection(Port, Pin, 0 );	//direction 0=input
-	(buttons[buttonCount]).id = ID;
-	buttons[buttonCount].port = Port;
-	buttons[buttonCount].pin = Pin;
+	if(Type==0)
+	  setPinMode(Port, Pin,"PinModePullUp");
+	if(Type==1)
+	   setPinMode(Port, Pin,"PinModePullDown");
+	(buttons[buttonCount]).id   = ID;
+	buttons[buttonCount].port   = Port;
+	buttons[buttonCount].pin    = Pin;
+	buttons[buttonCount].type   =Type;
 
 	buttonCount++;
 
-	initializeTimer2(Mhz, 100);
+	initializeTimer2(khz, 100);
 	initializeCb(&buttonBuffer,20,sizeof(uint8));
 
-//singleShotTimer2(uint32 ms, void (* func)(void));
-singleShotTimer2(Mhz, valueButton);
+
+singleShotTimer2(10, valueButton);
 
 return 0;
 }
@@ -45,9 +51,10 @@ return 0;
 void valueButton(void){
 	uint8 i;
 	for(i=0;i<=buttonCount;i++){
-
-
-	readGpio(buttons[i].port,buttons[i].pin) ? putVal(i,1): putVal(i,0);
+	if(buttons[i].type==0)
+	  readGpio(buttons[i].port,buttons[i].pin) ? putVal(i,0): putVal(i,1);
+	if(buttons[i].type==1)
+	  readGpio(buttons[i].port,buttons[i].pin) ? putVal(i,1): putVal(i,0);
 	}
 }
 

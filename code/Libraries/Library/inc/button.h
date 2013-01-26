@@ -1,4 +1,4 @@
- #ifndef _BUTTONLIB_H_
+#ifndef _BUTTONLIB_H_
 #define _BUTTONLIB_H_
 
 #include <types.h>
@@ -11,8 +11,10 @@
  *@param ID  Stands for the name of the Buttons(B1,B2,B3,..).
  *@param Port Is the port of the button.
  *@param Pin  Is the pin of the button.
+ *@param Type set "0" for low_active, or" 1" for high_active
  */
-uint8 initializeButton(uint8 Mhz,uint8 ID, uint8 Port, uint8 Pin);
+uint8 initializeButton(uint8 khz,uint8 ID, uint8 Port, uint8 Pin,uint8 Type);
+
 /** reads the button values
  */
 void valueButton(void);
