@@ -100,6 +100,8 @@ public:
     void actionRun(IrCommand irCommand);
     void actionCapture();
     void startWlanAdhoc();
+
+    void flashFirmware(QString filename);
     
     int responseTimeout() const
     {
@@ -226,6 +228,8 @@ private:
 
     QTimer *keepAliveTimer;
     bool    keepAliveReceived;
+
+    QByteArray dataToHex(const char* data, int size);
 
     void receivedCommand(QByteArray command);
     void sendData(const QByteArray &data);

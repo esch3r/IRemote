@@ -41,12 +41,14 @@ SOURCES += main.cpp\
         iremotewindow.cpp \
     graphicbutton.cpp \
     iremote.cpp \
-    showcommanddialog.cpp
+    showcommanddialog.cpp \
+    crc.cpp
 
 HEADERS  += iremotewindow.h \
     graphicbutton.h \
     iremote.h \
-    showcommanddialog.h
+    showcommanddialog.h\
+    crc.h
 
 FORMS    += iremotewindow.ui \
     showcommanddialog.ui

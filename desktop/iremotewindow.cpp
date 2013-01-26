@@ -647,3 +647,21 @@ void IRemoteWindow::on_removeCommandButton_clicked()
 {
     removeIrCommand(ui->commandList->currentItem()->text());
 }
+
+void IRemoteWindow::on_openFlashfileButton_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Open flash file"),
+                                                    QDir::homePath(),
+                                                    tr("Bin file (*.bin) (*.bin)"));
+
+    if (!fileName.isNull())
+    {
+        ui->flashfileNameEdit->setText(fileName);
+    }
+}
+
+void IRemoteWindow::on_flashButton_clicked()
+{
+    iremote->flashFirmware(ui->flashfileNameEdit->text());
+}
