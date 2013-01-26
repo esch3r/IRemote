@@ -53,17 +53,9 @@ int main(void)
     initializeLed(0,10, FALSE);    // led 3 - red
     clearAllLeds();
    
-    
-<<<<<<< HEAD
-  // initializeButton(10,1,2,10);
-   initializeButton(10000,0,0,0,1);
-                              
-    
-=======
-   initializeButton(10,1,2,10);
+    // initializeButton(10,1,2,10);
+    initializeButton(10000,0,0,0,1);
    
-   
->>>>>>> 63e459444f221c9173140761b14c22f003a434ce
     //Program started notifier
     delayMs(500);
     blinkLed(3);    
