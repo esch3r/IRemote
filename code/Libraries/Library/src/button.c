@@ -1,5 +1,6 @@
 #include <button.h>
 #include <gpio.h>
+#include <pincon.h>
 #include <circularbuffer.h>
 
 int32 Puffer[20];
@@ -23,15 +24,15 @@ typedef struct {
 
 Button	buttons[10];
 ButtonValue val[20];
-int8	buttonCount = 0;
+uint8	buttonCount = 0;
 
 uint8 initializeButton(uint8 khz,uint8 ID, uint8 Port, uint8 Pin,uint8 Type){
 
 	setGpioDirection(Port, Pin, 0 );	//direction 0=input
 	if(Type==0)
-	  setPinMode(Port, Pin,"PinModePullUp");
+	  setPinMode(Port, Pin, PinModePullUp);
 	if(Type==1)
-	   setPinMode(Port, Pin,"PinModePullDown");
+	   setPinMode(Port, Pin, PinModePullDown);
 	(buttons[buttonCount]).id   = ID;
 	buttons[buttonCount].port   = Port;
 	buttons[buttonCount].pin    = Pin;
@@ -62,7 +63,7 @@ int8 putVal(uint8 i,uint8 var){
 
 	if(var){
 		val[i].id=buttons[i].id;
-		val[i].count = &val[i].count +1;
+		val[i].count = val[i].count +1;
 	}
 	else{
 		if(buttons[i].unset <= maxunset) buttons[i].unset = buttons[i].unset +1;
