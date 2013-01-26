@@ -1,9 +1,12 @@
 #include "iremote.h"
+#include "crc.h"
 #include <QtGui>
 
 IRemote::IRemote(QObject *parent) :
     QObject(parent)
 {
+    crcInit();
+
     m_responseTimeout = 2000;
     m_keepAliveTimeout = 5000;
     m_queueRunning = false;
@@ -291,7 +294,7 @@ void IRemote::actionRun()
 {
     QueueCommand command;
     command.command = "run\r";
-    command.response = "Going into idle";
+    command.response = "Idle";
     command.timeout = m_responseTimeout;
     command.type = NormalQueueCommandType;
 
@@ -301,17 +304,10 @@ void IRemote::actionRun()
 
 void IRemote::actionRun(IrCommand irCommand)
 {
-    int commandSize = sizeof(IrCommand);
     QByteArray data;
 
     data.append("run ");
-    for (int i = 0; i < commandSize; i++)
-    {
-        data.append(QString("%1").arg((quint8)(((char*)(&irCommand))[i]),
-                                      2,
-                                      16,
-                                      QLatin1Char('0')));
-    }
+    data.append(dataToHex((char*)&irCommand, sizeof(irCommand)));
     data.append("\r");
 
     QueueCommand command;
@@ -346,6 +342,52 @@ void IRemote::startWlanAdhoc()
 
     commandQueue.enqueue(command);
     startQueue();
+}
+
+void IRemote::flashFirmware(QString filename)
+{
+    // here the flashing is happening
+    QFile file(filename);
+    QByteArray data;
+
+    if (file.open(QIODevice::ReadOnly))
+    {
+        int size;
+        quint16 checksum;
+        QByteArray commandData;
+
+        data = file.readAll();
+
+        // split the file in 100 bytes parts
+        for (int i = 0; i < data.size(); i+=100)
+        {
+            if (i+100 < data.size())
+                size = 100;
+            else
+                size = data.size() - i;
+
+            checksum = crcFast(&(data.data()[i]), size);//qChecksum(&(data.data()[i]), size);
+
+            commandData.clear();
+            commandData.append("flash ");
+            commandData.append(dataToHex(&(data.data()[i]),size));
+            commandData.append(" ");
+            commandData.append(QString("%1").arg(checksum,4,16,QLatin1Char('0')));
+            commandData.append("\r");
+
+            qDebug() << checksum;
+
+            QueueCommand command;
+            command.command = commandData;
+            command.response = "ACK";
+            command.timeout = m_responseTimeout;
+            command.type = NormalQueueCommandType;
+
+            commandQueue.enqueue(command);
+            startQueue();
+        }
+
+    }
 }
 
 void IRemote::incomingSerialData()
@@ -458,6 +500,20 @@ void IRemote::keepAliveTimerTick()
         commandQueue.enqueue(command);
         startQueue();
     }
+}
+
+QByteArray IRemote::dataToHex(const char *data, int size)
+{
+    QByteArray bytes;
+    for (int i = 0; i < size; i++)
+    {
+        bytes.append(QString("%1").arg((quint8)(data[i]),
+                                      2,
+                                      16,
+                                      QLatin1Char('0')));
+    }
+
+    return bytes;
 }
 
 void IRemote::receivedCommand(QByteArray command)

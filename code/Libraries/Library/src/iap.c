@@ -252,3 +252,19 @@ int32 compareIap(uint32 sector, uint32 offset, const void *buffer, uint32 size)
 {
     return memcmp(buffer, getIapPointer(sector, offset), size);
 }
+
+void flashFirmware(const void* data, uint32 size)
+{
+    uint8 i;
+    
+    __disable_irq();            // disable interrupts to avoid memory corruption
+    
+    for (i = 0; i < 27; i++)    // erase sector 0 to 26 before programming
+    {
+        eraseIap(i);
+    }
+    
+    writeIap(0, 0, data, size);
+    
+    __enable_irq();
+}

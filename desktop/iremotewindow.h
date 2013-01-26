@@ -87,6 +87,10 @@ private slots:
 
     void on_removeCommandButton_clicked();
 
+    void on_openFlashfileButton_clicked();
+
+    void on_flashButton_clicked();
+
 private:
     Ui::IRemoteWindow *ui;
 

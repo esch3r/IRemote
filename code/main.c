@@ -10,6 +10,7 @@
 #include <timeout.h>
 #include <button.h>
 #include <pwm.h>
+#include <crc.h>
 #include "irControl.h"
 #include "iremote.h"
 
@@ -41,6 +42,8 @@ NetworkState networkState = NetworkStateDisconnected;
 
 int main(void)
 {   
+    crcInit();
+    
     initializeTimeout(TIMER1);
         
     //initializeLeds();
@@ -56,7 +59,7 @@ int main(void)
    
     //Program started notifier
     delayMs(500);
-    blinkLed(3);
+    blinkLed(3);    
     blinkLed(2);
     blinkLed(1);
     delayMs(500);
@@ -87,7 +90,7 @@ int main(void)
     //printfUart0("Sector 26: %i, Sector 27: %i\n",checkBlankIap(26),checkBlankIap(27));
     //testVar = 0;
     //__disable_irq();
-    //eraseIap(27);
+    //eraseIap(27); 
     //writeIap(27,256*64,(void*)(&testVar),sizeof(testVar));
     //readIap(27,256*64,(void*)(&testVar),sizeof(testVar));
     //printfUart0("Test: %u\n",testVar);
@@ -129,7 +132,7 @@ int main(void)
             while (getcharWiFly(&receivedData) == 0)
                 putcharUart0(receivedData);
         }
-        delayMs(50);
+        delayMs(5);
      }
 
     return 0 ;
@@ -154,7 +157,7 @@ void startState(ApplicationState state)
     {
         applicationState = ApplicationStateIdle;
         
-        printfData("Going into idle\r");
+        printfData("Idle\r");
     }
     else if (state == ApplicationStateCaptureCommand)
     {
@@ -252,7 +255,6 @@ void processCommand(char *buffer)
             uint16 i;
             for (i = 0; i < commandSize; i+=2)
             {
-                //sscanf(dataPointer+i, "%02x", (unsigned int *)(&byte));
                 ((char*)currentCommand)[i/2] = (char)hex2int(dataPointer+i,2);
             }
         }
@@ -267,6 +269,36 @@ void processCommand(char *buffer)
     {
         // We have a capture command
         startState(ApplicationStateIdle);
+    }
+    else if (compareBaseCommand("flash", dataPointer))
+    {
+        // We have a flash command
+        char buffer[100];
+        uint16 receivedChecksum;
+        uint16 calculatedChecksum;
+        
+        dataPointer = strtok(NULL," ");
+        if (dataPointer != NULL)
+        {
+            uint16 commandSize = strlen(dataPointer);
+            uint16 i;
+            for (i = 0; i < commandSize; i+=2)
+            {
+                buffer[i/2] = (char)hex2int(dataPointer+i,2);
+            }
+            
+            dataPointer = strtok(NULL," ");
+            if (dataPointer != NULL)
+            {
+                receivedChecksum = (uint16)hex2int(dataPointer,4);;
+                calculatedChecksum = crcFast(buffer, 100);
+                if (receivedChecksum == calculatedChecksum)
+                    printAcknowledgement();
+                else
+                    printfData("%u %u %u\r",commandSize,receivedChecksum,calculatedChecksum);
+            }
+        }
+        
     }
     else if (compareBaseCommand("set", dataPointer))
     {
