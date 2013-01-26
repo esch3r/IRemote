@@ -389,7 +389,7 @@ void IRemoteWindow::removeIrCommand(const QString name)
     irCommandMap.remove(name);
     foreach (QListWidgetItem* item, ui->commandList->findItems(name, Qt::MatchCaseSensitive))
     {
-        ui->commandList->removeItemWidget(item);
+        ui->commandList->takeItem(ui->commandList->row(item));
     }
 }
 
@@ -641,4 +641,9 @@ void IRemoteWindow::on_wlanAdhocButton_clicked()
 {
     iremote->startWlanAdhoc();
     ui->networkAddressEdit->setText("169.254.1.1");
+}
+
+void IRemoteWindow::on_removeCommandButton_clicked()
+{
+    removeIrCommand(ui->commandList->currentItem()->text());
 }

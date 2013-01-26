@@ -19,21 +19,35 @@ typedef struct {
     quint16  id;
 } IrCommand;
 
+enum QueueCommandType {
+    NormalQueueCommandType = 0,
+    KeepAliveQueueCommandType = 1,
+    GroupQueueCommandType = 2
+};
+
 typedef struct {
-    QString command;
-    QString response;
+    QByteArray command;
+    QByteArray response;
+    int timeout;
+    QueueCommandType type;//= NormalQueueCommandType;
 } QueueCommand;
 
 class IRemote : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int responseTimeout READ responseTimeout WRITE setResponseTimeout NOTIFY responseTimeoutChanged)
+    Q_PROPERTY(bool queueRunning READ isQueueRunning WRITE setQueueRunning NOTIFY queueRunningChanged)
+    Q_PROPERTY(int keepAliveTimeout READ keepAliveTimeout WRITE setKeepAliveTimeout)
+    Q_PROPERTY(bool autoconnectEnabled READ autoconnectEnabled WRITE setAutoconnectEnabled NOTIFY autoconnectEnabledChanged)
+    Q_PROPERTY(QString networkHostname READ networkHostname WRITE setNetworkHostname NOTIFY networkHostnameChanged)
+    Q_PROPERTY(int networkPort READ networkPort WRITE setNetworkPort NOTIFY networkPortChanged)
 
     Q_FLAGS(ActiveConnection ActiveConnections)
 
 public:
 
     enum ActiveConnection {
+        NoConnection = 0x00,
         SerialConnection = 0x01,
         NetworkConnection = 0x02
     };
@@ -67,29 +81,54 @@ public:
     bool isSerialPortConnected();
     bool isNetworkConnected();
 
-    bool startWlanConfig();
-    bool saveWlanConfig();
-    bool setWlanSsid(const QString &ssid);
-    bool setWlanPhrase(const QString &phrase);
-    bool setWlanKey(const QString &key);
-    bool setWlanHostname(const QString &hostname);
-    bool setWlanAuth(WlanAuthType mode);
-    bool setWlanDhcpMethod(IpDhcpMethod method);
-    bool setWlanIpAddress(QString address);
-    bool setWlanSubnetMask(QString address);
-    bool setWlanGateway(QString address);
+    void startWlanConfig();
+    void saveWlanConfig();
+    void setWlanSsid(const QString &ssid);
+    void setWlanPhrase(const QString &phrase);
+    void setWlanKey(const QString &key);
+    void setWlanHostname(const QString &hostname);
+    void setWlanAuth(WlanAuthType mode);
+    void setWlanDhcpMethod(IpDhcpMethod method);
+    void setWlanIpAddress(QString address);
+    void setWlanSubnetMask(QString address);
+    void setWlanGateway(QString address);
 
-    bool setIrRepeat(int times);
-    bool setIrTimeout(int ms);
+    void setIrRepeat(int times);
+    void setIrTimeout(int ms);
 
-    bool actionRun();
-    bool actionRun(IrCommand irCommand);
-    bool actionCapture();
-    bool startWlanAdhoc();
+    void actionRun();
+    void actionRun(IrCommand irCommand);
+    void actionCapture();
+    void startWlanAdhoc();
     
     int responseTimeout() const
     {
         return m_responseTimeout;
+    }
+
+    bool isQueueRunning() const
+    {
+        return m_queueRunning;
+    }
+
+    int keepAliveTimeout() const
+    {
+        return m_keepAliveTimeout;
+    }
+
+    bool autoconnectEnabled() const
+    {
+        return m_autoconnectEnabled;
+    }
+
+    QString networkHostname() const
+    {
+        return m_networkHostname;
+    }
+
+    int networkPort() const
+    {
+        return m_networkPort;
     }
 
 signals:
@@ -106,6 +145,14 @@ signals:
 
     void error(QString text);
 
+    void queueRunningChanged(bool arg);
+
+    void autoconnectEnabledChanged(bool arg);
+
+    void networkHostnameChanged(QString arg);
+
+    void networkPortChanged(int arg);
+
 public slots:
 
 void setResponseTimeout(int arg)
@@ -116,13 +163,50 @@ void setResponseTimeout(int arg)
     }
 }
 
+void setQueueRunning(bool arg)
+{
+    if (m_queueRunning != arg) {
+        m_queueRunning = arg;
+        emit queueRunningChanged(arg);
+    }
+}
+
+void setKeepAliveTimeout(int arg)
+{
+    m_keepAliveTimeout = arg;
+    keepAliveTimer->setInterval(arg);
+}
+
+void setAutoconnectEnabled(bool arg)
+{
+    m_autoconnectEnabled = arg;
+}
+
+void setNetworkHostname(QString arg)
+{
+    if (m_networkHostname != arg) {
+        m_networkHostname = arg;
+        emit networkHostnameChanged(arg);
+    }
+}
+
+void setNetworkPort(int arg)
+{
+    if (m_networkPort != arg) {
+        m_networkPort = arg;
+        emit networkPortChanged(arg);
+    }
+}
+
 private slots:
     void incomingSerialData();
     void incomingNetworkData();
+    void incomingByte(char byte);
     void tcpSocketConnected();
     void tcpSocketDisconnected();
     void tcpSocketError(QAbstractSocket::SocketError error);
     void responseTimerTick();
+    void keepAliveTimerTick();
 
 private:
     SerialPort *serialPort;
@@ -130,23 +214,35 @@ private:
     QByteArray dataBuffer;
     bool waitingForRespose;
 
+    bool wantsConnection;   // this variable indicates wheter a user wants a connection or not, necessary for autoconnect
+
     ActiveConnections activeConnections;
 
     QQueue<QueueCommand> commandQueue;
+    QueueCommand currentCommand;
     QTimer *responseTimer;
     QString responseString;
-    int     currentResponseTimeout;
-    QTime   responseTime;
     int     responseOffset;
+
+    QTimer *keepAliveTimer;
+    bool    keepAliveReceived;
 
     void receivedCommand(QByteArray command);
     void sendData(const QByteArray &data);
-    bool findInResponse(QString toMatch, int timeout);
+    void findInResponse(QString toMatch, int timeout);
+    void responseReceived(QueueCommandType type);
+    void responseTimedOut(QueueCommandType type);
 
     void startQueue();
     void doQueue();
+    void endQueue();
     
     int m_responseTimeout;
+    bool m_queueRunning;
+    int m_keepAliveTimeout;
+    bool m_autoconnectEnabled;
+    QString m_networkHostname;
+    int m_networkPort;
 };
 
 #endif // IREMOTE_H

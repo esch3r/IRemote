@@ -85,6 +85,8 @@ private slots:
 
     void on_wlanAdhocButton_clicked();
 
+    void on_removeCommandButton_clicked();
+
 private:
     Ui::IRemoteWindow *ui;
 
