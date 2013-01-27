@@ -26,17 +26,17 @@ Button	buttons[10];
 ButtonValue val[20];
 uint8	buttonCount = 0;
 
-uint8 initializeButton(uint8 khz,uint8 ID, uint8 Port, uint8 Pin,uint8 Type){
+uint8 initializeButton(uint8 khz,uint8 id, uint8 port, uint8 pin,uint8 type){
 
-	setGpioDirection(Port, Pin, 0 );	//direction 0=input
-	if(Type==0)
-	  setPinMode(Port, Pin, PinModePullUp);
-	if(Type==1)
-	   setPinMode(Port, Pin, PinModePullDown);
-	(buttons[buttonCount]).id   = ID;
-	buttons[buttonCount].port   = Port;
-	buttons[buttonCount].pin    = Pin;
-	buttons[buttonCount].type   =Type;
+	setGpioDirection(port, pin, 0 );	//direction 0=input
+	if(type==0)
+	  setPinMode(port, pin, PinModePullUp);
+	if(type==1)
+	   setPinMode(port, pin, PinModePullDown);
+	(buttons[buttonCount]).id   = id;
+	buttons[buttonCount].port   = port;
+	buttons[buttonCount].pin    = pin;
+	buttons[buttonCount].type   = type;
 
 	buttonCount++;
 
@@ -61,13 +61,15 @@ void valueButton(void){
 
 int8 putVal(uint8 i,uint8 var){
 
-	if(var){
+	if(var && buttons[i].unset!=0){
+        printfData("button pressed\r");   
 		val[i].id=buttons[i].id;
 		val[i].count = val[i].count +1;
+        buttons[i].unset = 0;
 	}
 	else{
-		if(buttons[i].unset <= maxunset) buttons[i].unset = buttons[i].unset +1;
-		else{
+		if(!var && buttons[i].unset <= maxunset) buttons[i].unset = buttons[i].unset +1;
+		if(buttons[i].unset > maxunset && val[i].count != 0 ){
 			putCb(&buttonBuffer,&val[i]);
 			val[i].count = 0;
 			buttons[i].unset =0;

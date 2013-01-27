@@ -13,7 +13,7 @@
  *@param Pin  Is the pin of the button.
  *@param Type set "0" for low_active, or" 1" for high_active
  */
-uint8 initializeButton(uint8 khz,uint8 ID, uint8 Port, uint8 Pin,uint8 Type);
+uint8 initializeButton(uint8 khz,uint8 id, uint8 port, uint8 pin,uint8 type);
 
 /** reads the button values
  */

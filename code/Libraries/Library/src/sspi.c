@@ -4,7 +4,7 @@ int8 initializeSPI(uint32 freq,float duty, uint8 ch)
     SSPI_ENABLE_POWER(1);
     SSPI_SET_CORE_CLK();
     
-    PWM_PR(0);                      // set Prescaler to 0
+   // PWM_PR(0);                      // set Prescaler to 0
 
     switch (ch)
     {
