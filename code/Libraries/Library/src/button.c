@@ -30,7 +30,7 @@ uint8 initializeButton(uint8 khz,uint8 ID, uint8 Port, uint8 Pin,uint8 Type){
 
 	setGpioDirection(Port, Pin, 0 );	//direction 0=input
 	if(Type==0)
-	  setPinMode(Port, Pin, PinModePullUp);
+	  setPinMode(Port, Pin, PinModePullUp); 
 	if(Type==1)
 	   setPinMode(Port, Pin, PinModePullDown);
 	(buttons[buttonCount]).id   = ID;

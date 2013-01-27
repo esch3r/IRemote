@@ -19,6 +19,7 @@ typedef enum {
     ApplicationStateIdle = 0,
     ApplicationStateCaptureCommand = 1,
     ApplicationStateRunCommand = 2,
+    ApplicationStateFlashFirmware = 3,
     ApplicationStateWiFlyTest = 100
 } ApplicationState;
 
@@ -27,44 +28,36 @@ typedef enum {
     NetworkStateDisconnected = 1
 } NetworkState;
 
-void testFunc();
 void startState(ApplicationState state);
 void processCommand(char* buffer);
-void processWiFly(char* buffer);
-void errorCommand();
-void errorWiFly();
 
 IrCommand *currentCommand;
 ApplicationState applicationState = ApplicationStateIdle;
 NetworkState networkState = NetworkStateDisconnected;
 
-//char dataBuffer[DATA_BUFFER_SIZE];
-
 int main(void)
 {   
-    crcInit();
+    crcInit();                    // init crc function for firmware flashing
     
     initializeTimeout(TIMER1);
         
-    //initializeLeds();
-    initializeLed(1,29, TRUE);    // led 0 - onoard
+    initializeLed(1,29, TRUE);     // led 0 - onboard
     initializeLed(0,0, FALSE);     // led 1 - green
     initializeLed(0,1, FALSE);     // led 2 - yellow
     initializeLed(0,10, FALSE);    // led 3 - red
     clearAllLeds();
    
     // initializeButton(10,1,2,10);
-    initializeButton(10000,0,0,0,1);
+    initializeButton(10,1,2,0,1);
    
     //Program started notifier
     delayMs(500);
     blinkLed(3);    
     blinkLed(2);
-    blinkLed(1);
+    setLed(1);
     delayMs(500);
     
     initializeIrControl();
-    
     initializeSerialConnection();
     
     if (initializeNetworkConnection() == -1)
@@ -82,7 +75,7 @@ int main(void)
     printfData("Welcome to IRemote!\r");    // Send a welcome message
     printfData("Id: %i, Version: %i, Serial: %i\r",readIdIap(),readVersionIap(),readSerialIap());
    
-    blinkLed2(0);
+    blinkLed2(0);   //onboard we came through the initialization
     
     // Testing IAP functions
     //    uint32 testVar;
@@ -100,6 +93,8 @@ int main(void)
     //enableGpioInterrupt(2,10,GpioInterruptRisingEdge,&testFunc);
     
     //setGpioDirection(0,9,GpioDirectionOutput);   // Output pin for testing purposes
+    
+    uint8 ledTiming = 0;
     
     for (;;) 
     {
@@ -131,20 +126,18 @@ int main(void)
             while (getcharWiFly(&receivedData) == 0)
                 putcharUart0(receivedData);
         }
+        
+        if (ledTiming == 200)
+        {
+            ledTask();
+            ledTiming = 0;
+        }
+        ledTiming++;
+        
         delayMs(5);
      }
 
     return 0 ;
-}
-
-void errorCommand()
-{
-    printfData("ERR: Command too long\r");
-}
-
-void errorWiFly()
-{
-    printfData("ERR: WiFly command too long\r");
 }
 
 void startState(ApplicationState state)
@@ -163,7 +156,7 @@ void startState(ApplicationState state)
         applicationState = ApplicationStateCaptureCommand;
         
         printfData("Start capturing data\r");
-        blinkLed2(0);
+        blinkLed2(2);
         startIrCapture();
     }
     else if (state == ApplicationStateRunCommand)
@@ -171,8 +164,13 @@ void startState(ApplicationState state)
         applicationState = ApplicationStateRunCommand;
                 
         printfData("Start running command\r");
-        blinkLed(0);
+        blinkLed(2);
         runIrCommand(currentCommand);
+    }
+    else if (state == ApplicationStateFlashFirmware)
+    {
+        setAllLeds();
+        
     }
     else if (state == ApplicationStateWiFlyTest)
     {
@@ -182,55 +180,6 @@ void startState(ApplicationState state)
     }
     
     return;
-}
-
-bool compareBaseCommand(char *original, char *received)
-{
-    return (strcmp(original,received) == 0);
-}
-
-bool compareExtendedCommand(char *original, char *received)
-{
-    return (((strlen(received) == 1) && (strncmp(original,received,1) == 0)) ||
-                (strcmp(original,received) == 0));
-}
-
-void printUnknownCommand(void)
-{
-    printfData("CMD?\r");
-}
-
-void printParameterMissing(void)
-{
-    printfData("Missing parameter.\r");
-}
-
-void printAcknowledgement(void)
-{
-    printfData("ACK\r");
-}
-
-void printError(char *message)
-{
-    printfData("ERR: %s\r", message);
-}
-
-void processWiFly(char *buffer)
-{
-    
-}
-
-uint32 hex2int(char *a, unsigned int len)
-{
-    uint32 i;
-    uint32 val = 0;
-
-    for(i=0;i<len;i++)
-       if(a[i] <= 57)
-        val += (a[i]-48)*(1<<(4*(len-1-i)));
-       else
-        val += (a[i]-87)*(1<<(4*(len-1-i)));
-    return val;
 }
 
 void processCommand(char *buffer)
@@ -531,6 +480,13 @@ void processCommand(char *buffer)
                 else
                     printError("entering adhoc mode failed");
                     
+                return;
+            }
+            else if (compareExtendedCommand("flash", dataPointer))
+            {
+                startState(ApplicationStateFlashFirmware);
+                printAcknowledgement();
+                
                 return;
             }
             else

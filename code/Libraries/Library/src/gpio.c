@@ -89,13 +89,13 @@ inline void toggleGpio(uint8 port, uint8 pin)
 {
     switch (port)
     {
-        case 0: GPIO0_SET((GPIO0_READ(pin) ? (GPIO0_CLEAR(pin)) : (GPIO0_SET(pin))));
+        case 0: (GPIO0_READ(pin) ? (GPIO0_CLEAR(pin)) : (GPIO0_SET(pin)));
                 return;
-        case 1: GPIO1_SET((GPIO1_READ(pin) ? (GPIO1_CLEAR(pin)) : (GPIO1_SET(pin))));
+        case 1: (GPIO1_READ(pin) ? (GPIO1_CLEAR(pin)) : (GPIO1_SET(pin)));
                 return;
-        case 2: GPIO2_SET((GPIO2_READ(pin) ? (GPIO2_CLEAR(pin)) : (GPIO2_SET(pin))));
+        case 2: (GPIO2_READ(pin) ? (GPIO2_CLEAR(pin)) : (GPIO2_SET(pin)));
                 return;
-        case 3: GPIO3_SET((GPIO3_READ(pin) ? (GPIO3_CLEAR(pin)) : (GPIO3_SET(pin))));
+        case 3: (GPIO3_READ(pin) ? (GPIO3_CLEAR(pin)) : (GPIO3_SET(pin)));
                 return;
         default: return;
     }

@@ -44,15 +44,6 @@ int8 printfData(char* format, ... )
     va_list arg_ptr;
     uint16 i = 0;
     
-    if (isWiFlyConnected())
-    {
-        activeConnections |= NetworkConnection;
-    }
-    else
-    {
-        activeConnections &= ~NetworkConnection;
-    }
-    
     va_start(arg_ptr,format);
     vsnprintf(buffer, PRINTF_BUFFER_SIZE, format, arg_ptr);
     va_end(arg_ptr);
@@ -82,16 +73,7 @@ int8 printfData(char* format, ... )
 }
 
 int8 putcharData(char c)
-{
-    if (isWiFlyConnected())
-    {
-        activeConnections |= NetworkConnection;
-    }
-    else
-    {
-        activeConnections &= ~NetworkConnection;
-    }
-    
+{  
     if (activeConnections & NetworkConnection)
     {
         return putcharWiFly(c);
@@ -105,16 +87,7 @@ int8 putcharData(char c)
 }
 
 int8 writeData(void *data, uint32 length)
-{
-    if (isWiFlyConnected())
-    {
-        activeConnections |= NetworkConnection;
-    }
-    else
-    {
-        activeConnections &= ~NetworkConnection;
-    }
-    
+{   
     if (activeConnections & NetworkConnection)
     {
         return writeDataWiFly(data, length);
@@ -125,4 +98,79 @@ int8 writeData(void *data, uint32 length)
     }
     
     return -1;
+}
+
+void errorCommand()
+{
+    printfData("ERR: Command too long\r");
+}
+
+void errorWiFly()
+{
+    printfData("ERR: WiFly command too long\r");
+}
+
+void printUnknownCommand(void)
+{
+    printfData("CMD?\r");
+}
+
+void printParameterMissing(void)
+{
+    printfData("Missing parameter.\r");
+}
+
+void printAcknowledgement(void)
+{
+    printfData("ACK\r");
+}
+
+void printError(char *message)
+{
+    printfData("ERR: %s\r", message);
+}
+
+bool compareBaseCommand(char *original, char *received)
+{
+    return (strcmp(original,received) == 0);
+}
+
+bool compareExtendedCommand(char *original, char *received)
+{
+    return (((strlen(received) == 1) && (strncmp(original,received,1) == 0)) ||
+                (strcmp(original,received) == 0));
+}
+
+void ledTask(void )
+{
+    if (isWiFlyConnected()) // keeps also track of the connectedness
+    {
+        activeConnections |= NetworkConnection;
+    }
+    else
+    {
+        activeConnections &= ~NetworkConnection;
+    }
+    
+    if ((activeConnections & NetworkConnection))
+    {
+        setLed(1);  // Green LED
+    }
+    else
+    {
+        toggleLed(1);   // Green LED
+    }
+}
+
+uint32 hex2int(char *a, unsigned int len)
+{
+    uint32 i;
+    uint32 val = 0;
+
+    for(i=0;i<len;i++)
+       if(a[i] <= 57)
+        val += (a[i]-48)*(1<<(4*(len-1-i)));
+       else
+        val += (a[i]-87)*(1<<(4*(len-1-i)));
+    return val;
 }

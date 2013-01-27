@@ -6,7 +6,7 @@
  */
 
 #ifndef _LEDLIB_H_
-#define _LEDLIB_H
+#define _LEDLIB_H_
 
 /* With these values you can modify the behavior of the Led functions */
 #define LED_BLINK_TIME 100
