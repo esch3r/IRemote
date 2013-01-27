@@ -58,6 +58,11 @@ IRemoteWindow::~IRemoteWindow()
     delete ui;
 }
 
+void IRemoteWindow::applicationStarted(QString message)
+{
+    qDebug() << message;
+}
+
 void IRemoteWindow::loadSettings()
 {
     QSettings settings(settingsDir + "settings.ini", QSettings::IniFormat);

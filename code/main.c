@@ -84,14 +84,16 @@ int main(void)
     setErrorFunctionUart0(&errorCommand);
     setProcessFunctionWiFly(&processCommand);
     setErrorFunctionWiFly(&errorWiFly);
-    
-    currentCommand = createIrCommand();
      
     printfData("Welcome to IRemote!\r");    // Send a welcome message
     printfData("Id: %i, Version: %i, Serial: %i\r",readIdIap(),readVersionIap(),readSerialIap());
    
     clearLed(3);
     blinkLed2(0);   //onboard we came through the initialization
+    
+    // init variables
+    currentCommand = createIrCommand();
+    
     
     // Testing IAP functions
     //    uint32 testVar;
