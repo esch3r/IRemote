@@ -85,8 +85,6 @@ public:
     bool isSerialPortConnected();
     bool isNetworkConnected();
 
-    void startWlanConfig();
-    void saveWlanConfig();
     void setWlanSsid(const QString &ssid);
     void setWlanPhrase(const QString &phrase);
     void setWlanKey(const QString &key);
@@ -97,13 +95,15 @@ public:
     void setWlanSubnetMask(QString address);
     void setWlanGateway(QString address);
 
-    void setIrRepeat(int times);
-    void setIrTimeout(int ms);
+    void setIrCount(int times);
+    void setIrReceiveTimeout(int ms);
+    void setIrSendTimeout(int ms);
 
     void actionRun();
     void actionRun(IrCommand irCommand);
     void actionCapture();
     void startWlanAdhoc();
+    void startWlanInfrastructure();
 
     void flashFirmware(QString filename);
     

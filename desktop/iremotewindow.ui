@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>757</width>
-    <height>687</height>
+    <height>706</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
     <item row="2" column="2">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -480,6 +480,13 @@
                    </property>
                   </widget>
                  </item>
+                 <item row="4" column="0">
+                  <widget class="QPushButton" name="wlanInfrastructureButton">
+                   <property name="text">
+                    <string>Infrastructure</string>
+                   </property>
+                  </widget>
+                 </item>
                 </layout>
                </widget>
               </item>
@@ -492,12 +499,12 @@
                  <item row="0" column="0">
                   <widget class="QLabel" name="label_7">
                    <property name="text">
-                    <string>Repeat:</string>
+                    <string>Repeat Count:</string>
                    </property>
                   </widget>
                  </item>
                  <item row="0" column="1">
-                  <widget class="QSpinBox" name="irRepeatSpin">
+                  <widget class="QSpinBox" name="irCountSpin">
                    <property name="suffix">
                     <string> x </string>
                    </property>
@@ -512,12 +519,12 @@
                  <item row="1" column="0">
                   <widget class="QLabel" name="label_13">
                    <property name="text">
-                    <string>Timeout:</string>
+                    <string>Receive Timeout:</string>
                    </property>
                   </widget>
                  </item>
                  <item row="1" column="1">
-                  <widget class="QSpinBox" name="irTimeoutSpin">
+                  <widget class="QSpinBox" name="irReceiveTimeoutSpin">
                    <property name="suffix">
                     <string> ms</string>
                    </property>
@@ -529,6 +536,29 @@
                    </property>
                    <property name="value">
                     <number>50</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="label_16">
+                   <property name="text">
+                    <string>Send Timeout:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QSpinBox" name="irSendTimeoutSpin">
+                   <property name="suffix">
+                    <string> ms</string>
+                   </property>
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                   <property name="maximum">
+                    <number>1000</number>
+                   </property>
+                   <property name="value">
+                    <number>100</number>
                    </property>
                   </widget>
                  </item>

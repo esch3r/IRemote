@@ -14,12 +14,45 @@
 #include <led.h>
 
 typedef enum {
+    ApplicationStateIdle = 0,
+    ApplicationStateCaptureCommand = 1,
+    ApplicationStateRunCommand = 2,
+    ApplicationStateFlashFirmware = 3,
+    ApplicationStateWiFlyTest = 100
+} ApplicationState;
+
+/*typedef enum {
+    NetworkStateConnected = 0,
+    NetworkStateDisconnected = 1
+} NetworkState;*/
+
+typedef struct {
+    uint32 irReceiveTimeout;
+    uint32 irSendTimeout;
+    uint32 irRepeatCount;
+    char   wlanSsid[100];
+    char   wlanPhrase[100];
+    char   wlanKey[100];
+    char   wlanHostname[100];
+    uint8  wlanAuth;
+    uint8  wlanDhcp;
+    char   wlanIp[20];
+    char   wlanMask[20];
+    char   wlanGateway[20];
+    
+} ApplicationSettings;
+
+typedef enum {
         SerialConnection = 0x01,
         NetworkConnection = 0x02
     } ActiveConnection;
     
+    
 int8 initializeSerialConnection(void);
 int8 initializeNetworkConnection(void);
+
+int8 startWlanInfrastructureMode(ApplicationSettings *settings);
+int8 startWlanAdhocMode(void);
     
 int8 printfData(char* format, ...);
 int8 putcharData(char c);

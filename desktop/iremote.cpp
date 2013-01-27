@@ -132,30 +132,6 @@ bool IRemote::isNetworkConnected()
     return (tcpSocket != NULL);
 }
 
-void IRemote::startWlanConfig()
-{
-    QueueCommand command;
-    command.command = QString("start w c\r").toLocal8Bit();
-    command.response = "ACK";
-    command.timeout = m_responseTimeout;
-    command.type = NormalQueueCommandType;
-
-    commandQueue.enqueue(command);
-    startQueue();
-}
-
-void IRemote::saveWlanConfig()
-{
-    QueueCommand command;
-    command.command = QString("save w c\r").toLocal8Bit();
-    command.response = "ACK";
-    command.timeout = m_responseTimeout*2;
-    command.type = NormalQueueCommandType;
-
-    commandQueue.enqueue(command);
-    startQueue();
-}
-
 void IRemote::setWlanSsid(const QString &ssid)
 {
     QueueCommand command;
@@ -264,10 +240,10 @@ void IRemote::setWlanGateway(QString address)
     startQueue();
 }
 
-void IRemote::setIrRepeat(int times)
+void IRemote::setIrCount(int times)
 {
     QueueCommand command;
-    command.command = QString("set i r %1").arg(times).toLocal8Bit();
+    command.command = QString("set i c %1").arg(times).toLocal8Bit();
     command.response = "ACK";
     command.timeout = m_responseTimeout;
     command.type = NormalQueueCommandType;
@@ -276,10 +252,22 @@ void IRemote::setIrRepeat(int times)
     startQueue();
 }
 
-void IRemote::setIrTimeout(int ms)
+void IRemote::setIrReceiveTimeout(int ms)
 {
     QueueCommand command;
-    command.command = QString("set i t %1").arg(ms).toLocal8Bit();
+    command.command = QString("set i r %1").arg(ms).toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+}
+
+void IRemote::setIrSendTimeout(int ms)
+{
+    QueueCommand command;
+    command.command = QString("set i s %1").arg(ms).toLocal8Bit();
     command.response = "ACK";
     command.timeout = m_responseTimeout;
     command.type = NormalQueueCommandType;
@@ -336,6 +324,18 @@ void IRemote::startWlanAdhoc()
 {
     QueueCommand command;
     command.command = "start w a\r";
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+}
+
+void IRemote::startWlanInfrastructure()
+{
+    QueueCommand command;
+    command.command = "start w i\r";
     command.response = "ACK";
     command.timeout = m_responseTimeout;
     command.type = NormalQueueCommandType;

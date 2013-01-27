@@ -12,42 +12,12 @@
 #include "irControl.h"
 #include "iremote.h"
 
-
-typedef enum {
-    ApplicationStateIdle = 0,
-    ApplicationStateCaptureCommand = 1,
-    ApplicationStateRunCommand = 2,
-    ApplicationStateFlashFirmware = 3,
-    ApplicationStateWiFlyTest = 100
-} ApplicationState;
-
-typedef enum {
-    NetworkStateConnected = 0,
-    NetworkStateDisconnected = 1
-} NetworkState;
-
-typedef struct {
-    uint32 irReceiveTimeout;
-    uint32 irSendTimeout;
-    uint32 irRepeatCount;
-    char   wlanSsid[100];
-    char   wlanPhrase[100];
-    char   wlanKey[100];
-    char   wlanHostname[100];
-    uint8  wlanAuth;
-    uint8  wlanDhcp;
-    char   wlanIp[20];
-    char   wlanMask[20];
-    char   wlanGateway[20];
-    
-} ApplicationSettings;
-
 void startState(ApplicationState state);
 void processCommand(char* buffer);
 
 IrCommand *currentCommand;
 ApplicationState applicationState = ApplicationStateIdle;
-NetworkState networkState = NetworkStateDisconnected;
+//NetworkState networkState = NetworkStateDisconnected;
 ApplicationSettings applicationSettings;
 
 int main(void)
@@ -94,6 +64,15 @@ int main(void)
     // init variables
     currentCommand = createIrCommand();
     
+    applicationSettings.irReceiveTimeout = 20000;
+    applicationSettings.irSendTimeout = 100000;
+    applicationSettings.irRepeatCount = 4;
+    
+    //load settings....
+    
+    setIrReceiveTimeout(applicationSettings.irReceiveTimeout);
+    setIrSendTimeout(applicationSettings.irSendTimeout);
+    setIrRepeatCount(applicationSettings.irRepeatCount);
     
     // Testing IAP functions
     //    uint32 testVar;
@@ -296,11 +275,8 @@ void processCommand(char *buffer)
                 dataPointer = strtok(NULL," ");
                 if (dataPointer != NULL)
                 {
-                    if (setWiFlyWlanSsid(dataPointer) == 0)
-                        printAcknowledgement();
-                    else
-                        printError("setting SSID failed");
-                    
+                    strncpy(applicationSettings.wlanSsid, dataPointer, 100);
+                    printAcknowledgement();
                     return;
                 }
                 else
@@ -315,10 +291,8 @@ void processCommand(char *buffer)
                 dataPointer = strtok(NULL," ");
                 if (dataPointer != NULL)
                 {
-                    if (setWiFlyWlanPhrase(dataPointer) == 0)
-                        printAcknowledgement();
-                    else
-                        printError("setting passphrase failed");
+                    strncpy(applicationSettings.wlanPhrase, dataPointer, 100);
+                    printAcknowledgement();
                     return;
                 }
                 else
@@ -333,10 +307,8 @@ void processCommand(char *buffer)
                 dataPointer = strtok(NULL," ");
                 if (dataPointer != NULL)
                 {
-                    if (setWiFlyWlanKey(dataPointer) == 0)
-                        printAcknowledgement();
-                    else
-                        printError("setting key failed");
+                    strncpy(applicationSettings.wlanKey, dataPointer, 100);
+                    printAcknowledgement();
                     return;
                 }
                 else
@@ -351,10 +323,8 @@ void processCommand(char *buffer)
                 dataPointer = strtok(NULL," ");
                 if (dataPointer != NULL)
                 {
-                    if (setWiFlyDnsName(dataPointer) == 0)
-                        printAcknowledgement();
-                    else
-                        printError("setting hostname failed");
+                    strncpy(applicationSettings.wlanHostname, dataPointer, 100);
+                    printAcknowledgement();
                     return;
                 }
                 else
@@ -369,10 +339,8 @@ void processCommand(char *buffer)
                 dataPointer = strtok(NULL," ");
                 if (dataPointer != NULL)
                 {
-                    if (setWiFlyWlanAuth(atoi(dataPointer)) == 0)
-                        printAcknowledgement();
-                    else
-                        printError("setting auth mode failed");
+                    applicationSettings.wlanAuth = atoi(dataPointer);
+                    printAcknowledgement();
                     return;
                 }
                 else
@@ -387,10 +355,8 @@ void processCommand(char *buffer)
                 dataPointer = strtok(NULL," ");
                 if (dataPointer != NULL)
                 {
-                    if (setWiFlyIpDhcp(atoi(dataPointer)) == 0)
-                        printAcknowledgement();
-                    else
-                        printError("setting dhcp mode failed");
+                    applicationSettings.wlanDhcp = atoi(dataPointer);
+                    printAcknowledgement();
                     return;
                 }
                 else
@@ -405,10 +371,8 @@ void processCommand(char *buffer)
                 dataPointer = strtok(NULL," ");
                 if (dataPointer != NULL)
                 {
-                    if (setWiFlyIpAddress(dataPointer) == 0)
-                        printAcknowledgement();
-                    else
-                        printError("setting ip address failed");
+                    strncpy(applicationSettings.wlanIp, dataPointer, 20);
+                    printAcknowledgement();
                     return;
                 }
                 else
@@ -423,10 +387,8 @@ void processCommand(char *buffer)
                 dataPointer = strtok(NULL," ");
                 if (dataPointer != NULL)
                 {
-                    if (setWiFlyIpNetmask(dataPointer) == 0)
-                        printAcknowledgement();
-                    else
-                        printError("setting mask failed");
+                    strncpy(applicationSettings.wlanMask, dataPointer, 20);
+                    printAcknowledgement();
                     return;
                 }
                 else
@@ -441,15 +403,79 @@ void processCommand(char *buffer)
                 dataPointer = strtok(NULL," ");
                 if (dataPointer != NULL)
                 {
-                    if (setWiFlyIpGateway(dataPointer) == 0)
-                        printAcknowledgement();
-                    else
-                        printError("setting gateway failed");
+                    strncpy(applicationSettings.wlanGateway, dataPointer, 20);
+                    printAcknowledgement();
                     return;
                 }
                 else
                 {
                     printUnknownCommand();
+                    return;
+                }
+            }
+            else
+            {
+                printUnknownCommand();
+                return;
+            }
+        }
+        else if (compareExtendedCommand("ir",dataPointer))
+        {
+            // set ir
+            dataPointer = strtok(NULL," ");
+            if (dataPointer == NULL)
+            {
+                printUnknownCommand();
+                return;
+            }
+            else if (compareExtendedCommand("receiveTimeout",dataPointer))
+            {
+
+                dataPointer = strtok(NULL," ");
+                if (dataPointer != NULL)
+                {
+                    applicationSettings.irReceiveTimeout = atoi(dataPointer);
+                    setIrReceiveTimeout(applicationSettings.irReceiveTimeout);
+                    printAcknowledgement();
+                    return;
+                }
+                else
+                {
+                    printParameterMissing();
+                    return;
+                }
+            }
+            else if (compareExtendedCommand("sendTimeout",dataPointer))
+            {
+
+                dataPointer = strtok(NULL," ");
+                if (dataPointer != NULL)
+                {
+                    applicationSettings.irSendTimeout = atoi(dataPointer);
+                    setIrSendTimeout(applicationSettings.irSendTimeout);
+                    printAcknowledgement();
+                    return;
+                }
+                else
+                {
+                    printParameterMissing();
+                    return;
+                }
+            }
+            else if (compareExtendedCommand("count",dataPointer))
+            {
+
+                dataPointer = strtok(NULL," ");
+                if (dataPointer != NULL)
+                {
+                    applicationSettings.irRepeatCount = atoi(dataPointer);
+                    setIrRepeatCount(applicationSettings.irRepeatCount);
+                    printAcknowledgement();
+                    return;
+                }
+                else
+                {
+                    printParameterMissing();
                     return;
                 }
             }
@@ -483,7 +509,7 @@ void processCommand(char *buffer)
                 printUnknownCommand();
                 return;
             }
-            else if (compareExtendedCommand("config",dataPointer))
+            /*else if (compareExtendedCommand("config",dataPointer))
             {
                 if (actionWiFlyEnterCommandMode(FALSE) == 0)
                 {
@@ -496,21 +522,23 @@ void processCommand(char *buffer)
                     printError("entering command mode failed");
                     
                 return;
-            }
+            }*/
             else if (compareExtendedCommand("adhoc",dataPointer))
             {
-                if (createWiFlyAdhocNetwork("IRemoteBox") == 0)
+                if (startWlanAdhocMode() == 0)
                     printAcknowledgement();
                 else
                     printError("entering adhoc mode failed");
                     
                 return;
             }
-            else if (compareExtendedCommand("flash", dataPointer))
+            else if (compareExtendedCommand("infrastructure",dataPointer))
             {
-                startState(ApplicationStateFlashFirmware);
-                printAcknowledgement();
-                
+                if (startWlanInfrastructureMode(&applicationSettings) == 0)
+                    printAcknowledgement();
+                else
+                    printError("entering infrastructure mode failed");
+                    
                 return;
             }
             else
@@ -519,13 +547,20 @@ void processCommand(char *buffer)
                 return;
             }
         }
+        else if (compareExtendedCommand("flash", dataPointer))
+        {
+            startState(ApplicationStateFlashFirmware);
+            printAcknowledgement();
+            
+            return;
+        }
         else
         {
             printUnknownCommand();
             return;
         }
     }
-    else if (compareBaseCommand("save", dataPointer))
+    /*else if (compareBaseCommand("save", dataPointer))
     {
         // starting a save command
         dataPointer = strtok(NULL," ");
@@ -568,7 +603,7 @@ void processCommand(char *buffer)
             printUnknownCommand();
             return;
         }
-    }
+    }*/
     else if (compareBaseCommand("test", dataPointer))
     {
         dataPointer = strtok(NULL," ");

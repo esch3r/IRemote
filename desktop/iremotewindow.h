@@ -101,6 +101,8 @@ private slots:
 
     void on_flashButton_clicked();
 
+    void on_wlanInfrastructureButton_clicked();
+
 private:
     Ui::IRemoteWindow *ui;
 
