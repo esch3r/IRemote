@@ -1,8 +1,6 @@
 /**
- * This is a file 
+ * This is the main file
  */
-
-//#define DATA_BUFFER_SIZE    420
 
 #include <led.h>
 #include <iap.h>
@@ -28,12 +26,29 @@ typedef enum {
     NetworkStateDisconnected = 1
 } NetworkState;
 
+typedef struct {
+    uint32 irReceiveTimeout;
+    uint32 irSendTimeout;
+    uint32 irRepeatCount;
+    char   wlanSsid[100];
+    char   wlanPhrase[100];
+    char   wlanKey[100];
+    char   wlanHostname[100];
+    uint8  wlanAuth;
+    uint8  wlanDhcp;
+    char   wlanIp[20];
+    char   wlanMask[20];
+    char   wlanGateway[20];
+    
+} ApplicationSettings;
+
 void startState(ApplicationState state);
 void processCommand(char* buffer);
 
 IrCommand *currentCommand;
 ApplicationState applicationState = ApplicationStateIdle;
 NetworkState networkState = NetworkStateDisconnected;
+ApplicationSettings applicationSettings;
 
 int main(void)
 {   
@@ -52,7 +67,7 @@ int main(void)
    
     //Program started notifier
     delayMs(500);
-    blinkLed(3);    
+    setLed(3);    
     blinkLed(2);
     setLed(1);
     delayMs(500);
@@ -75,6 +90,7 @@ int main(void)
     printfData("Welcome to IRemote!\r");    // Send a welcome message
     printfData("Id: %i, Version: %i, Serial: %i\r",readIdIap(),readVersionIap(),readSerialIap());
    
+    clearLed(3);
     blinkLed2(0);   //onboard we came through the initialization
     
     // Testing IAP functions
@@ -145,6 +161,10 @@ void startState(ApplicationState state)
     if (applicationState == state)              // If we are already in this state => ignore
         return;
     
+    if ((state != ApplicationStateIdle) 
+        && (applicationState != ApplicationStateIdle))  // only changes beetween idle and non idle are possible
+        return;
+    
     if (state == ApplicationStateIdle)
     {
         applicationState = ApplicationStateIdle;
@@ -155,7 +175,7 @@ void startState(ApplicationState state)
     {
         applicationState = ApplicationStateCaptureCommand;
         
-        printfData("Start capturing data\r");
+        printfData("Capturing data\r");
         blinkLed2(2);
         startIrCapture();
     }
@@ -163,7 +183,7 @@ void startState(ApplicationState state)
     {
         applicationState = ApplicationStateRunCommand;
                 
-        printfData("Start running command\r");
+        printfData("Running command\r");
         blinkLed(2);
         runIrCommand(currentCommand);
     }
@@ -186,12 +206,14 @@ void processCommand(char *buffer)
 {
     char *dataPointer;
     
+    setLed(2);  // set the yellow led to indicate incoming data status
+    
     dataPointer = strtok(buffer," ");
     
     if (compareBaseCommand("alive", dataPointer))
     {
         // We have a keep alive command
-        printfData("yes\r");
+        printAliveMessage();
     }
     else if (compareBaseCommand("run", dataPointer))
     {

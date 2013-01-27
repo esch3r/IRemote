@@ -12,6 +12,7 @@ IRemoteWindow::IRemoteWindow(QWidget *parent) :
     currentProfile = NULL;
     scenePixmap = NULL;
     signalMapper = NULL;
+    commandComboMapper = NULL;
 
     int width = 300;
     int height = 600;
@@ -31,10 +32,17 @@ IRemoteWindow::IRemoteWindow(QWidget *parent) :
             this, SLOT(networkConnected()));
     connect(iremote, SIGNAL(networkDisconnected()),
             this, SLOT(networkDisconnected()));
+#ifdef SERIALPORT
     connect(iremote, SIGNAL(serialPortConnected()),
             this, SLOT(serialPortConnected()));
     connect(iremote, SIGNAL(serialPortDisconnected()),
             this, SLOT(serialPortDisconnected()));
+#endif
+
+    connect(iremote, SIGNAL(queueFinished()),
+            this, SLOT(queueFinished()));
+    connect(iremote, SIGNAL(queueStarted()),
+            this, SLOT(queueStarted()));
 
     QSettings tmpConfig(QSettings::IniFormat, QSettings::UserScope, "iremote", "settings");
     settingsDir = QFileInfo(tmpConfig.fileName()).absolutePath() + "/";
@@ -127,6 +135,8 @@ void IRemoteWindow::loadSettings()
         ui->irRepeatSpin->setValue(settings.value("repeat", 5).toInt());
         ui->irTimeoutSpin->setValue(settings.value("timeout", 50).toInt());
     settings.endGroup();
+
+    ui->profileCombo->setCurrentIndex(settings.value("currentProfile", 0).toInt());
 }
 
 void IRemoteWindow::saveSettings()
@@ -198,6 +208,8 @@ void IRemoteWindow::saveSettings()
          settings.setValue("timeout", ui->irTimeoutSpin->value());
      settings.endGroup();
 
+     settings.setValue("currentProfile", ui->profileCombo->currentIndex());
+
     settings.sync();
 }
 
@@ -217,6 +229,7 @@ void IRemoteWindow::irCommandReceived(IrCommand irCommand)
     if (!name.isEmpty())
     {
         addIrCommand(name, irCommand);
+        refreshProfiles();
     }
 }
 
@@ -229,6 +242,10 @@ void IRemoteWindow::loadProfile()
         signalMapper = new QSignalMapper(this);
         connect(signalMapper, SIGNAL(mapped(int)),
                 this, SLOT(buttonClicked(int)));
+
+        commandComboMapper = new QSignalMapper(this);
+        connect(commandComboMapper, SIGNAL(mapped(int)),
+                this, SLOT(commandComboClicked(int)));
 
     ui->tableWidget->clearContents();
     ui->tableWidget->setRowCount(0);
@@ -359,19 +376,33 @@ void IRemoteWindow::unloadPicture()
 void IRemoteWindow::addTableRow(QString buttonName, QString commandName)
 {
     QTableWidgetItem *newItem;
+    QComboBox *box;
     int row;
     int column;
 
     row = ui->tableWidget->rowCount();
     ui->tableWidget->setRowCount(row + 1);
 
+    // Column 0 Name
     column = 0;
     newItem = new QTableWidgetItem(buttonName);
     ui->tableWidget->setItem(row, column, newItem);
 
+    // Column 1 combo box
     column = 1;
-    newItem = new QTableWidgetItem(commandName);
-    ui->tableWidget->setItem(row, column, newItem);
+    box = new QComboBox(this);
+    for (int i = 0; i < ui->commandList->count(); i++)
+    {
+        box->addItem(ui->commandList->item(i)->text());
+    }
+    box->setCurrentIndex(box->findText(commandName));
+    ui->tableWidget->setCellWidget(row, column, box);
+
+    commandComboMapper->setMapping(box, row);
+    connect(box, SIGNAL(currentIndexChanged(int)),
+            commandComboMapper, SLOT(map()));
+
+    ui->tableWidget->resizeColumnToContents(1);
 
 }
 
@@ -401,10 +432,26 @@ IrCommand IRemoteWindow::getIrCommand(const QString name)
 void IRemoteWindow::on_tableWidget_cellChanged(int row, int column)
 {
     QString cellContent = ui->tableWidget->item(row,column)->text();
+
     if ((column == 0) && (currentProfile->commandList.size() > row))
+    {
         currentProfile->commandList.at(row).button->setButtonName(cellContent);
-    else if ((column == 1) && (currentProfile->commandList.size() > row))
-        currentProfile->commandList[row].commandName = cellContent;
+    }
+}
+
+void IRemoteWindow::commandComboClicked(int row)
+{
+    currentProfile->commandList[row].commandName =  ((QComboBox*)(ui->tableWidget->cellWidget(row,1)))->currentText();
+}
+
+void IRemoteWindow::queueStarted()
+{
+    ui->statusBar->showMessage(tr("Running command"));
+}
+
+void IRemoteWindow::queueFinished()
+{
+    ui->statusBar->showMessage(tr("Commands finished"));
 }
 
 void IRemoteWindow::on_tableWidget_cellClicked(int row, int column)
@@ -467,6 +514,7 @@ void IRemoteWindow::on_networkConnectButton_clicked()
         iremote->closeNetwork();
 }
 
+#ifdef SERIALPORT
 void IRemoteWindow::on_serialConnectButton_clicked()
 {
     if (!iremote->isSerialPortConnected())
@@ -474,6 +522,7 @@ void IRemoteWindow::on_serialConnectButton_clicked()
     else
         iremote->closeSerialPort();
 }
+#endif
 
 void IRemoteWindow::serialPortConnected()
 {
@@ -646,6 +695,7 @@ void IRemoteWindow::on_wlanAdhocButton_clicked()
 void IRemoteWindow::on_removeCommandButton_clicked()
 {
     removeIrCommand(ui->commandList->currentItem()->text());
+    refreshProfiles();
 }
 
 void IRemoteWindow::on_openFlashfileButton_clicked()

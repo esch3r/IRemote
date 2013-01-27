@@ -49,6 +49,11 @@ private slots:
     void networkConnected();
     void networkDisconnected();
 
+    void commandComboClicked(int row);
+
+    void queueStarted();
+    void queueFinished();
+
     void on_addButton_clicked();
 
     void on_editableCheck_clicked();
@@ -63,7 +68,9 @@ private slots:
 
     void on_networkConnectButton_clicked();
 
+#ifdef SERIALPORT
     void on_serialConnectButton_clicked();
+#endif
 
     void on_captureButton_clicked();
 
@@ -105,6 +112,7 @@ private:
     QMap<QString,IrCommand>    irCommandMap;
 
     QSignalMapper *signalMapper;
+    QSignalMapper *commandComboMapper;
 
     QString settingsDir;
 

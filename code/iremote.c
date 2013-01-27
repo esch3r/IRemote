@@ -113,21 +113,30 @@ void errorWiFly()
 void printUnknownCommand(void)
 {
     printfData("CMD?\r");
+    clearLed(2);
 }
 
 void printParameterMissing(void)
 {
     printfData("Missing parameter.\r");
+    clearLed(2);
 }
 
 void printAcknowledgement(void)
 {
     printfData("ACK\r");
+    clearLed(2);
 }
 
 void printError(char *message)
 {
     printfData("ERR: %s\r", message);
+}
+
+void printAliveMessage(void)
+{
+    printfData("yes\r");
+    clearLed(2);
 }
 
 bool compareBaseCommand(char *original, char *received)
@@ -160,6 +169,8 @@ void ledTask(void )
     {
         toggleLed(1);   // Green LED
     }
+    
+    clearLed(2);    // clear the yellow led in case it is still running
 }
 
 uint32 hex2int(char *a, unsigned int len)

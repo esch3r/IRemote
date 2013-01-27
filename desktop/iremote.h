@@ -6,12 +6,14 @@
 #include <QObject>
 #include <QTcpSocket>
 #include <QQueue>
-#include <QtAddOnSerialPort/serialport.h>
-#include <QtAddOnSerialPort/serialportinfo.h>
 #include <QTimer>
 #include <QtGui>
 
+#ifdef SERIALPORT
+#include <QtAddOnSerialPort/serialport.h>
+#include <QtAddOnSerialPort/serialportinfo.h>
 QT_USE_NAMESPACE_SERIALPORT
+#endif
 
 typedef struct {
     quint16  data[IR_MAX_TRANSITIONS];
@@ -73,8 +75,10 @@ public:
     explicit IRemote(QObject *parent = 0);
     ~IRemote();
 
+#ifdef SERIALPORT
     bool connectSerialPort(const QString &device);
     void closeSerialPort();
+#endif
     void connectNetwork(QString hostname, int port);
     void closeNetwork();
 
@@ -135,10 +139,13 @@ public:
 
 signals:
     void irCommandReceived(IrCommand irCommand);
-    void serialPortConnected();
     void networkConnected();
-    void serialPortDisconnected();
     void networkDisconnected();
+
+#ifdef SERIALPORT
+    void serialPortConnected();
+    void serialPortDisconnected();
+#endif
 
     void responseTimeoutChanged(int arg);
 
@@ -201,7 +208,9 @@ void setNetworkPort(int arg)
 }
 
 private slots:
+#ifdef SERIALPORT
     void incomingSerialData();
+#endif
     void incomingNetworkData();
     void incomingByte(char byte);
     void tcpSocketConnected();
@@ -211,7 +220,9 @@ private slots:
     void keepAliveTimerTick();
 
 private:
+#ifdef SERIALPORT
     SerialPort *serialPort;
+#endif
     QTcpSocket *tcpSocket;
     QByteArray dataBuffer;
     bool waitingForRespose;
@@ -240,6 +251,8 @@ private:
     void startQueue();
     void doQueue();
     void endQueue();
+
+    void pauseKeepAlive(int msecs);
     
     int m_responseTimeout;
     bool m_queueRunning;

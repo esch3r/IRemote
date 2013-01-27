@@ -29,6 +29,7 @@ void printUnknownCommand(void);
 void printParameterMissing(void);
 void printAcknowledgement(void);
 void printError(char *message);
+void printAliveMessage(void);
 
 void errorCommand();
 void errorWiFly();
