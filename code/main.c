@@ -9,6 +9,7 @@
 #include <button.h>
 #include <pwm.h>
 #include <crc.h>
+#include <rfm12.h>
 #include "irControl.h"
 #include "iremote.h"
 
@@ -76,6 +77,8 @@ int main(void)
     setIrReceiveTimeout(applicationSettings.irReceiveTimeout);
     setIrSendTimeout(applicationSettings.irSendTimeout);
     setIrRepeatCount(applicationSettings.irRepeatCount);
+    
+    initializeRfm12();
     
     uint8 ledTiming = 0;
     ButtonValue buttonValue;

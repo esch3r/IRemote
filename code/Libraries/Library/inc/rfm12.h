@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include <sspi.h>
+#include <ssp.h>
 
 int8 initializeRfm12(void);
 
