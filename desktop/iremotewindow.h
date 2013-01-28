@@ -39,6 +39,9 @@ class IRemoteWindow : public QMainWindow
 public:
     explicit IRemoteWindow(QWidget *parent = 0);
     ~IRemoteWindow();
+
+public slots:
+    void applicationStarted(QString message);
     
 private slots:
     void buttonClicked(int id);
@@ -97,6 +100,8 @@ private slots:
     void on_openFlashfileButton_clicked();
 
     void on_flashButton_clicked();
+
+    void on_wlanInfrastructureButton_clicked();
 
 private:
     Ui::IRemoteWindow *ui;

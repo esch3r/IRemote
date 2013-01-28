@@ -37,6 +37,40 @@ int8 initializeNetworkConnection(void)
     return -1;
 }
 
+int8 startWlanInfrastructureMode(ApplicationSettings *settings)
+{
+    if (actionWiFlyEnterCommandMode(FALSE) == -1)
+        return -1;
+    if (setWiflyInfrastructureParams() == -1)
+        return -1;
+    if (setWiFlyWlanSsid(settings->wlanSsid) == -1)
+        return -1;
+    if (setWiFlyWlanPhrase(settings->wlanPhrase) == -1)
+        return -1;
+    if (setWiFlyWlanKey(settings->wlanKey) == -1)
+        return -1;
+    if (setWiFlyDnsName(settings->wlanHostname) == -1)
+        return -1;
+    if (setWiFlyWlanAuth(settings->wlanAuth) == -1)
+        return -1;
+    if (setWiFlyIpDhcp(settings->wlanDhcp) == -1)
+        return -1;
+    if (setWiFlyIpAddress(settings->wlanIp) == -1)
+        return -1;
+    if (setWiFlyIpNetmask(settings->wlanMask) == -1)
+        return -1;
+    if (setWiFlyIpGateway(settings->wlanGateway) == -1)
+        return -1;
+    if (fileIoWiFlySaveDefault() == -1)
+        return -1;
+    return actionWiFlyReboot();
+}
+
+int8 startWlanAdhocMode(void)
+{
+    return createWiFlyAdhocNetwork("IRemoteBox");
+}
+
 int8 printfData(char* format, ... )
 {
     static char buffer[PRINTF_BUFFER_SIZE];

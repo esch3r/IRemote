@@ -58,6 +58,11 @@ IRemoteWindow::~IRemoteWindow()
     delete ui;
 }
 
+void IRemoteWindow::applicationStarted(QString message)
+{
+    qDebug() << message;
+}
+
 void IRemoteWindow::loadSettings()
 {
     QSettings settings(settingsDir + "settings.ini", QSettings::IniFormat);
@@ -132,8 +137,9 @@ void IRemoteWindow::loadSettings()
     settings.endGroup();
 
     settings.beginGroup("ir");
-        ui->irRepeatSpin->setValue(settings.value("repeat", 5).toInt());
-        ui->irTimeoutSpin->setValue(settings.value("timeout", 50).toInt());
+        ui->irCountSpin->setValue(settings.value("repeat", 5).toInt());
+        ui->irReceiveTimeoutSpin->setValue(settings.value("receiveTimeout", 30).toInt());
+        ui->irSendTimeoutSpin->setValue(settings.value("sendTimeout", 100).toInt());
     settings.endGroup();
 
     ui->profileCombo->setCurrentIndex(settings.value("currentProfile", 0).toInt());
@@ -204,8 +210,9 @@ void IRemoteWindow::saveSettings()
      settings.endGroup();
 
      settings.beginGroup("ir");
-         settings.setValue("repeat", ui->irRepeatSpin->value());
-         settings.setValue("timeout", ui->irTimeoutSpin->value());
+         settings.setValue("repeat", ui->irCountSpin->value());
+         settings.setValue("receiveTimeout", ui->irReceiveTimeoutSpin->value());
+         settings.setValue("sendTimeout", ui->irSendTimeoutSpin->value());
      settings.endGroup();
 
      settings.setValue("currentProfile", ui->profileCombo->currentIndex());
@@ -583,7 +590,6 @@ void IRemoteWindow::on_settingsSubmitButton_clicked()
     case 6: authType = IRemote::WPE64AuthType;
         break;
     }
-    iremote->startWlanConfig();
     iremote->setWlanSsid(ui->wlanSsidEdit->text());
     iremote->setWlanAuth(authType);
     iremote->setWlanHostname(ui->wlanHostnameEdit->text());
@@ -619,11 +625,11 @@ void IRemoteWindow::on_settingsSubmitButton_clicked()
         iremote->setWlanGateway(ui->gatewayEdit->text());
     }
 
-    //iremote->setIrRepeat(ui->irRepeatSpin->value());
-    //iremote->setIrTimeout(ui->irTimeoutSpin->value());
+    iremote->setIrCount(ui->irCountSpin->value());
+    iremote->setIrReceiveTimeout(ui->irReceiveTimeoutSpin->value());
+    iremote->setIrSendTimeout(ui->irSendTimeoutSpin->value());
 
     qDebug() << "test";
-    iremote->saveWlanConfig();
 }
 
 void IRemoteWindow::on_commandList_doubleClicked(const QModelIndex &index)
@@ -690,6 +696,11 @@ void IRemoteWindow::on_wlanAdhocButton_clicked()
 {
     iremote->startWlanAdhoc();
     ui->networkAddressEdit->setText("169.254.1.1");
+}
+
+void IRemoteWindow::on_wlanInfrastructureButton_clicked()
+{
+    iremote->startWlanInfrastructure();
 }
 
 void IRemoteWindow::on_removeCommandButton_clicked()

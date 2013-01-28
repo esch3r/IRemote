@@ -9,6 +9,9 @@ CircularBuffer buffer0;
 uint8   repeatCount = 4;
 uint8   currentRepeatCount = 0;
 
+uint32 receiveTimeout = 20000;
+uint32 sendTimeout = 100000;
+
 IrCommand *tmpCommand = NULL;
 
 int8 initializeIrControl(void)
@@ -87,7 +90,7 @@ void captureFunction(void)
     {
         timeDiff = (uint16)getCounterValueTimer3();
 
-        if (timeDiff >= IR_TIMEOUT)     // Detected a timeout => frameReceived
+        if (timeDiff >= receiveTimeout)     // Detected a timeout => frameReceived
         {
             if ((saveIrFrame(&buffer0, tmpCommand) == -1) || (frameReceived != 1))
             {
@@ -160,7 +163,7 @@ void stopIrCommand(void )
     else
     {
         currentPosition = 0;
-        setIntervalUsTimer3(IR_TIMEOUT);    // Timeout between commands
+        setIntervalUsTimer3(sendTimeout);    // Timeout between commands
         startTimer3();
     }
 }
@@ -183,6 +186,16 @@ void runFunction(void )
 uint8 isCommandRunning(void )
 {
     return commandRunning;
+}
+
+void setIrReceiveTimeout(uint32 timeout)
+{
+    receiveTimeout = timeout;
+}
+
+void setIrSendTimeout(uint32 timeout)
+{
+    sendTimeout = timeout;
 }
 
 void setIrRepeatCount(uint8 count)

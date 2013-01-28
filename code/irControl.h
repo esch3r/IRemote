@@ -38,7 +38,11 @@ void runIrCommand(IrCommand *command);
 void stopIrCommand(void);
 void runFunction(void);
 uint8 isCommandRunning(void);
-void setIrRepeatCount(uint8 count);
 
 void outputCommand(IrCommand* command);
+
+void setIrReceiveTimeout(uint32 timeout);
+void setIrSendTimeout(uint32 timeout);
+void setIrRepeatCount(uint8 count);
+
 #endif

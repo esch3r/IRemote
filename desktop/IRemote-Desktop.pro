@@ -9,6 +9,8 @@ QT     += core gui network
 CONFIG += qwt
 #CONFIG += serialport
 
+include(./qtsingleapplication/qtsingleapplication.pri)
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = IRemote-Desktop
