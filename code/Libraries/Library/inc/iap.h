@@ -20,3 +20,6 @@ int32 readSerialIap(void);
 int32 readVersionIap(void);
 int32 readIdIap(void);
 void flashFirmware(const void* data, uint32 size);
+
+int8 saveSettings(void* data, uint32 size);
+int8 loadSettings(void* data, uint32 size);

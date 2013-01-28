@@ -71,27 +71,11 @@ int main(void)
     applicationSettings.irRepeatCount = 4;
     
     //load settings....
+    loadSettings(&applicationSettings, sizeof(ApplicationSettings));
     
     setIrReceiveTimeout(applicationSettings.irReceiveTimeout);
     setIrSendTimeout(applicationSettings.irSendTimeout);
     setIrRepeatCount(applicationSettings.irRepeatCount);
-    
-    // Testing IAP functions
-    //    uint32 testVar;
-    //printfUart0("Sector 26: %i, Sector 27: %i\n",checkBlankIap(26),checkBlankIap(27));
-    //testVar = 0;
-    //__disable_irq();
-    //eraseIap(27); 
-    //writeIap(27,256*64,(void*)(&testVar),sizeof(testVar));
-    //readIap(27,256*64,(void*)(&testVar),sizeof(testVar));
-    //printfUart0("Test: %u\n",testVar);
-    //__enable_irq();
-    
-    //setPinMode(2,10,PinModeNoPullUpDown);       // button3
-    //setGpioDirection(2,10,GpioDirectionInput);
-    //enableGpioInterrupt(2,10,GpioInterruptRisingEdge,&testFunc);
-    
-    //setGpioDirection(0,9,GpioDirectionOutput);   // Output pin for testing purposes
     
     uint8 ledTiming = 0;
     ButtonValue buttonValue;
@@ -567,7 +551,14 @@ void processCommand(char *buffer)
         else if (compareExtendedCommand("config",dataPointer))
         {
             // save config
-            printAcknowledgement();
+            if (saveSettings(&applicationSettings, sizeof(ApplicationSettings)) == 0)
+            {
+                printAcknowledgement();
+            }
+            else
+            {
+                printError("saving settings failed");
+            }
         }
         else
         {

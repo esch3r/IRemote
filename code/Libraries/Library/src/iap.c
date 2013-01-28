@@ -268,3 +268,36 @@ void flashFirmware(const void* data, uint32 size)
     
     __enable_irq();
 }
+
+int8 saveSettings(void* data, uint32 size)
+{
+    int8 result;
+    
+    __disable_irq();
+    
+    result = eraseIap(27);
+    if (result == -1)
+    {
+        __enable_irq();
+        return -1;
+    }
+    
+    result = writeIap(27,0,data,size);
+    
+    __enable_irq();
+    
+    return result;
+}
+
+int8 loadSettings(void* data, uint32 size)
+{
+    int8 result;
+    
+    __disable_irq();
+    
+    result = readIap(27,0,data,size);
+    
+    __enable_irq();
+    
+    return result;
+}
