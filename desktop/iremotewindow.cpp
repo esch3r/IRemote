@@ -625,10 +625,6 @@ void IRemoteWindow::on_settingsSubmitButton_clicked()
         iremote->setWlanGateway(ui->gatewayEdit->text());
     }
 
-    iremote->setIrCount(ui->irCountSpin->value());
-    iremote->setIrReceiveTimeout(ui->irReceiveTimeoutSpin->value());
-    iremote->setIrSendTimeout(ui->irSendTimeoutSpin->value());
-
     qDebug() << "test";
 }
 
@@ -725,4 +721,11 @@ void IRemoteWindow::on_openFlashfileButton_clicked()
 void IRemoteWindow::on_flashButton_clicked()
 {
     iremote->flashFirmware(ui->flashfileNameEdit->text());
+}
+
+void IRemoteWindow::on_setIrButton_clicked()
+{
+    iremote->setIrCount(ui->irCountSpin->value());
+    iremote->setIrReceiveTimeout(ui->irReceiveTimeoutSpin->value());
+    iremote->setIrSendTimeout(ui->irSendTimeoutSpin->value());
 }

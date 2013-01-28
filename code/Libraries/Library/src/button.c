@@ -26,7 +26,6 @@ Button	buttons[10];
 ButtonValue val[20];
 uint8	buttonCount = 0;
 
-<<<<<<< HEAD
 uint8 initializeButton(uint8 khz,uint8 id, uint8 port, uint8 pin,uint8 type){
 
 	setGpioDirection(port, pin, 0 );	//direction 0=input
@@ -38,19 +37,6 @@ uint8 initializeButton(uint8 khz,uint8 id, uint8 port, uint8 pin,uint8 type){
 	buttons[buttonCount].port   = port;
 	buttons[buttonCount].pin    = pin;
 	buttons[buttonCount].type   = type;
-=======
-uint8 initializeButton(uint8 khz,uint8 ID, uint8 Port, uint8 Pin,uint8 Type){
-
-	setGpioDirection(Port, Pin, 0 );	//direction 0=input
-	if(Type==0)
-	  setPinMode(Port, Pin, PinModePullUp); 
-	if(Type==1)
-	   setPinMode(Port, Pin, PinModePullDown);
-	(buttons[buttonCount]).id   = ID;
-	buttons[buttonCount].port   = Port;
-	buttons[buttonCount].pin    = Pin;
-	buttons[buttonCount].type   =Type;
->>>>>>> 5dc7bf618fbe8836bdb1e9dee396c2237a47bf9b
 
 	buttonCount++;
 

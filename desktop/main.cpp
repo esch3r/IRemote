@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
     }
 
     IRemoteWindow w;
-    QApplication::setQuitOnLastWindowClosed(false);
+    //QApplication::setQuitOnLastWindowClosed(false);
 
     instance.setActivationWindow(&w);
 

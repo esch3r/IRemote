@@ -434,7 +434,7 @@ void processCommand(char *buffer)
                 dataPointer = strtok(NULL," ");
                 if (dataPointer != NULL)
                 {
-                    applicationSettings.irReceiveTimeout = atoi(dataPointer);
+                    applicationSettings.irReceiveTimeout = atoi(dataPointer)*1000;
                     setIrReceiveTimeout(applicationSettings.irReceiveTimeout);
                     printAcknowledgement();
                     return;
@@ -451,7 +451,7 @@ void processCommand(char *buffer)
                 dataPointer = strtok(NULL," ");
                 if (dataPointer != NULL)
                 {
-                    applicationSettings.irSendTimeout = atoi(dataPointer);
+                    applicationSettings.irSendTimeout = atoi(dataPointer)*1000;
                     setIrSendTimeout(applicationSettings.irSendTimeout);
                     printAcknowledgement();
                     return;

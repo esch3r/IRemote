@@ -195,7 +195,7 @@ void IRemote::setWlanAuth(IRemote::WlanAuthType mode)
 void IRemote::setWlanDhcpMethod(IRemote::IpDhcpMethod method)
 {
     QueueCommand command;
-    command.command = QString("set w d %1").arg((int)method).toLocal8Bit();
+    command.command = QString("set w d %1\r").arg((int)method).toLocal8Bit();
     command.response = "ACK";
     command.timeout = m_responseTimeout;
     command.type = NormalQueueCommandType;
@@ -207,7 +207,7 @@ void IRemote::setWlanDhcpMethod(IRemote::IpDhcpMethod method)
 void IRemote::setWlanIpAddress(QString address)
 {
     QueueCommand command;
-    command.command = QString("set w i %1").arg(address).toLocal8Bit();
+    command.command = QString("set w i %1\r").arg(address).toLocal8Bit();
     command.response = "ACK";
     command.timeout = m_responseTimeout;
     command.type = NormalQueueCommandType;
@@ -219,7 +219,7 @@ void IRemote::setWlanIpAddress(QString address)
 void IRemote::setWlanSubnetMask(QString address)
 {
     QueueCommand command;
-    command.command = QString("set w m %1").arg(address).toLocal8Bit();
+    command.command = QString("set w m %1\r").arg(address).toLocal8Bit();
     command.response = "ACK";
     command.timeout = m_responseTimeout;
     command.type = NormalQueueCommandType;
@@ -231,7 +231,7 @@ void IRemote::setWlanSubnetMask(QString address)
 void IRemote::setWlanGateway(QString address)
 {
     QueueCommand command;
-    command.command = QString("set w g %1").arg(address).toLocal8Bit();
+    command.command = QString("set w g %1\r").arg(address).toLocal8Bit();
     command.response = "ACK";
     command.timeout = m_responseTimeout;
     command.type = NormalQueueCommandType;
@@ -243,7 +243,7 @@ void IRemote::setWlanGateway(QString address)
 void IRemote::setIrCount(int times)
 {
     QueueCommand command;
-    command.command = QString("set i c %1").arg(times).toLocal8Bit();
+    command.command = QString("set i c %1\r").arg(times).toLocal8Bit();
     command.response = "ACK";
     command.timeout = m_responseTimeout;
     command.type = NormalQueueCommandType;
@@ -255,7 +255,7 @@ void IRemote::setIrCount(int times)
 void IRemote::setIrReceiveTimeout(int ms)
 {
     QueueCommand command;
-    command.command = QString("set i r %1").arg(ms).toLocal8Bit();
+    command.command = QString("set i r %1\r").arg(ms).toLocal8Bit();
     command.response = "ACK";
     command.timeout = m_responseTimeout;
     command.type = NormalQueueCommandType;
@@ -267,7 +267,7 @@ void IRemote::setIrReceiveTimeout(int ms)
 void IRemote::setIrSendTimeout(int ms)
 {
     QueueCommand command;
-    command.command = QString("set i s %1").arg(ms).toLocal8Bit();
+    command.command = QString("set i s %1\r").arg(ms).toLocal8Bit();
     command.response = "ACK";
     command.timeout = m_responseTimeout;
     command.type = NormalQueueCommandType;

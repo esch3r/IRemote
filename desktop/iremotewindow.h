@@ -103,6 +103,8 @@ private slots:
 
     void on_wlanInfrastructureButton_clicked();
 
+    void on_setIrButton_clicked();
+
 private:
     Ui::IRemoteWindow *ui;
 
