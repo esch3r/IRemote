@@ -1,5 +1,4 @@
 #include <led.h>
-#include <timer.h>
 
 LedConfig leds[MAXLEDS];
 

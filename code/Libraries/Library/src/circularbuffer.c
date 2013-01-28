@@ -12,7 +12,7 @@ int8 initializeCb(CircularBuffer *buffer, uint16 bufferSize, uint16 dataSize)
     if (buffer->startPointer == NULL)    //memory full
         return -1;
     
-    buffer->inPointer = buffer->startPointer + buffer->dataSize;
+    buffer->inPointer = buffer->startPointer;// + buffer->dataSize;
     buffer->outPointer = buffer->startPointer;   //empty buffer
     
     return 0;
@@ -20,7 +20,8 @@ int8 initializeCb(CircularBuffer *buffer, uint16 bufferSize, uint16 dataSize)
 
 int8 putCb(CircularBuffer *buffer, void *item)
 {
-    if ((buffer->inPointer == (buffer->outPointer - buffer->dataSize)) || ((buffer->inPointer == (buffer->startPointer+buffer->bufferSize)) && (buffer->outPointer == buffer->startPointer)))  //buffer full
+    if ((buffer->inPointer == (buffer->outPointer - buffer->dataSize)) || 
+        ((buffer->inPointer == (buffer->startPointer+buffer->bufferSize)) && (buffer->outPointer == buffer->startPointer)))  //buffer full
         return -1;
     
     memcpy(buffer->inPointer,item,buffer->dataSize);

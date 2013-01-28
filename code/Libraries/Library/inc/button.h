@@ -3,8 +3,19 @@
 
 #include <types.h>
 #include <timer.h>
+#include <gpio.h>
+#include <pincon.h>
+#include <circularbuffer.h>
 
-#define maxunset 	4
+typedef enum {
+    ButtonTypeHighActive = 0,
+    ButtonTypeLowActive = 1
+} ButtonType;
+
+typedef struct {
+    uint8 id;
+    uint8 count;
+} ButtonValue;
 
 /** Initizes the Button Pin und Ports.
  *@param Mhz Is the frequency in wich values are checked.
@@ -13,17 +24,11 @@
  *@param Pin  Is the pin of the button.
  *@param Type set "0" for low_active, or" 1" for high_active
  */
-uint8 initializeButton(uint8 khz,uint8 id, uint8 port, uint8 pin,uint8 type);
+uint8 initializeButtons(uint32 khz, uint32 sampleInterval, uint32 timeoutInterval);
 
-/** reads the button values
- */
-void valueButton(void);
+void initializeButton(uint8 id, uint8 port, uint8 pin, ButtonType type);
 
-/** stores the values and counts the matches.
- *@param i is the number of the row of buttons.
- *@param var is the value of the button.
- */
-int8 putVal(uint8 i,uint8 var);
+int8 getButtonPress(ButtonValue *value);
 
 #endif
 

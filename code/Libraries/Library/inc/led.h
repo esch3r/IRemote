@@ -13,6 +13,7 @@
 #define LED_RUNNING_TIME 30
 
 #include <ledDriver.h>
+#include <timer.h>
 #include <gpio.h>
 #include <types.h>
 

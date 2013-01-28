@@ -31,9 +31,11 @@ int main(void)
     initializeLed(0,1, FALSE);     // led 2 - yellow
     initializeLed(0,10, FALSE);    // led 3 - red
     clearAllLeds();
-   
-    // initializeButton(10,1,2,10);
-    initializeButton(10,1,2,0,1);
+    
+    initializeButtons(1000, 1E4, 1E5);  //100kHz timer, 10ms timeout
+    initializeButton(0, 2, 4, ButtonTypeLowActive);
+    initializeButton(1, 2, 5, ButtonTypeLowActive);
+    initializeButton(2, 2, 10, ButtonTypeLowActive);
    
     //Program started notifier
     delayMs(500);
@@ -60,7 +62,7 @@ int main(void)
    
     clearLed(3);
     blinkLed2(0);   //onboard we came through the initialization
-    
+
     // init variables
     currentCommand = createIrCommand();
     
@@ -69,29 +71,14 @@ int main(void)
     applicationSettings.irRepeatCount = 4;
     
     //load settings....
+    loadSettings(&applicationSettings, sizeof(ApplicationSettings));
     
     setIrReceiveTimeout(applicationSettings.irReceiveTimeout);
     setIrSendTimeout(applicationSettings.irSendTimeout);
     setIrRepeatCount(applicationSettings.irRepeatCount);
     
-    // Testing IAP functions
-    //    uint32 testVar;
-    //printfUart0("Sector 26: %i, Sector 27: %i\n",checkBlankIap(26),checkBlankIap(27));
-    //testVar = 0;
-    //__disable_irq();
-    //eraseIap(27); 
-    //writeIap(27,256*64,(void*)(&testVar),sizeof(testVar));
-    //readIap(27,256*64,(void*)(&testVar),sizeof(testVar));
-    //printfUart0("Test: %u\n",testVar);
-    //__enable_irq();
-    
-    //setPinMode(2,10,PinModeNoPullUpDown);       // button3
-    //setGpioDirection(2,10,GpioDirectionInput);
-    //enableGpioInterrupt(2,10,GpioInterruptRisingEdge,&testFunc);
-    
-    //setGpioDirection(0,9,GpioDirectionOutput);   // Output pin for testing purposes
-    
     uint8 ledTiming = 0;
+    ButtonValue buttonValue;
     
     for (;;) 
     {
@@ -122,6 +109,12 @@ int main(void)
                 putcharWiFly(receivedData);
             while (getcharWiFly(&receivedData) == 0)
                 putcharUart0(receivedData);
+        }
+        
+        if (getButtonPress(&buttonValue) == 0)
+        {
+            
+            printfData("pressed %u, %u\r", buttonValue.id, buttonValue.count);
         }
         
         if (ledTiming == 200)
@@ -509,20 +502,6 @@ void processCommand(char *buffer)
                 printUnknownCommand();
                 return;
             }
-            /*else if (compareExtendedCommand("config",dataPointer))
-            {
-                if (actionWiFlyEnterCommandMode(FALSE) == 0)
-                {
-                    if (setWiflyInfrastructureParams() == 0)
-                        printAcknowledgement();
-                    else
-                        printError("setting infrastructure settings failed");
-                }
-                else
-                    printError("entering command mode failed");
-                    
-                return;
-            }*/
             else if (compareExtendedCommand("adhoc",dataPointer))
             {
                 if (startWlanAdhocMode() == 0)
@@ -560,7 +539,7 @@ void processCommand(char *buffer)
             return;
         }
     }
-    /*else if (compareBaseCommand("save", dataPointer))
+    else if (compareBaseCommand("save", dataPointer))
     {
         // starting a save command
         dataPointer = strtok(NULL," ");
@@ -569,33 +548,16 @@ void processCommand(char *buffer)
             printUnknownCommand();
             return;
         }
-        else if (compareExtendedCommand("wlan",dataPointer))
+        else if (compareExtendedCommand("config",dataPointer))
         {
-            // set wlan
-            dataPointer = strtok(NULL," ");
-            if (dataPointer == NULL)
+            // save config
+            if (saveSettings(&applicationSettings, sizeof(ApplicationSettings)) == 0)
             {
-                printUnknownCommand();
-                return;
-            }
-            else if (compareExtendedCommand("config",dataPointer))
-            {
-                if (fileIoWiFlySaveDefault() == 0)
-                {
-                    if (actionWiFlyReboot() == 0)
-                        printAcknowledgement();
-                    else
-                        printError("reboot failed");
-                }
-                else
-                    printError("saving config failed");
-                    
-                return;
+                printAcknowledgement();
             }
             else
             {
-                printUnknownCommand();
-                return;
+                printError("saving settings failed");
             }
         }
         else
@@ -603,7 +565,7 @@ void processCommand(char *buffer)
             printUnknownCommand();
             return;
         }
-    }*/
+    }
     else if (compareBaseCommand("test", dataPointer))
     {
         dataPointer = strtok(NULL," ");

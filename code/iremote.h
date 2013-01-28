@@ -12,6 +12,9 @@
 #include <wifly.h>
 #include <uart.h>
 #include <led.h>
+#include <timer.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 typedef enum {
     ApplicationStateIdle = 0,
