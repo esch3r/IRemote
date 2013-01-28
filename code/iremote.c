@@ -1,7 +1,4 @@
 #include "iremote.h"
-#include <timer.h>
-#include <stdarg.h>
-#include <stdio.h>
 
 ActiveConnection activeConnections = 0;
 
