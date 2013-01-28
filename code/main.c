@@ -1,8 +1,6 @@
 /**
- * This is a file 
+ * This is the main file
  */
-
-//#define DATA_BUFFER_SIZE    420
 
 #include <led.h>
 #include <iap.h>
@@ -19,6 +17,7 @@ typedef enum {
     ApplicationStateIdle = 0,
     ApplicationStateCaptureCommand = 1,
     ApplicationStateRunCommand = 2,
+    ApplicationStateFlashFirmware = 3,
     ApplicationStateWiFlyTest = 100
 } ApplicationState;
 
@@ -27,44 +26,53 @@ typedef enum {
     NetworkStateDisconnected = 1
 } NetworkState;
 
-void testFunc();
+typedef struct {
+    uint32 irReceiveTimeout;
+    uint32 irSendTimeout;
+    uint32 irRepeatCount;
+    char   wlanSsid[100];
+    char   wlanPhrase[100];
+    char   wlanKey[100];
+    char   wlanHostname[100];
+    uint8  wlanAuth;
+    uint8  wlanDhcp;
+    char   wlanIp[20];
+    char   wlanMask[20];
+    char   wlanGateway[20];
+    
+} ApplicationSettings;
+
 void startState(ApplicationState state);
 void processCommand(char* buffer);
-void processWiFly(char* buffer);
-void errorCommand();
-void errorWiFly();
 
 IrCommand *currentCommand;
 ApplicationState applicationState = ApplicationStateIdle;
 NetworkState networkState = NetworkStateDisconnected;
-
-//char dataBuffer[DATA_BUFFER_SIZE];
+ApplicationSettings applicationSettings;
 
 int main(void)
 {   
-    crcInit();
+    crcInit();                    // init crc function for firmware flashing
     
     initializeTimeout(TIMER1);
         
-    //initializeLeds();
-    initializeLed(1,29, TRUE);    // led 0 - onoard
+    initializeLed(1,29, TRUE);     // led 0 - onboard
     initializeLed(0,0, FALSE);     // led 1 - green
     initializeLed(0,1, FALSE);     // led 2 - yellow
     initializeLed(0,10, FALSE);    // led 3 - red
     clearAllLeds();
    
     // initializeButton(10,1,2,10);
-    initializeButton(10000,0,0,0,1);
+    initializeButton(10,1,2,0,1);
    
     //Program started notifier
     delayMs(500);
-    blinkLed(3);    
+    setLed(3);    
     blinkLed(2);
-    blinkLed(1);
+    setLed(1);
     delayMs(500);
     
     initializeIrControl();
-    
     initializeSerialConnection();
     
     if (initializeNetworkConnection() == -1)
@@ -82,7 +90,8 @@ int main(void)
     printfData("Welcome to IRemote!\r");    // Send a welcome message
     printfData("Id: %i, Version: %i, Serial: %i\r",readIdIap(),readVersionIap(),readSerialIap());
    
-    blinkLed2(0);
+    clearLed(3);
+    blinkLed2(0);   //onboard we came through the initialization
     
     // Testing IAP functions
     //    uint32 testVar;
@@ -100,6 +109,8 @@ int main(void)
     //enableGpioInterrupt(2,10,GpioInterruptRisingEdge,&testFunc);
     
     //setGpioDirection(0,9,GpioDirectionOutput);   // Output pin for testing purposes
+    
+    uint8 ledTiming = 0;
     
     for (;;) 
     {
@@ -131,25 +142,27 @@ int main(void)
             while (getcharWiFly(&receivedData) == 0)
                 putcharUart0(receivedData);
         }
+        
+        if (ledTiming == 200)
+        {
+            ledTask();
+            ledTiming = 0;
+        }
+        ledTiming++;
+        
         delayMs(5);
      }
 
     return 0 ;
 }
 
-void errorCommand()
-{
-    printfData("ERR: Command too long\r");
-}
-
-void errorWiFly()
-{
-    printfData("ERR: WiFly command too long\r");
-}
-
 void startState(ApplicationState state)
 {
     if (applicationState == state)              // If we are already in this state => ignore
+        return;
+    
+    if ((state != ApplicationStateIdle) 
+        && (applicationState != ApplicationStateIdle))  // only changes beetween idle and non idle are possible
         return;
     
     if (state == ApplicationStateIdle)
@@ -162,17 +175,22 @@ void startState(ApplicationState state)
     {
         applicationState = ApplicationStateCaptureCommand;
         
-        printfData("Start capturing data\r");
-        blinkLed2(0);
+        printfData("Capturing data\r");
+        blinkLed2(2);
         startIrCapture();
     }
     else if (state == ApplicationStateRunCommand)
     {
         applicationState = ApplicationStateRunCommand;
                 
-        printfData("Start running command\r");
-        blinkLed(0);
+        printfData("Running command\r");
+        blinkLed(2);
         runIrCommand(currentCommand);
+    }
+    else if (state == ApplicationStateFlashFirmware)
+    {
+        setAllLeds();
+        
     }
     else if (state == ApplicationStateWiFlyTest)
     {
@@ -184,65 +202,18 @@ void startState(ApplicationState state)
     return;
 }
 
-bool compareBaseCommand(char *original, char *received)
-{
-    return (strcmp(original,received) == 0);
-}
-
-bool compareExtendedCommand(char *original, char *received)
-{
-    return (((strlen(received) == 1) && (strncmp(original,received,1) == 0)) ||
-                (strcmp(original,received) == 0));
-}
-
-void printUnknownCommand(void)
-{
-    printfData("CMD?\r");
-}
-
-void printParameterMissing(void)
-{
-    printfData("Missing parameter.\r");
-}
-
-void printAcknowledgement(void)
-{
-    printfData("ACK\r");
-}
-
-void printError(char *message)
-{
-    printfData("ERR: %s\r", message);
-}
-
-void processWiFly(char *buffer)
-{
-    
-}
-
-uint32 hex2int(char *a, unsigned int len)
-{
-    uint32 i;
-    uint32 val = 0;
-
-    for(i=0;i<len;i++)
-       if(a[i] <= 57)
-        val += (a[i]-48)*(1<<(4*(len-1-i)));
-       else
-        val += (a[i]-87)*(1<<(4*(len-1-i)));
-    return val;
-}
-
 void processCommand(char *buffer)
 {
     char *dataPointer;
+    
+    setLed(2);  // set the yellow led to indicate incoming data status
     
     dataPointer = strtok(buffer," ");
     
     if (compareBaseCommand("alive", dataPointer))
     {
         // We have a keep alive command
-        printfData("yes\r");
+        printAliveMessage();
     }
     else if (compareBaseCommand("run", dataPointer))
     {
@@ -531,6 +502,13 @@ void processCommand(char *buffer)
                 else
                     printError("entering adhoc mode failed");
                     
+                return;
+            }
+            else if (compareExtendedCommand("flash", dataPointer))
+            {
+                startState(ApplicationStateFlashFirmware);
+                printAcknowledgement();
+                
                 return;
             }
             else

@@ -12,7 +12,9 @@ IRemote::IRemote(QObject *parent) :
     m_queueRunning = false;
     m_autoconnectEnabled = true;
 
+#ifdef SERIALPORT
     serialPort = NULL;
+#endif
     tcpSocket = NULL;
 
     waitingForRespose = false;
@@ -32,26 +34,18 @@ IRemote::IRemote(QObject *parent) :
 
 IRemote::~IRemote()
 {
+#ifdef SERIALPORT
     if (serialPort != NULL)
         serialPort->close();
+#endif
 
     if (tcpSocket != NULL)
         tcpSocket->close();
 }
 
+#ifdef SERIALPORT
 bool IRemote::connectSerialPort(const QString &device)
 {
-    /*foreach (const SerialPortInfo &info, SerialPortInfo::availablePorts()) {
-            qDebug() << "Name        : " << info.portName();
-            qDebug() << "Description : " << info.description();
-            qDebug() << "Manufacturer: " << info.manufacturer();
-
-            // Example use SerialPort
-            SerialPort serial;
-            serial.setPort(info);
-            if (serial.open(QIODevice::ReadWrite))
-                serial.close();
-        }*/
     if (serialPort != NULL)
         closeSerialPort();
 
@@ -81,6 +75,7 @@ bool IRemote::connectSerialPort(const QString &device)
 
 }
 
+
 void IRemote::closeSerialPort()
 {
     serialPort->close();
@@ -90,6 +85,7 @@ void IRemote::closeSerialPort()
     emit serialPortDisconnected();
     endQueue();
 }
+#endif
 
 void IRemote::connectNetwork(QString hostname, int port)
 {
@@ -124,10 +120,12 @@ void IRemote::closeNetwork()
     endQueue();
 }
 
+#ifdef SERIALPORT
 bool IRemote::isSerialPortConnected()
 {
     return (serialPort != NULL);
 }
+#endif
 
 bool IRemote::isNetworkConnected()
 {
@@ -312,7 +310,7 @@ void IRemote::actionRun(IrCommand irCommand)
 
     QueueCommand command;
     command.command = data;
-    command.response = "Start running command";
+    command.response = "Idle";
     command.timeout = m_responseTimeout;
     command.type = NormalQueueCommandType;
 
@@ -324,12 +322,14 @@ void IRemote::actionCapture()
 {
     QueueCommand command;
     command.command = "capture\r";
-    command.response = "Start capturing data";
+    command.response = "Capturing data";
     command.timeout = m_responseTimeout;
     command.type = NormalQueueCommandType;
 
     commandQueue.enqueue(command);
     startQueue();
+
+    pauseKeepAlive(m_responseTimeout*20);   // let there be enough time to capture signals
 }
 
 void IRemote::startWlanAdhoc()
@@ -390,6 +390,7 @@ void IRemote::flashFirmware(QString filename)
     }
 }
 
+#ifdef SERIALPORT
 void IRemote::incomingSerialData()
 {
     QByteArray data;
@@ -399,6 +400,7 @@ void IRemote::incomingSerialData()
        incomingByte(data.at(0));
     }
 }
+#endif
 
 void IRemote::incomingNetworkData()
 {
@@ -482,6 +484,9 @@ void IRemote::responseTimerTick()
 
 void IRemote::keepAliveTimerTick()
 {
+    if (!keepAliveTimer->isActive())
+        keepAliveTimer->start();
+
     if ((activeConnections == NoConnection) || isQueueRunning())    // if no connection or queue running no timeout is needed
     {
         if ((activeConnections == NoConnection) && autoconnectEnabled() && wantsConnection)
@@ -550,11 +555,13 @@ void IRemote::sendData(const QByteArray &data)
     {
         tcpSocket->write(data);
     }
+#ifdef SERIALPORT
     else if (activeConnections & SerialConnection)
     {
         serialPort->flush();
         serialPort->write(data);
     }
+#endif
 }
 
 void IRemote::findInResponse(QString toMatch, int timeout)
@@ -598,11 +605,13 @@ void IRemote::responseTimedOut(QueueCommandType type)
             closeNetwork();
             wantsConnection = true; // we lost the connection but we want it
         }
+#ifdef SERIALPORT
         if (activeConnections & SerialConnection)
         {
             activeConnections &= ~SerialConnection;
             closeSerialPort();
         }
+#endif
 
     }
 }
@@ -639,4 +648,10 @@ void IRemote::doQueue()
 void IRemote::endQueue()
 {
     setQueueRunning(false);
+}
+
+void IRemote::pauseKeepAlive(int msecs)
+{
+    keepAliveTimer->stop();
+    QTimer::singleShot(msecs, this, SLOT(keepAliveTimerTick()));
 }

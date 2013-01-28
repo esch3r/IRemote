@@ -1,4 +1,4 @@
-#include "pwm.h"
+include "sspi.h"
 int8 initializeSPI(uint32 freq,float duty, uint8 ch)
 {
     SSPI_ENABLE_POWER(1);
@@ -8,42 +8,16 @@ int8 initializeSPI(uint32 freq,float duty, uint8 ch)
 
     switch (ch)
     {
-        case 0: PWM_ENABLE_PWM1_1();break;  //Enable PWM1.1
-        case 1: PWM_ENABLE_PWM1_2();break;  //Enable PWM1.2
-        case 2: PWM_ENABLE_PWM1_3();break;  //Enable PWM1.3
-        case 3: PWM_ENABLE_PWM1_4();break;  //Enable PWM1.4€
-        case 4: PWM_ENABLE_PWM1_5();break;  //Enable PWM1.5
-        case 5: PWM_ENABLE_PWM1_6();break;  //Enable PWM1.6
-    
+        case 0: SSPI0_SET_CORE_CLK();break;  //Enable PWM1.1
+               
+        case 1: SSPI1_SET_CORE_CLK();  //Enable PWM1.2
+                SSPI_SET_SSEL1;
+                SSPI_SET_SCK1;
+                SSPI_SET_MISO1;
+                SSPI_SET_MOSI1;break;
         default: break;
     }
-
-    PWM1_ENABLE_LATCH(0);
-    PWM1_ENABLE_LATCH(1);
-
-    PWM1_SET_MR0(freq);
-    PWM1_SET_MR1(freq);
-
-    PWM1_START;
-
-    return 0;
-}
-
-inline void startPWM(uint8 ch)
-{
-    PWM1_ENABLE_OUTPUT(ch);
-    return;
-}
-
-inline void stopPwm(uint8 ch)
-{
-    PWM1_SET_0;                 //funtioniert nur für alle ausgänge auf einmal oder??
-    PWM1_DISABLE_OUTPUT(ch);
-    return;
-}
-
-inline void togglePwm(uint8 ch)
-{
-    PWM1_TOGGLE_OUTPUT(ch);
-    return;
+   SPI_ENABLE_IRQ();
+   
+   return 0;
 }
