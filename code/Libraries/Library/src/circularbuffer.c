@@ -1,7 +1,4 @@
 #include "circularbuffer.h"
-#include <stdlib.h>
-#include <string.h>
-#include <uart.h>
 
 int8 initializeCb(CircularBuffer *buffer, uint16 bufferSize, uint16 dataSize)
 {

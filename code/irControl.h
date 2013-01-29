@@ -18,7 +18,6 @@
 #include <timer.h>
 #include <gpio.h>
 #include <pincon.h>
-#include <uart.h>
 
 #include "irData.h"
 #include "iremote.h"

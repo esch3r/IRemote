@@ -1,4 +1,4 @@
-#include <rfm12.h>
+#include "rfm12.h"
 
 #define RFM12_WRITEDATA             writeDataUart1
 #define RFXX_WRT_CMD                putcharUart1

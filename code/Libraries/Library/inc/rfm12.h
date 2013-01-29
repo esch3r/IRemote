@@ -4,11 +4,6 @@
  * @brief RFM12 Library
  * @date 28-01-2013
  */
-/* Device group ----------------------------------------------------------- */
-/** @addtogroup Device
- * @{
- */
-
 /** @defgroup RFM12 RFM12 Library
  * @ingroup Device
  * @{
@@ -21,10 +16,6 @@ int8 initializeRfm12(void);
 
 void prepareSendingRfm12(void);
 void prepareReceivingRfm12(void);
-
-/**
- * @}
- */
 
 /**
  * @}

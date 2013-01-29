@@ -18,11 +18,6 @@
  * @brief Library for controlling the IAP functions
  * @date 2000, Modified 2013
  */
-/* Functional group ----------------------------------------------------------- */
-/** @addtogroup Functional
- * @{
- */
-
 /** @defgroup CRC CRC (Circular Redundancy Check)
  * @ingroup Functional
  * @{
@@ -83,10 +78,6 @@ typedef uint16  crc;
 void  crcInit(void);
 crc   crcSlow(char* message, uint32 nBytes);
 crc   crcFast(char* message, uint32 nBytes);
-
-/**
- * @}
- */
 
 /**
  * @}

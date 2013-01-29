@@ -4,11 +4,6 @@
  * @brief PINCON Library
  * @date 08-12-2012
  */
- /* Peripheral group ----------------------------------------------------------- */
-/** @addtogroup Peripheral
- * @{
- */
-
 /** @defgroup PINCON PINCON (Pin Configuration)
  * @ingroup Peripheral
  * @{
@@ -47,10 +42,6 @@ void setPinMode(uint8 port, uint8 pin, enum PinMode mode);
  *  @param mode Open drain mode that should be set on the pin (enabled or not).
  */
 void setPinOpenDrainMode(uint8 port, uint8 pin, enum PinOpenDrainMode mode);
-
-/**
- * @}
- */
 
 /**
  * @}

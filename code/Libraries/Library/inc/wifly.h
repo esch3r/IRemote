@@ -4,11 +4,6 @@
  * @brief WiFly Library
  * @date 23-12-2012
  */
-/* Device group ----------------------------------------------------------- */
-/** @addtogroup Device
- * @{
- */
-
 /** @defgroup WiFly WiFly Library
  * @ingroup Device
  * @{
@@ -589,10 +584,6 @@ uint8 isWiFlyConnected();
 int8 setWiFlyAdhocParams();
 int8 setWiflyInfrastructureParams();
 int8 createWiFlyAdhocNetwork(char *ssid);
-
-/**
- * @}
- */
 
 /**
  * @}

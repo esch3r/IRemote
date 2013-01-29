@@ -46,7 +46,7 @@ CSRC += $(SYSPATH)/libnosys_gnu.c
 #CSRC += $(DRVPATH)/lpc17xx_exti.c
 CSRC += $(DRVPATH)/lpc17xx_nvic.c
 #CSRC += $(DRVPATH)/lpc17xx_ssp.c
-CSRC += $(DRVPATH)/ledDriver.c
+#CSRC += $(DRVPATH)/ledDriver.c
 
 #CSRC += $(LIBRARYPATH)/capcom.c
 CSRC += $(LIBRARYPATH)/timer.c

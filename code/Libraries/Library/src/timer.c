@@ -1,5 +1,4 @@
-#include <timer.h>
-#include <led.h>
+#include "timer.h"
 
 void (* functionPointer0)(void) = NULL;
 void (* functionPointer1)(void) = NULL;

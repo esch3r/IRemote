@@ -17,7 +17,6 @@
  
 #include "crc.h"
 
-
 /*
  * Derive parameters from the standard-specific parameters in crc.h.
  */

@@ -5,11 +5,6 @@
  * @date 25-01-2013
  */
 
-/* Device group ----------------------------------------------------------- */
-/** @addtogroup Device
- * @{
- */
-
 /** @defgroup Button Button Library
  * @ingroup Device
  * @{
@@ -44,10 +39,6 @@ uint8 initializeButtons(uint32 khz, uint32 sampleInterval, uint32 timeoutInterva
 void initializeButton(uint8 id, uint8 port, uint8 pin, ButtonType type);
 
 int8 getButtonPress(ButtonValue *value);
-
-/**
- * @}
- */
 
 /**
  * @}

@@ -1,5 +1,4 @@
-#include <uart.h>
-#include <stdlib.h>
+#include "uart.h"
 
 CircularBuffer uart0ReadBuffer;
 CircularBuffer uart0WriteBuffer;

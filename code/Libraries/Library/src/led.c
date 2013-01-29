@@ -1,4 +1,4 @@
-#include <led.h>
+#include "led.h"
 
 LedConfig leds[MAXLEDS];
 
@@ -11,27 +11,6 @@ void initializeLed(uint8 port, uint8 pin, bool lowActive)
     leds[ledCount].pin = pin;
     leds[ledCount].lowActive = lowActive;
     ledCount++;
-}
-
-uint8 initializeLeds(void)
-{
-    return initLeds();
-}
-
-void setGreenLedsEnabled(bool enabled)
-{
-    if (enabled)
-        ENABLE_GREEN();
-    else
-        DISABLE_GREEN();
-}
-
-void setRedLedsEnabled(bool enabled)
-{
-    if (enabled)
-        ENABLE_RED();
-    else
-        DISABLE_RED();
 }
 
 void setLed(uint8 id)

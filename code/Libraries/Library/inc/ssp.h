@@ -1,12 +1,14 @@
 /**
  * @file ssp.h
  * @author Johannes Wimmer & Alexander Rössler
- * @brief PWM Library
+ * @brief SSP Library
  * @date 16-10-2012
  */
-
-#ifndef _PWM_DRIVER_H_
-#define _PWM_DRIVER_H_
+/** @defgroup SSP SSP (Synchronous Serial Port)
+ * @ingroup Peripheral
+ * @{
+ */
+#pragma once
 
 #include <types.h>
 #include <LPC17xx.h>
@@ -96,4 +98,6 @@ int8 initializeSSP1(uint32 baudrate,SspDataSize dataSize,SspFrameFormat frameFor
 int8 putcharSsp1(uint16 c);
 int8 getcharSsp1(uint16 *c);
 
-#endif
+/**
+ * @}
+ */

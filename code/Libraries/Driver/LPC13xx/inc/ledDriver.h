@@ -30,6 +30,12 @@
 #include <LPC13xx.h>
 #include <types.h>
 
-inline uint8 initLeds(void);
+uint8 initializeLeds(void);
+
+void setGreenLedsEnabled(bool enabled);
+/** Enables or disables the red Leds if possible.
+ *  @param enabled
+ */
+void setRedLedsEnabled(bool enabled);
 
 #endif

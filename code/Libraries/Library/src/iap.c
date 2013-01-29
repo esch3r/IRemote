@@ -1,7 +1,4 @@
 #include "iap.h"
-#include <LPC17xx.h>
-#include <uart.h>
-#include <string.h>
 
 #define CCLK_KHZ SystemCoreClock/1000
 
@@ -99,10 +96,12 @@ static int32 prepareIap(uint32 sector)
     command[2] = sector;
     iapEntry(command,result);
     
+#ifdef DEBUG_IAP
     if (result[0] != IapStatusCommandSuccess)
     {
         printfUart0("prepareIap result: %d\n",result[0]);
     }
+#endif
     
     return ((int32)result[0]);
 }
@@ -120,10 +119,12 @@ int32 eraseIap(uint32 sector)
     command[3] = CCLK_KHZ;
     iapEntry(command,result);
     
+#ifdef DEBUG_IAP
     if (result[0])
     {
         printfUart0("eraseIap: result: %d\n",result[0]);
     }
+#endif
     
     while (checkBlankIap(sector))
     {
@@ -144,12 +145,14 @@ static int32 compIap(uint32 sourceAddress, uint32 destinationAddress, uint32 siz
     command[3] = size;
     iapEntry(command,result);
     
+#ifdef DEBUG_IAP
     if (result[0] != IapStatusCommandSuccess)
     {
         printfUart0("compIap(0x%x,0x%x,0x%x) result: %d,pos[0x%x]\n",
             sourceAddress, destinationAddress, size, result[0], result[1]
         );
     }
+#endif
     
     return ((int32)result[0]);
 }
@@ -178,6 +181,7 @@ int32 writeIap(uint32 sector, uint32 offset, const void *buffer, uint32 size)
         command[4] = CCLK_KHZ;
         iapEntry(command,result);
         
+#ifdef DEBUG_IAP
         if (result[0] != IapStatusCommandSuccess)
         {
             printfUart0("cmd[%x,%x,%x],result:%d\n",command[1],command[2],command[3],result[0]);
@@ -194,6 +198,7 @@ int32 writeIap(uint32 sector, uint32 offset, const void *buffer, uint32 size)
             printfUart0("writeIap failed\n");
             return -1;
         }
+#endif
         
         if (result[0] != IapStatusCommandSuccess)
             return (int32)result[0];

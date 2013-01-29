@@ -4,16 +4,12 @@
  * @brief UART Library
  * @date 06-11-2012
  */
-/* Peripheral group ----------------------------------------------------------- */
-/** @addtogroup Peripheral
- * @{
- */
-
 /** @defgroup UART UART (Universal Asynchronous Receiver and Transmitter)
  * @ingroup Peripheral
  * @{
  */
 #pragma once
+#include <stdlib.h>
 
 /** Size of UARTs circular buffer for reading */
 #ifndef UART_READ_BUFFER_SIZE
@@ -252,10 +248,6 @@ void processTaskUart2();
  */
 void processTaskUart3();
 #endif
-
-/**
- * @}
- */
 
 /**
  * @}

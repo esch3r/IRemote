@@ -1,4 +1,4 @@
-#include <timeout.h>
+#include "timeout.h"
 
 #define TIMEOUT_TIMER_KHZ       1
 #define TIMEOUT_TIMER_INTERVAL  ~(uint32)0

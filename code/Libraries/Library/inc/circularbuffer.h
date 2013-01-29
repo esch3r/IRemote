@@ -4,11 +4,6 @@
  * @brief Circular Buffer Library
  * @date 07-11-2012
  */
-/* Functional group ----------------------------------------------------------- */
-/** @addtogroup Functional
- * @{
- */
-
 /** @defgroup CircularBuffer CircularBuffer
  * @ingroup Functional
  * @{
@@ -16,7 +11,8 @@
 #pragma once
 
 #include <types.h>
-
+#include <stdlib.h>
+#include <string.h>
 
 /** Initialize this structure with the initializeCb function! */
 typedef struct
@@ -48,10 +44,6 @@ int8 putCb(CircularBuffer *buffer, void *item);
  *  @return Returns -1 if the buffer is empty and 0 if successful.
  */
 int8 getCb(CircularBuffer *buffer, void *item);
-
-/**
- * @}
- */
 
 /**
  * @}

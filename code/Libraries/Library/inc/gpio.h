@@ -4,11 +4,6 @@
  * @brief GPIO Library
  * @date 08-12-2012
  */
-/* Peripheral group ----------------------------------------------------------- */
-/** @addtogroup Peripheral
- * @{
- */
-
 /** @defgroup GPIO GPIO (General Purpose Input and Output)
  * @ingroup Peripheral
  * @{
@@ -77,10 +72,6 @@ void enableGpioInterrupt(uint8 port, uint8 pin, enum GpioInterruptType type, voi
  *  @param pin Pin number.
 */
 void disableGpioInterrupt(uint8 port, uint8 pin);
-
-/**
- * @}
- */
 
 /**
  * @}

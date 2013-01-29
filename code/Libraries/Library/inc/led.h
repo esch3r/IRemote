@@ -4,11 +4,6 @@
  * @brief Led Library
  * @date 16-10-2012
  */
-/* Device group ----------------------------------------------------------- */
-/** @addtogroup Device
- * @{
- */
-
 /** @defgroup LED LED Library
  * @ingroup Device
  * @{
@@ -18,10 +13,11 @@
 /* With these values you can modify the behavior of the Led functions */
 #define LED_BLINK_TIME 100
 #define LED_RUNNING_TIME 30
+#define MAXLEDS 10
 
+#include <types.h>
 #include <timer.h>
 #include <gpio.h>
-#include <types.h>
 
 typedef struct {
     uint8 port;
@@ -36,11 +32,6 @@ uint8 initializeLeds(void);
 /** Enables or disables the green Leds if possible.
  *  @param enabled
  */
-void setGreenLedsEnabled(bool enabled);
-/** Enables or disables the red Leds if possible.
- *  @param enabled
- */
-void setRedLedsEnabled(bool enabled);
 /** Sets a Led.
  *  @param id Id of the Led to set.
  */
@@ -78,10 +69,6 @@ void setAllLeds();
 void allLedsUp();
 /** Make a running light from Led LEDCOUNT to 1. Uses timer 0. */
 void allLedsDown();
-
-/**
- * @}
- */
 
 /**
  * @}

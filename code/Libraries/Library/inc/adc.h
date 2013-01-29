@@ -4,11 +4,25 @@
  * @brief ADC Library
  * @date 14-11-2012
  */
-/* Peripheral group ----------------------------------------------------------- */
-/** @addtogroup Peripheral
- * @{
+/* Cortex M3 Libraries ----------------------------------------------------------- */
+/** @defgroup ComplexCortex
+ *  ComplexCortex Libaries
  */
-
+/* Peripheral group ----------------------------------------------------------- */
+/** @defgroup Peripheral
+ *  @ingroup ComplexCortex
+ *  Libraries to control the peripheral devices
+ */
+/* Device group ----------------------------------------------------------- */
+/** @defgroup Device
+ *  @ingroup ComplexCortex
+ *  Libraries to control control various hardware devices
+ */
+/* Functional group ----------------------------------------------------------- */
+/** @defgroup Functional
+ *  @ingroup ComplexCortex
+ *  Libraries that implement useful functions not using any specific hardware
+ */
 /** @defgroup ADC ADC (Analog to Digital Converter)
  * @ingroup Peripheral
  * @{
@@ -34,10 +48,6 @@ int8 deinitializeAdc();
  *  @return Returns 0 if successful, -1 if not.
  */
 int8 readAdc(uint16 *value);
-
-/**
- * @}
- */
 
 /**
  * @}

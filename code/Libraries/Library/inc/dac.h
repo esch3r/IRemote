@@ -4,11 +4,6 @@
  * @brief DAC Library
  * @date 20-11-2012
  */
-/* Peripheral group ----------------------------------------------------------- */
-/** @addtogroup Peripheral
- * @{
- */
-
 /** @defgroup DAC DAC (Digital to Analog Converter)
  * @ingroup Peripheral
  * @{
@@ -28,10 +23,6 @@ void setDacValue(uint16 value);
  *  @param mV Value in millivolts, must be between VREFN and VREFP
  */
 void setDacVolt(uint16 mV);
-
-/**
- * @}
- */
 
 /**
  * @}

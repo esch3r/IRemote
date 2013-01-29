@@ -4,11 +4,6 @@
  * @brief Timer Library
  * @date 16-10-2012
  */
-/* Peripheral group ----------------------------------------------------------- */
-/** @addtogroup Peripheral
- * @{
- */
-
 /** @defgroup Timer Timer
  * @ingroup Peripheral
  * @{
@@ -338,10 +333,6 @@ int8 initializeCapCom0(uint32 khz, uint8 pin, void (* func)(void));
 int8 initializeCapCom1(uint32 khz, uint8 pin, void (* func)(void));
 int8 initializeCapCom2(uint32 khz, uint8 pin, void (* func)(void));
 int8 initializeCapCom3(uint32 khz, uint8 pin, void (* func)(void));
-
-/**
- * @}
- */
 
 /**
  * @}

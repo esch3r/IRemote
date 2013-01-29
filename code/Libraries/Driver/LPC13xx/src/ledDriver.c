@@ -1,6 +1,6 @@
 #include "../inc/ledDriver.h"
 
-uint8 initLeds(void)
+uint8 initializeLeds(void)
 {
 	LPC_IOCON->JTAG_nTRST_PIO1_2 |= (1<<0);     /* configure LED_RED_EN as IO pin */
 
@@ -14,4 +14,20 @@ uint8 initLeds(void)
 	ENABLE_RED();			/* enable the Red LEDs - high active  */
 
 	return INIT_OK;
+}
+
+void setGreenLedsEnabled(bool enabled)
+{
+    if (enabled)
+        ENABLE_GREEN();
+    else
+        DISABLE_GREEN();
+}
+
+void setRedLedsEnabled(bool enabled)
+{
+    if (enabled)
+        ENABLE_RED();
+    else
+        DISABLE_RED();
 }

@@ -4,18 +4,14 @@
  * @brief Library for controlling the IAP functions
  * @date 12-12-2012
  */
-#pragma once
-#include <types.h>
-
-/* Peripheral group ----------------------------------------------------------- */
-/** @addtogroup Peripheral
- * @{
- */
-
 /** @defgroup IAP IAP (In Application Programming)
  * @ingroup Peripheral
  * @{
  */
+#pragma once
+#include <types.h>
+#include <string.h>
+#include <LPC17xx.h>
 
 enum IapStatusCodes {
     IapStatusCommandSuccess = 0,
@@ -110,10 +106,6 @@ int8  saveSettings(void* data, uint32 size);
  * @return Return -1 on error or one of the IapStatusCodes if sucsessful.
  */
 int8  loadSettings(void* data, uint32 size);
-
-/**
- * @}
- */
 
 /**
  * @}

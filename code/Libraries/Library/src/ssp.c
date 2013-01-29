@@ -1,4 +1,4 @@
-#include <ssp.h>
+#include "ssp.h"
 
 CircularBuffer ssp1ReadBuffer;
 CircularBuffer ssp1WriteBuffer;

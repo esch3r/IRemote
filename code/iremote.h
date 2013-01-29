@@ -15,6 +15,14 @@
 #include <timer.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <led.h>
+#include <iap.h>
+#include <timeout.h>
+#include <button.h>
+#include <pwm.h>
+#include <crc.h>
+#include <rfm12.h>
+#include "irControl.h"
 
 typedef enum {
     ApplicationStateIdle = 0,
@@ -51,6 +59,7 @@ typedef enum {
     } ActiveConnection;
     
     
+int8 initialize(void);
 int8 initializeSerialConnection(void);
 int8 initializeNetworkConnection(void);
 
@@ -73,6 +82,11 @@ void errorWiFly();
 bool compareBaseCommand(char *original, char *received);
 bool compareExtendedCommand(char *original, char *received);
 
+void startState(ApplicationState state);
+void processCommand(char *buffer);
+
+void mainTask(void);
 void ledTask(void);
+void buttonTask(void);
 
 uint32 hex2int(char *a, unsigned int len);
