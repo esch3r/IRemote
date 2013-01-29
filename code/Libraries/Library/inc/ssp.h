@@ -15,11 +15,13 @@
 #include <circularbuffer.h>
 
 /** Size of circular buffer for reading */
-#ifndef SSP0_READ_BUFFER_SIZE
+#ifndef SSP_READ_BUFFER_SIZE
 #define SSP1_READ_BUFFER_SIZE       100
+#define SSP0_READ_BUFFER_SIZE       100
 #endif
 /** Size of circular buffer for writing */
-#ifndef SSP1_WRITE_BUFFER_SIZE
+#ifndef SSP_WRITE_BUFFER_SIZE
+#define SSP0_WRITE_BUFFER_SIZE      100
 #define SSP1_WRITE_BUFFER_SIZE      100
 #endif
 /** Defines wheter the buffer should be used or not */
@@ -34,12 +36,12 @@
 
 #define SSP0_SET_PR(x)       LPC_SSP0->CPSR = (uint8)(SSP_CLK/x)-1
 #define SSP1_SET_PR(x)       LPC_SSP1->CPSR = (uint8)(SSP_CLK/x)-1
-#define PCONP_SSP(ch)     (1 << (8+2*ch)) 		//set clock control bit
 #define SSP0_SET_CORE_CLK()  LPC_SC->PCLKSEL0 |= (0b00<< 10); //set 11:10 for SSPI
 #define SSP1_SET_CORE_CLK()  LPC_SC->PCLKSEL1 |= (0b00<< 20); //set 16:17 for SSPI
 
 
-#define SSP_ENABLE_POWER(ch)  LPC_SC->PCONP |= PCONP_SSP(ch)             //enable PCONP for SSPI
+#define SSP0_ENABLE_POWER  LPC_SC->PCONP |= (1 << 21)            //enable PCONP for SSPI
+#define SSP1_ENABLE_POWER  LPC_SC->PCONP |= (1 << 10)            //enable PCONP for SSPI
 #define SSP_DISABLE_POWER(ch) LPC_SC->PCONP &= ~PCONP_SSPI(ch)              //set PCLKSEL for SSPI
 #define SSP0_SET_DATA_SIZE(x)     LPC_SSP0->CR0 |= (x << 0)
 #define SSP0_SET_FRAME_FORMAT(x)  LPC_SSP0->CR0 |= (x << 4)

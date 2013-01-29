@@ -1,23 +1,30 @@
 #include "ssp.h"
 
+CircularBuffer ssp0ReadBuffer;
+CircularBuffer ssp0WriteBuffer;
 CircularBuffer ssp1ReadBuffer;
 CircularBuffer ssp1WriteBuffer;
 
 int8 initializeSSP0(uint32 baudrate,SspDataSize dataSize,SspFrameFormat frameFormat)
 {
-    SSP_ENABLE_POWER(0);
-    SSP0_SET_CORE_CLK();    
+   SSP0_ENABLE_POWER;
+   SSP0_SET_CORE_CLK();    
    SSP0_SET_PR(baudrate);                      // set Prescaler
  
    SSP0_SET_DATA_SIZE(dataSize);
    SSP0_SET_FRAME_FORMAT(frameFormat);
-
    
-   SSP0_SET_SSEL;     
+   //SSP0_SET_SSEL;     
    SSP0_SET_SCK;
    SSP0_SET_MISO;
    SSP0_SET_MOSI;
 
+    if (initializeCb(&ssp0ReadBuffer, SSP0_READ_BUFFER_SIZE, sizeof(uint16)) == -1)      // Initialize circular read buffer
+        return -1;
+    
+    if (initializeCb(&ssp0WriteBuffer, SSP0_WRITE_BUFFER_SIZE, sizeof(uint16)) == -1)    //Initialize circular write buffer
+        return -1;
+    
    SSP0_ENABLE_IRQ();
    SSP0_SET_RXIM_AND_TXIM_INTERRUPT();
    SSP0_ENABLE_SSP;
@@ -26,7 +33,7 @@ int8 initializeSSP0(uint32 baudrate,SspDataSize dataSize,SspFrameFormat frameFor
 }
 int8 initializeSSP1(uint32 baudrate,SspDataSize dataSize,SspFrameFormat frameFormat)
 {
-    SSP_ENABLE_POWER(1);
+    SSP1_ENABLE_POWER;
     SSP1_SET_CORE_CLK();
 
     SSP1_SET_PR(baudrate);                      // set Prescaler
