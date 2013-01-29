@@ -1,8 +1,8 @@
 #include "rfm12.h"
 
-#define RFM12_WRITEDATA             writeDataUart1
-#define RFXX_WRT_CMD                putcharUart1
-#define RFM12_GETCHAR               getcharUart1
+//#define RFM12_WRITEDATA             writeDataSSP0
+#define RFXX_WRT_CMD               // putcharSsp0
+#define RFM12_GETCHAR              // getcharSSP0
 #define RFM12_INIT                  initializeSSP0
 
 int8 initializeRfm12(void)

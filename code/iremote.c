@@ -44,7 +44,7 @@ int8 initializeHardware(void)
     clearLed(3);
     blinkLed2(0);   //onboard we came through the initialization
     
-    initializeRfm12();
+    //initializeRfm12();
     
     return 0;
 }
@@ -54,12 +54,25 @@ int8 initializeVariables(void )
     // init variables
     currentCommand = createIrCommand();
     
-    applicationSettings.irReceiveTimeout = 20000;
-    applicationSettings.irSendTimeout = 100000;
-    applicationSettings.irRepeatCount = 4;
-    
     //load settings....
     loadSettings(&applicationSettings, sizeof(ApplicationSettings));
+    
+    if (applicationSettings.firstStartIdentificator != 40)
+    {
+        applicationSettings.irReceiveTimeout = 25000;
+        applicationSettings.irSendTimeout = 50000;
+        applicationSettings.irRepeatCount = 2;
+        strcpy(applicationSettings.wlanSsid, "");
+        strcpy(applicationSettings.wlanPhrase, "");
+        strcpy(applicationSettings.wlanKey, "");
+        strcpy(applicationSettings.wlanHostname, "");
+        applicationSettings.wlanAuth = 0;
+        applicationSettings.wlanDhcp = 0;
+        strcpy(applicationSettings.wlanIp, "192.168.1.2");
+        strcpy(applicationSettings.wlanMask, "255.255.255.0");
+        strcpy(applicationSettings.wlanHostname, "192.168.1.1");
+    }
+    
     
     setIrReceiveTimeout(applicationSettings.irReceiveTimeout);
     setIrSendTimeout(applicationSettings.irSendTimeout);
@@ -862,7 +875,7 @@ void mainTask(void)
         }
 }
 
-void ledTask(void )
+void ledTask(void)
 {
     if (isWiFlyConnected()) // keeps also track of the connectedness
     {

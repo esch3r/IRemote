@@ -33,6 +33,7 @@ typedef enum {
 } ApplicationState;
 
 typedef struct {
+    uint8  firstStartIdentificator; // if this is not 40 then we have a first start
     uint32 irReceiveTimeout;
     uint32 irSendTimeout;
     uint32 irRepeatCount;
