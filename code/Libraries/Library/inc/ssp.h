@@ -62,13 +62,22 @@
 #define SSP0_SET_IRQS()       NVIC_SetPendingIRQ(SSP0_IRQn)
 #define SSP1_ENABLE_IRQ()      NVIC_EnableIRQ(SSP1_IRQn)
 #define SSP1_SET_IRQS()       NVIC_SetPendingIRQ(SSP1_IRQn)
-#define SSP0_SET_RXIM_AND_TXIM_INTERRUPT()   LPC_SSP0->IMSC = SSP_RXIM | SSP_TXIM
-#define SSP1_SET_RXIM_AND_TXIM_INTERRUPT()   LPC_SSP1->IMSC = SSP_RXIM | SSP_TXIM
+#define SSP0_SET_RXIM_AND_TXIM_INTERRUPT()   LPC_SSP0->IMSC |= SSP_RXIM | SSP_TXIM
+#define SSP1_SET_RXIM_AND_TXIM_INTERRUPT()   LPC_SSP1->IMSC |= SSP_RXIM | SSP_TXIM
+
+#define SSP0_READ_CHAR()           LPC_SSP0->DR
+#define SSP0_SET_CHAR(c)            LPC_SSP0->DR = (c << 0)
+#define SSP0_FIFO_TRANSMIT_EMPTY    (LPC_SSP0->SR &  (1 << 0))
+#define SSP0_FIFO_RECEIVE_EMPTY    (LPC_SSP0->SR &  (0 << 3))
 
 #define SSP1_READ_CHAR()           LPC_SSP1->DR
 #define SSP1_SET_CHAR(c)            LPC_SSP1->DR = (c << 0)
 #define SSP1_FIFO_TRANSMIT_EMPTY    (LPC_SSP1->SR &  (1 << 0))
 #define SSP1_FIFO_RECEIVE_EMPTY    (LPC_SSP1->SR &  (0 << 3))
+
+#define SSP0_IRQHANDLER()             SSP0_IRQHandler(void)
+#define SSP1_IRQHANDLER()             SSP1_IRQHandler(void)
+
 
 typedef enum
 {

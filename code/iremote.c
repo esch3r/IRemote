@@ -44,7 +44,7 @@ int8 initializeHardware(void)
     clearLed(3);
     blinkLed2(0);   //onboard we came through the initialization
     
-    //initializeRfm12();
+    initializeRfm12();
     
     return 0;
 }

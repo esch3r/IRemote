@@ -1,4 +1,6 @@
 #include "ssp.h"
+#include <uart.h>
+#include <timer.h>
 
 CircularBuffer ssp0ReadBuffer;
 CircularBuffer ssp0WriteBuffer;
@@ -7,31 +9,34 @@ CircularBuffer ssp1WriteBuffer;
 
 int8 initializeSSP0(uint32 baudrate,SspDataSize dataSize,SspFrameFormat frameFormat)
 {
-<<<<<<< HEAD
-   SSP_ENABLE_POWER(0);
-=======
    SSP0_ENABLE_POWER;
->>>>>>> 1293aaa24ce59981e49e24d79fb262f196d6dd80
    SSP0_SET_CORE_CLK();    
-   SSP0_SET_PR(baudrate);                      // set Prescaler
- 
-   SSP0_SET_DATA_SIZE(dataSize);
-   SSP0_SET_FRAME_FORMAT(frameFormat);
    
    //SSP0_SET_SSEL;     
    SSP0_SET_SCK;
    SSP0_SET_MISO;
    SSP0_SET_MOSI;
+   
+   SSP0_SET_PR(baudrate);                      // set Prescaler
+ 
+   SSP0_SET_DATA_SIZE(dataSize);
+   SSP0_SET_FRAME_FORMAT(frameFormat);
 
-    if (initializeCb(&ssp0ReadBuffer, SSP0_READ_BUFFER_SIZE, sizeof(uint16)) == -1)      // Initialize circular read buffer
-        return -1;
+   if (initializeCb(&ssp0ReadBuffer, SSP0_READ_BUFFER_SIZE, sizeof(uint16)) == -1)      // Initialize circular read buffer
+       return -1;
     
-    if (initializeCb(&ssp0WriteBuffer, SSP0_WRITE_BUFFER_SIZE, sizeof(uint16)) == -1)    //Initialize circular write buffer
-        return -1;
-    
+   if (initializeCb(&ssp0WriteBuffer, SSP0_WRITE_BUFFER_SIZE, sizeof(uint16)) == -1)    //Initialize circular write buffer
+       return -1;
+   
    SSP0_ENABLE_IRQ();
-   SSP0_SET_RXIM_AND_TXIM_INTERRUPT();
    SSP0_ENABLE_SSP;
+   
+   printfUart0("test 31\r");
+   delayMs(10);
+   //SSP0_SET_RXIM_AND_TXIM_INTERRUPT();
+   
+   printfUart0("test 4\r");
+   delayMs(10);
    
    return 0;
 }
@@ -63,6 +68,24 @@ int8 initializeSSP1(uint32 baudrate,SspDataSize dataSize,SspFrameFormat frameFor
    SSP1_ENABLE_SSP;
    return 0;
 }
+
+#if (USE_SSP_BUFFER == 1)
+void SSP0_IRQHANDLER()
+{
+    uint16 c;
+    
+    if (!SSP0_FIFO_TRANSMIT_EMPTY)          // If the interrupt comes from RBR
+    {
+        c = SSP0_READ_CHAR();                  // Read character and put it to the buffer, also disables interrupt
+        putCb(&ssp0ReadBuffer,(void*)(&c));
+    }
+    else                                        // Else interrupt comes from THRE or put function
+    {
+        if (getCb(&ssp0WriteBuffer,&c) == 0)   // If data is available
+            SSP0_SET_CHAR(c);                  // Put data to the uart, disables interrupt
+    }
+}
+#endif
 
 #if (USE_SSP_BUFFER == 1)
 void SSP1_IRQHANDLER()
