@@ -7,7 +7,8 @@
 
 int main(void)
 {   
-    initialize();
+    initializeHardware();
+    initializeVariables();
     
     uint8 ledTiming = 0;
     

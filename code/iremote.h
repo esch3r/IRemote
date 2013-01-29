@@ -32,11 +32,6 @@ typedef enum {
     ApplicationStateWiFlyTest = 100
 } ApplicationState;
 
-/*typedef enum {
-    NetworkStateConnected = 0,
-    NetworkStateDisconnected = 1
-} NetworkState;*/
-
 typedef struct {
     uint32 irReceiveTimeout;
     uint32 irSendTimeout;
@@ -59,7 +54,8 @@ typedef enum {
     } ActiveConnection;
     
     
-int8 initialize(void);
+int8 initializeHardware(void);
+int8 initializeVariables(void);
 int8 initializeSerialConnection(void);
 int8 initializeNetworkConnection(void);
 
@@ -70,20 +66,18 @@ int8 printfData(char* format, ...);
 int8 putcharData(char c);
 int8 writeData(void *data, uint32 length);
 
+void errorCommand();
+void errorWiFly();
 void printUnknownCommand(void);
 void printParameterMissing(void);
 void printAcknowledgement(void);
 void printError(char *message);
 void printAliveMessage(void);
-
-void errorCommand();
-void errorWiFly();
-
 bool compareBaseCommand(char *original, char *received);
 bool compareExtendedCommand(char *original, char *received);
+void processCommand(char *buffer);
 
 void startState(ApplicationState state);
-void processCommand(char *buffer);
 
 void mainTask(void);
 void ledTask(void);

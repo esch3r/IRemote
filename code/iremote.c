@@ -6,10 +6,9 @@ IrCommand *currentCommand;
 ApplicationState applicationState = ApplicationStateIdle;
 ApplicationSettings applicationSettings;
 
-int8 initialize(void)
+int8 initializeHardware(void)
 {
     crcInit();                    // init crc function for firmware flashing
-    
     initializeTimeout(TIMER1);    // initialize Timer1 for general timeout functions
         
     initializeLed(1,29, TRUE);     // led 0 - onboard
@@ -24,11 +23,10 @@ int8 initialize(void)
     initializeButton(2, 2, 10, ButtonTypeLowActive);
    
     //Program started notifier
-    delayMs(500);
     setLed(3);    
     blinkLed(2);
     setLed(1);
-    delayMs(500);
+    delayMs(200);
     
     initializeIrControl();
     
@@ -38,18 +36,21 @@ int8 initialize(void)
     {
         printfData("ERR: Network initalization failed");
     }
-    
-    setProcessFunctionUart0(&processCommand);
-    setErrorFunctionUart0(&errorCommand);
-    setProcessFunctionWiFly(&processCommand);
-    setErrorFunctionWiFly(&errorWiFly);
      
+    // Welcome message
     printfData("Welcome to IRemote!\r");    // Send a welcome message
     printfData("Id: %i, Version: %i, Serial: %i\r",readIdIap(),readVersionIap(),readSerialIap());
    
     clearLed(3);
     blinkLed2(0);   //onboard we came through the initialization
+    
+    initializeRfm12();
+    
+    return 0;
+}
 
+int8 initializeVariables(void )
+{
     // init variables
     currentCommand = createIrCommand();
     
@@ -64,8 +65,6 @@ int8 initialize(void)
     setIrSendTimeout(applicationSettings.irSendTimeout);
     setIrRepeatCount(applicationSettings.irRepeatCount);
     
-    initializeRfm12();
-    
     return 0;
 }
 
@@ -75,6 +74,10 @@ int8 initializeSerialConnection(void)
     {
         flushUart0();                           // Trash all unusefull characters
         activeConnections |= SerialConnection;
+        
+        setProcessFunctionUart0(&processCommand);
+        setErrorFunctionUart0(&errorCommand);
+    
         return 0;
     }
     
@@ -92,6 +95,10 @@ int8 initializeNetworkConnection(void)
             setWiFlyDnsName("IRemoteBox");      // Sets the default hostname
             setWiFlyDnsBackup("IRemote");       // Sets the backup hostname
             actionWiFlyExitCommandMode();
+            
+            setProcessFunctionWiFly(&processCommand);
+            setErrorFunctionWiFly(&errorWiFly);
+            
             return 0;
         }
         else
@@ -246,52 +253,6 @@ bool compareExtendedCommand(char *original, char *received)
 {
     return (((strlen(received) == 1) && (strncmp(original,received,1) == 0)) ||
                 (strcmp(original,received) == 0));
-}
-
-void startState(ApplicationState state)
-{
-    if (applicationState == state)              // If we are already in this state => ignore
-        return;
-    
-    if ((state != ApplicationStateIdle) 
-        && (applicationState != ApplicationStateIdle))  // only changes beetween idle and non idle are possible
-        return;
-    
-    if (state == ApplicationStateIdle)
-    {
-        applicationState = ApplicationStateIdle;
-        
-        printfData("Idle\r");
-    }
-    else if (state == ApplicationStateCaptureCommand)
-    {
-        applicationState = ApplicationStateCaptureCommand;
-        
-        printfData("Capturing data\r");
-        blinkLed2(2);
-        startIrCapture();
-    }
-    else if (state == ApplicationStateRunCommand)
-    {
-        applicationState = ApplicationStateRunCommand;
-                
-        printfData("Running command\r");
-        blinkLed(2);
-        runIrCommand(currentCommand);
-    }
-    else if (state == ApplicationStateFlashFirmware)
-    {
-        setAllLeds();
-        
-    }
-    else if (state == ApplicationStateWiFlyTest)
-    {
-        applicationState = ApplicationStateWiFlyTest;
-        
-        printfData("Going into WiFly Test state, all uart in and outputs will redirected.\n");
-    }
-    
-    return;
 }
 
 void processCommand(char *buffer)
@@ -602,6 +563,122 @@ void processCommand(char *buffer)
             return;
         }
     }
+    else if (compareBaseCommand("get", dataPointer))            // starting a get command
+    {
+        dataPointer = strtok(NULL," ");
+        if (dataPointer == NULL)
+        {
+            printUnknownCommand();
+            return;
+        }
+        else if (compareExtendedCommand("wlan",dataPointer))
+        {
+            // get wlan
+            dataPointer = strtok(NULL," ");
+            if (dataPointer == NULL)
+            {
+                printUnknownCommand();
+                return;
+            }
+            else if (compareExtendedCommand("ssid",dataPointer))
+            {
+                printfData("%s\r", applicationSettings.wlanSsid);
+                printAcknowledgement();
+                return;
+            }
+            else if (compareExtendedCommand("phrase",dataPointer))
+            {
+                printfData("%s\r", applicationSettings.wlanPhrase);
+                printAcknowledgement();
+                return;
+            }
+            else if (compareExtendedCommand("key",dataPointer))
+            {
+                printfData("%s\r", applicationSettings.wlanKey);
+                printAcknowledgement();
+                return;
+            }
+            else if (compareExtendedCommand("hostname",dataPointer))
+            {
+                printfData("%s\r", applicationSettings.wlanHostname);
+                printAcknowledgement();
+                return;
+            }
+            else if (compareExtendedCommand("auth",dataPointer))
+            {
+                printfData("%u\r", applicationSettings.wlanAuth);
+                printAcknowledgement();
+                return;
+            }
+            else if (compareExtendedCommand("dhcp",dataPointer))
+            {
+                printfData("%u\r", applicationSettings.wlanDhcp);
+                printAcknowledgement();
+                return;
+            }
+            else if (compareExtendedCommand("ip",dataPointer))
+            {
+                printfData("%s\r", applicationSettings.wlanIp);
+                printAcknowledgement();
+                return;
+            }
+            else if (compareExtendedCommand("mask",dataPointer))
+            {
+                printfData("%s\r", applicationSettings.wlanMask);
+                printAcknowledgement();
+                return;
+            }
+            else if (compareExtendedCommand("gateway",dataPointer))
+            {
+                printfData("%s\r", applicationSettings.wlanGateway);
+                printAcknowledgement();
+                return;
+            }
+            else
+            {
+                printUnknownCommand();
+                return;
+            }
+        }
+        else if (compareExtendedCommand("ir",dataPointer))
+        {
+            // set ir
+            dataPointer = strtok(NULL," ");
+            if (dataPointer == NULL)
+            {
+                printUnknownCommand();
+                return;
+            }
+            else if (compareExtendedCommand("receiveTimeout",dataPointer))
+            {
+                printfData("%u\r", applicationSettings.irReceiveTimeout/1000);
+                printAcknowledgement();
+                return;
+            }
+            else if (compareExtendedCommand("sendTimeout",dataPointer))
+            {
+                printfData("%u\r", applicationSettings.irSendTimeout/1000);
+                printAcknowledgement();
+                return;
+            }
+            else if (compareExtendedCommand("count",dataPointer))
+            {
+                printfData("%u\r", applicationSettings.irRepeatCount);
+                printAcknowledgement();
+                return;
+            }
+            else
+            {
+                printUnknownCommand();
+                return;
+            }
+        }
+        else
+        {
+            printUnknownCommand();
+            return;
+        }
+    }
     else if (compareBaseCommand("start", dataPointer))
     {
         // starting a start command
@@ -706,6 +783,52 @@ void processCommand(char *buffer)
     {
         printUnknownCommand();
     }
+}
+
+void startState(ApplicationState state)
+{
+    if (applicationState == state)              // If we are already in this state => ignore
+        return;
+    
+    if ((state != ApplicationStateIdle) 
+        && (applicationState != ApplicationStateIdle))  // only changes beetween idle and non idle are possible
+        return;
+    
+    if (state == ApplicationStateIdle)
+    {
+        applicationState = ApplicationStateIdle;
+        
+        printfData("Idle\r");
+    }
+    else if (state == ApplicationStateCaptureCommand)
+    {
+        applicationState = ApplicationStateCaptureCommand;
+        
+        printfData("Capturing data\r");
+        blinkLed2(2);
+        startIrCapture();
+    }
+    else if (state == ApplicationStateRunCommand)
+    {
+        applicationState = ApplicationStateRunCommand;
+                
+        printfData("Running command\r");
+        blinkLed(2);
+        runIrCommand(currentCommand);
+    }
+    else if (state == ApplicationStateFlashFirmware)
+    {
+        setAllLeds();
+        
+    }
+    else if (state == ApplicationStateWiFlyTest)
+    {
+        applicationState = ApplicationStateWiFlyTest;
+        
+        printfData("Going into WiFly Test state, all uart in and outputs will redirected.\n");
+    }
+    
+    return;
 }
 
 void mainTask(void)
