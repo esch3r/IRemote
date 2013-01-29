@@ -5,8 +5,8 @@ CircularBuffer ssp1WriteBuffer;
 
 int8 initializeSSP0(uint32 baudrate,SspDataSize dataSize,SspFrameFormat frameFormat)
 {
-    SSP_ENABLE_POWER(0);
-    SSP0_SET_CORE_CLK();    
+   SSP_ENABLE_POWER(0);
+   SSP0_SET_CORE_CLK();    
    SSP0_SET_PR(baudrate);                      // set Prescaler
  
    SSP0_SET_DATA_SIZE(dataSize);

@@ -71,6 +71,12 @@ int8 initializeVariables(void )
         strcpy(applicationSettings.wlanIp, "192.168.1.2");
         strcpy(applicationSettings.wlanMask, "255.255.255.0");
         strcpy(applicationSettings.wlanHostname, "192.168.1.1");
+        applicationSettings.networkMode = AdhocNetworkMode;
+        
+        applicationSettings.firstStartIdentificator = 40;   // remove the first start indicator
+    
+        startWlanAdhocMode();   // Start the adhoc mode
+        saveSettings(&applicationSettings, sizeof(ApplicationSettings));
     }
     
     
@@ -894,7 +900,24 @@ void ledTask(void)
     }
     else
     {
-        toggleLed(1);   // Green LED
+        if (applicationSettings.networkMode == AdhocNetworkMode)
+        {
+            toggleLed(1);   // Green LED
+        }
+        else if (applicationSettings.networkMode == InfrastructureNetworkMode)
+        {
+            if (readLed(1))
+            {
+                clearLed(1);
+                setLed(3);
+            }
+            else
+            {
+                clearLed(3);
+                setLed(1);
+            }
+            
+        }
     }
     
     clearLed(2);    // clear the yellow led in case it is still running
@@ -906,6 +929,21 @@ void buttonTask(void )
     if (getButtonPress(&buttonValue) == 0)
     {
         printfData("pressed %u, %u\r", buttonValue.id, buttonValue.count);
+        if ((buttonValue.id == 0) && (buttonValue.count == 1))
+        {
+            if (applicationSettings.networkMode == AdhocNetworkMode)
+            {
+                startWlanInfrastructureMode(&applicationSettings);
+                applicationSettings.networkMode = InfrastructureNetworkMode;
+                saveSettings(&applicationSettings, sizeof(ApplicationSettings));
+            }
+            else if (applicationSettings.networkMode == InfrastructureNetworkMode)
+            {
+                startWlanAdhocMode();
+                applicationSettings.networkMode = AdhocNetworkMode;
+                saveSettings(&applicationSettings, sizeof(ApplicationSettings));
+            }
+        }
     }
 }
 

@@ -32,6 +32,11 @@ typedef enum {
     ApplicationStateWiFlyTest = 100
 } ApplicationState;
 
+typedef enum {
+    AdhocNetworkMode = 0,
+    InfrastructureNetworkMode = 1
+} NetworkMode;
+
 typedef struct {
     uint8  firstStartIdentificator; // if this is not 40 then we have a first start
     uint32 irReceiveTimeout;
@@ -46,7 +51,7 @@ typedef struct {
     char   wlanIp[20];
     char   wlanMask[20];
     char   wlanGateway[20];
-    
+    uint8  networkMode;
 } ApplicationSettings;
 
 typedef enum {

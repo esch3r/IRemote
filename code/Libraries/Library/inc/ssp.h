@@ -35,8 +35,8 @@
 #define SSP0_SET_PR(x)       LPC_SSP0->CPSR = (uint8)(SSP_CLK/x)-1
 #define SSP1_SET_PR(x)       LPC_SSP1->CPSR = (uint8)(SSP_CLK/x)-1
 #define PCONP_SSP(ch)     (1 << (8+2*ch)) 		//set clock control bit
-#define SSP0_SET_CORE_CLK()  LPC_SC->PCLKSEL0 |= (0b00<< 10); //set 11:10 for SSPI
-#define SSP1_SET_CORE_CLK()  LPC_SC->PCLKSEL1 |= (0b00<< 20); //set 16:17 for SSPI
+#define SSP0_SET_CORE_CLK()  LPC_SC->PCLKSEL1 &= ~(0b00<< 10); //set 11:10 for SSP0
+#define SSP1_SET_CORE_CLK()  LPC_SC->PCLKSEL0 &= ~(0b00<< 20); //set 16:17 for SSP1
 
 
 #define SSP_ENABLE_POWER(ch)  LPC_SC->PCONP |= PCONP_SSP(ch)             //enable PCONP for SSPI
