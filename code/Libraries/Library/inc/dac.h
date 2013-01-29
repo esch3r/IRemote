@@ -4,9 +4,16 @@
  * @brief DAC Library
  * @date 20-11-2012
  */
+/* Peripheral group ----------------------------------------------------------- */
+/** @addtogroup Peripheral
+ * @{
+ */
 
-#ifndef _ADC_H_
-#define _ADC_H_
+/** @defgroup DAC DAC (Digital to Analog Converter)
+ * @ingroup Peripheral
+ * @{
+ */
+#pragma once
 
 #include <types.h>
 #include <dacDriver.h>
@@ -22,4 +29,10 @@ void setDacValue(uint16 value);
  */
 void setDacVolt(uint16 mV);
 
-#endif
+/**
+ * @}
+ */
+
+/**
+ * @}
+ */

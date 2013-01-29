@@ -1,5 +1,20 @@
-#ifndef _BUTTONLIB_H_
-#define _BUTTONLIB_H_
+/**
+ * @file button.h
+ * @author Johannes Wimmer & Alexander Rössler
+ * @brief Library for controlling the IAP functions
+ * @date 25-01-2013
+ */
+
+/* Device group ----------------------------------------------------------- */
+/** @addtogroup Device
+ * @{
+ */
+
+/** @defgroup Button Button Library
+ * @ingroup Device
+ * @{
+ */
+#pragma once
 
 #include <types.h>
 #include <timer.h>
@@ -30,6 +45,10 @@ void initializeButton(uint8 id, uint8 port, uint8 pin, ButtonType type);
 
 int8 getButtonPress(ButtonValue *value);
 
-#endif
+/**
+ * @}
+ */
 
-/** ButtonLib.h */
+/**
+ * @}
+ */

@@ -4,6 +4,15 @@
  * @brief Timeout Library
  * @date 05-01-2013
  */
+/* Functional group ----------------------------------------------------------- */
+/** @addtogroup Functional
+ * @{
+ */
+
+/** @defgroup Timeout Timeout Library
+ * @ingroup Functional
+ * @{
+ */
 #pragma once
 
 #include <types.h>
@@ -19,3 +28,11 @@ int8 initializeTimeout(int8 timerId);
 uint32 timeoutMsecs(void);
 /** Resets the timeout timer. */
 void resetTimeout(void);
+
+/**
+ * @}
+ */
+
+/**
+ * @}
+ */

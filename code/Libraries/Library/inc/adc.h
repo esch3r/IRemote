@@ -4,9 +4,16 @@
  * @brief ADC Library
  * @date 14-11-2012
  */
+/* Peripheral group ----------------------------------------------------------- */
+/** @addtogroup Peripheral
+ * @{
+ */
 
-#ifndef _ADC_H_
-#define _ADC_H_
+/** @defgroup ADC ADC (Analog to Digital Converter)
+ * @ingroup Peripheral
+ * @{
+ */
+#pragma once
 
 #include <types.h>
 #include <adcDriver.h>
@@ -27,4 +34,11 @@ int8 deinitializeAdc();
  *  @return Returns 0 if successful, -1 if not.
  */
 int8 readAdc(uint16 *value);
-#endif
+
+/**
+ * @}
+ */
+
+/**
+ * @}
+ */

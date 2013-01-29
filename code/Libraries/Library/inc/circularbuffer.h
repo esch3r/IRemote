@@ -4,8 +4,16 @@
  * @brief Circular Buffer Library
  * @date 07-11-2012
  */
-#ifndef _CIRCULARBUFFER_H_
-#define _CIRCULARBUFFER_H_
+/* Functional group ----------------------------------------------------------- */
+/** @addtogroup Functional
+ * @{
+ */
+
+/** @defgroup CircularBuffer CircularBuffer
+ * @ingroup Functional
+ * @{
+ */
+#pragma once
 
 #include <types.h>
 
@@ -41,5 +49,10 @@ int8 putCb(CircularBuffer *buffer, void *item);
  */
 int8 getCb(CircularBuffer *buffer, void *item);
 
+/**
+ * @}
+ */
 
-#endif
+/**
+ * @}
+ */

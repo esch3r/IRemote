@@ -4,9 +4,16 @@
  * @brief GPIO Library
  * @date 08-12-2012
  */
+/* Peripheral group ----------------------------------------------------------- */
+/** @addtogroup Peripheral
+ * @{
+ */
 
-#ifndef _GPIO_H_
-#define _GPIO_H_ 
+/** @defgroup GPIO GPIO (General Purpose Input and Output)
+ * @ingroup Peripheral
+ * @{
+ */
+#pragma once
 
 /** Set this constant to 0 if you want to write your own interrupt function */
 #ifndef GPIO_IRQ_ENABLED
@@ -71,4 +78,10 @@ void enableGpioInterrupt(uint8 port, uint8 pin, enum GpioInterruptType type, voi
 */
 void disableGpioInterrupt(uint8 port, uint8 pin);
 
-#endif
+/**
+ * @}
+ */
+
+/**
+ * @}
+ */

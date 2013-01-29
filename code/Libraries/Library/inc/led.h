@@ -4,15 +4,21 @@
  * @brief Led Library
  * @date 16-10-2012
  */
+/* Device group ----------------------------------------------------------- */
+/** @addtogroup Device
+ * @{
+ */
 
-#ifndef _LEDLIB_H_
-#define _LEDLIB_H_
+/** @defgroup LED LED Library
+ * @ingroup Device
+ * @{
+ */
+#pragma once
 
 /* With these values you can modify the behavior of the Led functions */
 #define LED_BLINK_TIME 100
 #define LED_RUNNING_TIME 30
 
-#include <ledDriver.h>
 #include <timer.h>
 #include <gpio.h>
 #include <types.h>
@@ -73,6 +79,10 @@ void allLedsUp();
 /** Make a running light from Led LEDCOUNT to 1. Uses timer 0. */
 void allLedsDown();
 
-#endif
+/**
+ * @}
+ */
 
-/** ledLib.h */
+/**
+ * @}
+ */

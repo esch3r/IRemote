@@ -4,9 +4,16 @@
  * @brief PINCON Library
  * @date 08-12-2012
  */
+ /* Peripheral group ----------------------------------------------------------- */
+/** @addtogroup Peripheral
+ * @{
+ */
 
-#ifndef _PIN_H_
-#define _PIN_H_ 
+/** @defgroup PINCON PINCON (Pin Configuration)
+ * @ingroup Peripheral
+ * @{
+ */
+#pragma once
 
 #include <pinconDriver.h>
 #include <types.h>
@@ -41,4 +48,10 @@ void setPinMode(uint8 port, uint8 pin, enum PinMode mode);
  */
 void setPinOpenDrainMode(uint8 port, uint8 pin, enum PinOpenDrainMode mode);
 
-#endif
+/**
+ * @}
+ */
+
+/**
+ * @}
+ */

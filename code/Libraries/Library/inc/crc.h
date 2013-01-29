@@ -12,13 +12,22 @@
  * notice must not be changed or removed and no warranty is either
  * expressed or implied by its publication or distribution.
  **********************************************************************/
+/**
+ * @file crc.h
+ * @author Michael Barr & Alexander Rössler
+ * @brief Library for controlling the IAP functions
+ * @date 2000, Modified 2013
+ */
+/* Functional group ----------------------------------------------------------- */
+/** @addtogroup Functional
+ * @{
+ */
 
-#ifndef _crc_h
-#define _crc_h
-
-
-//#define FALSE	0
-//#define TRUE	!FALSE
+/** @defgroup CRC CRC (Circular Redundancy Check)
+ * @ingroup Functional
+ * @{
+ */
+#pragma once
 
 /*
  * Select the CRC standard from the list that follows.
@@ -75,5 +84,10 @@ void  crcInit(void);
 crc   crcSlow(char* message, uint32 nBytes);
 crc   crcFast(char* message, uint32 nBytes);
 
+/**
+ * @}
+ */
 
-#endif /* _crc_h */
+/**
+ * @}
+ */

@@ -39,21 +39,6 @@ enum IapCommandCodes{
     IapCommandReadDeviceSerialNumber = 58
 };
 
-enum IapStatusCodes {
-    IapStatusCommandSuccess = 0,
-    IapStatusInvalidCommand = 1,
-    IapStatusSourceAddressError = 2,
-    IapStatusDestinationAddressError = 3,
-    IapStatusSourceAddressNotMapped = 4,
-    IapStatusDestinationAddressNotMapped = 5,
-    IapStatusCountError = 6,
-    IapStatusInvalidSector = 7,
-    IapStatusSectorNotBlank = 8,
-    IapStatusSectorNotPreparedForWriteOperation = 9,
-    IapStatusCompareError = 10,
-    IapStatusBusy = 11
-};
-
 typedef void (*iapEntry_t)(uint32 [], uint32 []);
 
 static iapEntry_t iapEntry = (iapEntry_t)0x1fff1ff1;

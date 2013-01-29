@@ -4,9 +4,16 @@
  * @brief Timer Library
  * @date 16-10-2012
  */
+/* Peripheral group ----------------------------------------------------------- */
+/** @addtogroup Peripheral
+ * @{
+ */
 
-#ifndef _TIMERLIB_H_
-#define _TIMERLIB_H_
+/** @defgroup Timer Timer
+ * @ingroup Peripheral
+ * @{
+ */
+#pragma once
 
 /** Set this constant to 0 if you want to write your own interrupt function */
 #ifndef TIMER0_IRQ_ENABLED
@@ -332,6 +339,10 @@ int8 initializeCapCom1(uint32 khz, uint8 pin, void (* func)(void));
 int8 initializeCapCom2(uint32 khz, uint8 pin, void (* func)(void));
 int8 initializeCapCom3(uint32 khz, uint8 pin, void (* func)(void));
 
-#endif
+/**
+ * @}
+ */
 
-/** timerLib.h */
+/**
+ * @}
+ */
