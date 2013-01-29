@@ -3,11 +3,12 @@
 #define RFM12_WRITEDATA             writeDataUart1
 #define RFXX_WRT_CMD                putcharUart1
 #define RFM12_GETCHAR               getcharUart1
-#define RFM12_INIT                  initializeUart1
+#define RFM12_INIT                  initializeSSP0
 
 int8 initializeRfm12(void)
 {
     //init ssp
+    RFM12_INIT(115200, SspDataSize16Bit, SspFrameFormatSPI);
 }
 
 void prepareSendingRfm12(void)
