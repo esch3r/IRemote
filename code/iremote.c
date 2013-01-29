@@ -152,7 +152,9 @@ int8 startWlanInfrastructureMode(ApplicationSettings *settings)
 
 int8 startWlanAdhocMode(void)
 {
-    return createWiFlyAdhocNetwork("IRemoteBox");
+    char buffer[100];
+    snprintf(buffer, 100, "IRemoteBox_%u", readSerialIap());
+    return createWiFlyAdhocNetwork(buffer);
 }
 
 int8 printfData(char* format, ... )
