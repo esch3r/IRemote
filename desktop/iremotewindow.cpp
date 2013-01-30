@@ -626,8 +626,6 @@ void IRemoteWindow::on_settingsSubmitButton_clicked()
         iremote->setWlanSubnetMask(ui->subnetMaskEdit->text());
         iremote->setWlanGateway(ui->gatewayEdit->text());
     }
-
-    qDebug() << "test";
 }
 
 void IRemoteWindow::on_commandList_doubleClicked(const QModelIndex &index)
@@ -703,8 +701,11 @@ void IRemoteWindow::on_wlanInfrastructureButton_clicked()
 
 void IRemoteWindow::on_removeCommandButton_clicked()
 {
-    removeIrCommand(ui->commandList->currentItem()->text());
-    refreshProfiles();
+    if (!ui->commandList->count() == 0)
+    {
+        removeIrCommand(ui->commandList->currentItem()->text());
+        refreshProfiles();
+    }
 }
 
 void IRemoteWindow::on_openFlashfileButton_clicked()

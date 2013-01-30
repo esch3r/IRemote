@@ -405,6 +405,10 @@ void IRemote::incomingSerialData()
 void IRemote::incomingNetworkData()
 {
     QByteArray data;
+
+    if (tcpSocket == NULL)
+        return;
+
     while (tcpSocket->bytesAvailable() != 0)
     {
        data = tcpSocket->read(1);
