@@ -17,23 +17,29 @@ int8 initializeSSP0(uint32 baudrate,SspDataSize dataSize,SspFrameFormat frameFor
    SSP0_SET_MISO;
    SSP0_SET_MOSI;
    
+   printfUart0("test 31\r");
+   delayMs(10);
+   SSP0_SET_RXIM_AND_TXIM_INTERRUPT();
+   
+   printfUart0("test 32\r");
+   delayMs(10);
+   //SSP0_ENABLE_IRQ();
+    
+   printfUart0("test 33\r");
+   delayMs(10);
+   
    SSP0_SET_PR(baudrate);                      // set Prescaler
  
    SSP0_SET_DATA_SIZE(dataSize);
    SSP0_SET_FRAME_FORMAT(frameFormat);
+   
+   SSP0_ENABLE_SSP;
 
    if (initializeCb(&ssp0ReadBuffer, SSP0_READ_BUFFER_SIZE, sizeof(uint16)) == -1)      // Initialize circular read buffer
        return -1;
     
    if (initializeCb(&ssp0WriteBuffer, SSP0_WRITE_BUFFER_SIZE, sizeof(uint16)) == -1)    //Initialize circular write buffer
        return -1;
-   
-   SSP0_ENABLE_IRQ();
-   SSP0_ENABLE_SSP;
-   
-   printfUart0("test 31\r");
-   delayMs(10);
-   //SSP0_SET_RXIM_AND_TXIM_INTERRUPT();
    
    printfUart0("test 4\r");
    delayMs(10);
@@ -69,12 +75,12 @@ int8 initializeSSP1(uint32 baudrate,SspDataSize dataSize,SspFrameFormat frameFor
    return 0;
 }
 
-#if (USE_SSP_BUFFER == 1)
+//#if (USE_SSP_BUFFER == 1)
 void SSP0_IRQHANDLER()
 {
     uint16 c;
     
-    if (!SSP0_FIFO_TRANSMIT_EMPTY)          // If the interrupt comes from RBR
+    /*if (!SSP0_FIFO_TRANSMIT_EMPTY)          // If the interrupt comes from RBR
     {
         c = SSP0_READ_CHAR();                  // Read character and put it to the buffer, also disables interrupt
         putCb(&ssp0ReadBuffer,(void*)(&c));
@@ -83,9 +89,9 @@ void SSP0_IRQHANDLER()
     {
         if (getCb(&ssp0WriteBuffer,&c) == 0)   // If data is available
             SSP0_SET_CHAR(c);                  // Put data to the uart, disables interrupt
-    }
+    }*/
 }
-#endif
+//#endif
 
 #if (USE_SSP_BUFFER == 1)
 void SSP1_IRQHANDLER()

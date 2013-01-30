@@ -40,5 +40,8 @@
 # Kdevelop
 .kdev_include_paths
 
+# Tex
+*.backup
+
 # Other
 ./code/DbgCfg/LPC1758_OOCD_CMARM.cfg

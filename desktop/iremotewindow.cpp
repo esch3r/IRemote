@@ -61,6 +61,8 @@ IRemoteWindow::~IRemoteWindow()
 void IRemoteWindow::applicationStarted(QString message)
 {
     qDebug() << message;
+    IrCommand command = getIrCommand(message);
+    iremote->actionRun(command);
 }
 
 void IRemoteWindow::loadSettings()

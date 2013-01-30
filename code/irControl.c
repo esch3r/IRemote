@@ -86,8 +86,8 @@ void captureFunction(void)
 {
     static uint16 timeDiff;
     
-    if (firstCapture != 1)                     // Check for first run, ignore value
-    {
+    //if (firstCapture != 1)                     // Check for first run, ignore value
+    //{
         timeDiff = (uint16)getCounterValueTimer3();
 
         if (timeDiff >= receiveTimeout)     // Detected a timeout => frameReceived
@@ -106,11 +106,11 @@ void captureFunction(void)
         {
             putCb(&buffer0, &timeDiff);
         }
-    }
+    /*}
     else 
     {
         firstCapture = 0;
-    }
+    }*/
     
     resetTimer3();                      // Reset the timer
 }
