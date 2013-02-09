@@ -71,7 +71,7 @@ led3PosY=12;
 
 
 renderButtons=false;
-renderTop=true;
+renderTop=false;
 renderBottom=true;
 
 rotation=0;		//set to 180 for top export

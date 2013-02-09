@@ -41,10 +41,16 @@ int8 initializeHardware(void)
     printfData("Welcome to IRemote!\r");    // Send a welcome message
     printfData("Id: %i, Version: %i, Serial: %i\r",readIdIap(),readVersionIap(),readSerialIap());
    
+    delayMs(500);
+    initializeRfm12();
+    prepareSendingRfm12();
+    
+    //putcharSsp1(0, 0x8209); // clk on
+    //delayMs(100);
+    //putcharSsp1(0, 0xC0E0); // clk 1.6MHz
+    
     clearLed(3);
     blinkLed2(0);   //onboard we came through the initialization
-    
-    initializeRfm12();
     
     return 0;
 }

@@ -20,9 +20,15 @@
 
 enum GpioDirection { GpioDirectionInput = 0, 
                      GpioDirectionOutput = 1};
+                     
 enum GpioInterruptType { GpioInterruptRisingEdge = 0,
                          GpioInterruptFallingEdge = 1,
                          GpioInterruptFallingAndRisingEdge = 2};
+                         
+typedef struct {
+    uint8 port;
+    uint8 pin;
+} GpioPair;
                          
 void (* functionPointers0[GPIO0_INT_PIN_COUNT])(void);
 void (* functionPointers2[GPIO2_INT_PIN_COUNT])(void);
