@@ -94,7 +94,6 @@
 #define SSP_RTIM    (1 << 1)     //Interrupt when receive timeout
 
 #define SYSTEM_CLK      SystemCoreClock
-#define SSP_CLK         SYSTEM_CLK/4
 #define SSP_FIFOSIZE    8
 
 #define SSP0_SET_CPSR(x)                      LPC_SSP0->CPSR = x
@@ -104,7 +103,7 @@
 #define SSP0_SET_CORE_CLK_DIVISOR_8()         LPC_SC->PCLKSEL1 |= (0b11<< 10);
 
 #define SSP0_ENABLE_POWER()         LPC_SC->PCONP |= (1 << 21)            //enable PCONP for SSPI
-#define SSP0_SET_SCR(x)             LPC_SSP0->CR0  |= (x << 8)
+#define SSP0_SET_SCR(x)             LPC_SSP0->CR0 |= (x << 8)
 #define SSP0_SET_DATA_SIZE(x)       LPC_SSP0->CR0 |= (x << 0)
 #define SSP0_SET_FRAME_FORMAT(x)    LPC_SSP0->CR0 |= (x << 4)
 #define SSP0_SET_CPOL(x)            LPC_SSP0->CR0 |= (x << 6)

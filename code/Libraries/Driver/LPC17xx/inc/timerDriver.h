@@ -11,8 +11,11 @@
 #define LOW_IRQ_PRIORITY                1
 #define HIGH_IRQ_PRIORITY               0
 
-#define TIMER0_ENABLE_CLK()             LPC_SC->PCONP |= (1 << 1); LPC_SC->PCLKSEL0 &= ~(1 << 3); LPC_SC->PCLKSEL0 |= (1 << 2)
-#define TIMER0_DISABLE_CLK()            //LPC_SC->PCONP &= ~(1 << 1)
+#define TIMER0_ENABLE_POWER()           LPC_SC->PCONP |= (1 << 1);
+#define TIMER0_SET_CORE_CLK_DIVISOR_1() LPC_SC->PCLKSEL0 &= ~(0b11 << 2); LPC_SC->PCLKSEL0 |= (0b01 << 2);
+#define TIMER0_SET_CORE_CLK_DIVISOR_2() LPC_SC->PCLKSEL0 &= ~(0b11 << 2); LPC_SC->PCLKSEL0 |= (0b10 << 2);
+#define TIMER0_SET_CORE_CLK_DIVISOR_4() LPC_SC->PCLKSEL0 &= ~(0b11 << 2); 
+#define TIMER0_SET_CORE_CLK_DIVISOR_8() LPC_SC->PCLKSEL0 |= (0b11 << 2);
 #define TIMER0_RESET()                  LPC_TIM0->TCR = 0x02
 #define TIMER0_START()                  LPC_TIM0->TCR = 0x01
 #define TIMER0_STOP()                   LPC_TIM0->TCR = 0x00
@@ -23,6 +26,7 @@
 #define TIMER0_RESET_IRQS()             LPC_TIM0->IR  = 0xff
 #define TIMER0_SET_INTERVAL_MS(x)       LPC_TIM0->MR0 = (uint32)(x*(SYSTEMCLK/1000/(LPC_TIM0->PR+1)))-1
 #define TIMER0_SET_INTERVAL_US(x)       LPC_TIM0->MR0 = (uint32)(x*(SYSTEMCLK/1000000/(LPC_TIM0->PR+1)))-1
+#define TIMER0_SET_MATCH_REGISTER_0(x)  LPC_TIM0->MR0 = x
 #define TIMER0_ENABLE_IRQ()             NVIC_EnableIRQ(TIMER0_IRQn)
 #define TIMER0_DISABLE_IRQ()            NVIC_DisableIRQ(TIMER0_IRQn)
 #define TIMER0_SET_IRQ_PRIORITY(x)                NVIC_SetPriority(TIMER0_IRQn,x)
@@ -32,8 +36,11 @@
 #define TIMER0_IRQHANDLER()             TIMER0_IRQHandler(void)
 #define TIMER0_COUNTER_VALUE()          LPC_TIM0->TC
 
-#define TIMER1_ENABLE_CLK()             LPC_SC->PCONP |= (1 << 2); LPC_SC->PCLKSEL0 &= ~(1 << 5); LPC_SC->PCLKSEL0 |= (1 << 4)
-#define TIMER1_DISABLE_CLK()            //LPC_SC->PCONP &= ~(1 << 2)
+#define TIMER1_ENABLE_POWER()           LPC_SC->PCONP |= (1 << 2);
+#define TIMER1_SET_CORE_CLK_DIVISOR_1() LPC_SC->PCLKSEL0 &= ~(0b11 << 4); LPC_SC->PCLKSEL0 |= (0b01 << 4);
+#define TIMER1_SET_CORE_CLK_DIVISOR_2() LPC_SC->PCLKSEL0 &= ~(0b11 << 4); LPC_SC->PCLKSEL0 |= (0b10 << 4);
+#define TIMER1_SET_CORE_CLK_DIVISOR_4() LPC_SC->PCLKSEL0 &= ~(0b11 << 4); 
+#define TIMER1_SET_CORE_CLK_DIVISOR_8() LPC_SC->PCLKSEL0 |= (0b11 << 4);
 #define TIMER1_RESET()                  LPC_TIM1->TCR = 0x02
 #define TIMER1_START()                  LPC_TIM1->TCR = 0x01
 #define TIMER1_STOP()                   LPC_TIM1->TCR = 0x00
@@ -44,6 +51,7 @@
 #define TIMER1_RESET_IRQS()             LPC_TIM1->IR  = 0xff
 #define TIMER1_SET_INTERVAL_MS(x)       LPC_TIM1->MR0 = (uint32)(x*(SYSTEMCLK/1000/(LPC_TIM1->PR+1)))-1
 #define TIMER1_SET_INTERVAL_US(x)       LPC_TIM1->MR0 = (uint32)(x*(SYSTEMCLK/1000000/(LPC_TIM1->PR+1)))-1
+#define TIMER1_SET_MATCH_REGISTER_0(x)  LPC_TIM1->MR0 = x
 #define TIMER1_ENABLE_IRQ()             NVIC_EnableIRQ(TIMER1_IRQn)
 #define TIMER1_DISABLE_IRQ()            NVIC_DisableIRQ(TIMER1_IRQn)
 #define TIMER1_SET_IRQ_PRIORITY(x)                NVIC_SetPriority(TIMER1_IRQn,x)
@@ -53,8 +61,11 @@
 #define TIMER1_IRQHANDLER()             TIMER1_IRQHandler(void)
 #define TIMER1_COUNTER_VALUE()          LPC_TIM1->TC
 
-#define TIMER2_ENABLE_CLK()             LPC_SC->PCONP |= (1 << 22); LPC_SC->PCLKSEL1 &= ~(1 << 13); LPC_SC->PCLKSEL1 |= (1 << 12)
-#define TIMER2_DISABLE_CLK()            //LPC_SC->PCONP &= ~(1 << 22)
+#define TIMER2_ENABLE_POWER()           LPC_SC->PCONP |= (1 << 22);
+#define TIMER2_SET_CORE_CLK_DIVISOR_1() LPC_SC->PCLKSEL1 &= ~(0b11 << 12); LPC_SC->PCLKSEL1 |= (0b01 << 12);
+#define TIMER2_SET_CORE_CLK_DIVISOR_2() LPC_SC->PCLKSEL1 &= ~(0b11 << 12); LPC_SC->PCLKSEL1 |= (0b10 << 12);
+#define TIMER2_SET_CORE_CLK_DIVISOR_4() LPC_SC->PCLKSEL1 &= ~(0b11 << 12); 
+#define TIMER2_SET_CORE_CLK_DIVISOR_8() LPC_SC->PCLKSEL1 |= (0b11 << 12);
 #define TIMER2_RESET()                  LPC_TIM2->TCR = 0x02
 #define TIMER2_START()                  LPC_TIM2->TCR = 0x01
 #define TIMER2_STOP()                   LPC_TIM2->TCR = 0x00
@@ -62,6 +73,7 @@
 #define TIMER2_SET_PRESCALER(x)         LPC_TIM2->PR = (uint32)(x)
 #define TIMER2_SET_KHZ(x)               TIMER2_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E3))-1)
 #define TIMER2_SET_MHZ(x)               TIMER2_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E6))-1)
+#define TIMER2_SET_MATCH_REGISTER_0(x)  LPC_TIM2->MR0 = x
 #define TIMER2_RESET_IRQS()             LPC_TIM2->IR  = 0xff
 #define TIMER2_SET_INTERVAL_MS(x)       LPC_TIM2->MR0 = (uint32)(x*(SYSTEMCLK/1000/(LPC_TIM2->PR+1)))-1
 #define TIMER2_SET_INTERVAL_US(x)       LPC_TIM2->MR0 = (uint32)(x*(SYSTEMCLK/1000000/(LPC_TIM2->PR+1)))-1
@@ -74,8 +86,11 @@
 #define TIMER2_IRQHANDLER()             TIMER2_IRQHandler(void)
 #define TIMER2_COUNTER_VALUE()          LPC_TIM2->TC
 
-#define TIMER3_ENABLE_CLK()             LPC_SC->PCONP |= (1 << 23); LPC_SC->PCLKSEL1 &= ~(1 << 15); LPC_SC->PCLKSEL1 |= (1 << 14)
-#define TIMER3_DISABLE_CLK()            //LPC_SC->PCONP &= ~(1 << 23)
+#define TIMER3_ENABLE_POWER()           LPC_SC->PCONP |= (1 << 23);
+#define TIMER3_SET_CORE_CLK_DIVISOR_1() LPC_SC->PCLKSEL1 &= ~(0b11 << 14); LPC_SC->PCLKSEL1 |= (0b01 << 14);
+#define TIMER3_SET_CORE_CLK_DIVISOR_2() LPC_SC->PCLKSEL1 &= ~(0b11 << 14); LPC_SC->PCLKSEL1 |= (0b10 << 14);
+#define TIMER3_SET_CORE_CLK_DIVISOR_4() LPC_SC->PCLKSEL1 &= ~(0b11 << 14); 
+#define TIMER3_SET_CORE_CLK_DIVISOR_8() LPC_SC->PCLKSEL1 |= (0b11 << 14);
 #define TIMER3_RESET()                  LPC_TIM3->TCR = 0x02
 #define TIMER3_START()                  LPC_TIM3->TCR = 0x01
 #define TIMER3_STOP()                   LPC_TIM3->TCR = 0x00
@@ -83,6 +98,7 @@
 #define TIMER3_SET_PRESCALER(x)         LPC_TIM3->PR = (uint32)(x)
 #define TIMER3_SET_KHZ(x)               TIMER3_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E3))-1)
 #define TIMER3_SET_MHZ(x)               TIMER3_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E6))-1)
+#define TIMER3_SET_MATCH_REGISTER_0(x)  LPC_TIM3->MR0 = x
 #define TIMER3_RESET_IRQS()             LPC_TIM3->IR  = 0xff
 #define TIMER3_SET_INTERVAL_MS(x)       LPC_TIM3->MR0 = (uint32)(x*(SYSTEMCLK/1000/(LPC_TIM3->PR+1)))-1
 #define TIMER3_SET_INTERVAL_US(x)       LPC_TIM3->MR0 = (uint32)(x*(SYSTEMCLK/1000000/(LPC_TIM3->PR+1)) )-1

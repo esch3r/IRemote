@@ -7,14 +7,55 @@ void (* functionPointer3)(void) = NULL;
 
 int8 initializeTimer0(uint32 khz, uint32 intervalUs)
 {
+    uint32 pclk;
+    uint32 pr;
+    uint32 targetfreq = khz*1000;
+    uint32 divisor;
+    uint32 mr0;
+    
     if (TIMER0_RUNNING())                       /* if timer is already in use return -1 */
         return -1;
     
-    TIMER0_ENABLE_CLK();                        /* Enable clock */
+    TIMER0_ENABLE_POWER();                      /* Enable power */
     
+    pr = 0xFFFFFFFF/2-1;    // 2^32/2+1
+    divisor = SystemCoreClock / targetfreq / (pr+1);
+    
+    if (divisor < 8)
+        {
+            if (divisor < 4)
+            {
+                if (divisor < 2)
+                {
+                    TIMER0_SET_CORE_CLK_DIVISOR_1();
+                    pclk = SystemCoreClock;
+                }
+                else
+                {
+                    TIMER0_SET_CORE_CLK_DIVISOR_2();
+                    pclk = SystemCoreClock/2;
+                }
+            }
+            else
+            {
+                TIMER0_SET_CORE_CLK_DIVISOR_4();
+                pclk = SystemCoreClock/4;
+            }
+        }
+        else
+        {
+            TIMER0_SET_CORE_CLK_DIVISOR_8();
+            pclk = SystemCoreClock/8;
+        }
+        
+    pr = (uint32)((pclk/targetfreq)-1)+1;
+    
+    mr0 = intervalUs/(1E6/(pclk/(pr+1)));
+    
+    TIMER0_SET_PRESCALER(pr);                   /* Set the clock prescaler */
+    TIMER0_SET_MATCH_REGISTER_0(mr0);           /* Set the match register */
+     
     TIMER0_RESET();                             /* Reset Timer Counter and Prescale Counter */
-    TIMER0_SET_KHZ(khz);                        /* Configure the timer to run with the given frequency */
-    TIMER0_SET_INTERVAL_US(intervalUs);         /* Set interval */
     TIMER0_RESET_IRQS();                        /* Reset all interrupts */
     TIMER0_RESET_AND_IRQ_ON_MATCH();            /* Reset the TC and generate an interrupt */
     TIMER0_ENABLE_IRQ();                        /* Enable IRQ for Timer_32_0) */
@@ -30,7 +71,6 @@ int8 deinitializeTimer0(void)
     if (TIMER0_RUNNING())                       /* if timer is already in use return -1 */
         return -1;
     
-    TIMER0_DISABLE_CLK();                               /* Disable the timer */
     TIMER0_DISABLE_IRQ();                               /* Disable timer interrupt */
     
     return 0;
@@ -41,7 +81,7 @@ int8 initializeCapCom0(uint32 khz, uint8 pin, void (* func)(void))
     if (TIMER0_RUNNING())                       /* if timer is already in use return -1 */
         return -1;
         
-    TIMER0_ENABLE_CLK();                        /* Enable clock */
+//    TIMER0_ENABLE_CLK();                        /* Enable clock */
     
     TIMER0_RESET();                             /* Reset Timer Counter and Prescale Counter */
     TIMER0_SET_KHZ(khz);                        /* Configure the timer to run with the given frequency */
@@ -90,7 +130,7 @@ int8 initializeCapCom3(uint32 khz, uint8 pin, void (* func)(void))
     //if (TIMER3_RUNNING())                       /* if timer is already in use return -1 */
     //    return -1;
         
-    TIMER3_ENABLE_CLK();                        /* Enable clock */
+    //TIMER3_ENABLE_CLK();                        /* Enable clock */
     
     CAPCOM_ENABLE_PIN5();  // Enable pin 0
     
@@ -211,7 +251,8 @@ int8 delayUsTimer0(uint32 us)
     if (TIMER0_RUNNING())                       /* if timer is already in use return -1 */
         return -1;
     
-    TIMER0_ENABLE_CLK();                                /* Enable clock for timer */
+    TIMER0_ENABLE_POWER();
+    TIMER0_SET_CORE_CLK_DIVISOR_1();
     
     TIMER0_RESET();                                     /* Reset the timer */
     TIMER0_SET_PRESCALER(OPTIMIZE_PRESCALER_US());      /* Set prescaler to 2 */
@@ -231,7 +272,6 @@ int8 delayUsTimer0(uint32 us)
     } 
     while(TIMER0_RUNNING());                            /* Wait until the timer has finished */ 
     
-    TIMER0_DISABLE_CLK();                               /* Disable the timer again */
     TIMER0_DISABLE_IRQ();                               /* Disable timer interrupt */
     
     return 0;
@@ -242,7 +282,8 @@ int8 delayMsTimer0(uint32 ms)
     if (TIMER0_RUNNING())                       /* if timer is already in use return -1 */
         return -1;
     
-    TIMER0_ENABLE_CLK();                                /* Enable clock for timer */
+    TIMER0_ENABLE_POWER();
+    TIMER0_SET_CORE_CLK_DIVISOR_1();
     
     TIMER0_RESET();                                     /* Reset the timer */
     TIMER0_SET_PRESCALER(OPTIMIZE_PRESCALER_MS());      /* Set prescaler to 2 */
@@ -262,7 +303,6 @@ int8 delayMsTimer0(uint32 ms)
     } 
     while(TIMER0_RUNNING());                            /* Wait until the timer has finished */ 
     
-    TIMER0_DISABLE_CLK();                               /* Disable the timer again */
     TIMER0_DISABLE_IRQ();                               /* Disable timer interrupt */
     
     return 0;
@@ -273,7 +313,8 @@ int8 singleShotTimer0(uint32 ms, void (* func)(void))
     if (TIMER0_RUNNING())                       /* if timer is already in use return 1 */
         return -1;
     
-    TIMER0_ENABLE_CLK();                                /* Enable clock for timer */
+    TIMER0_ENABLE_POWER();
+    TIMER0_SET_CORE_CLK_DIVISOR_1();
     
     TIMER0_RESET();                                     /* Reset the timer */
     TIMER0_SET_PRESCALER(OPTIMIZE_PRESCALER_MS());      /* Set prescaler to 0 */
@@ -323,14 +364,55 @@ void TIMER0_IRQHANDLER()
 
 int8 initializeTimer1(uint32 khz, uint32 intervalUs)
 {
-    if (TIMER1_RUNNING())                       /* if timer is already in use return 1 */
+    uint32 pclk;
+    uint32 pr;
+    uint32 targetfreq = khz*1000;
+    uint32 divisor;
+    uint32 mr0;
+    
+    if (TIMER1_RUNNING())                       /* if timer is already in use return -1 */
         return -1;
     
-    TIMER1_ENABLE_CLK();                        /* Enable clock */
+    TIMER1_ENABLE_POWER();                      /* Enable power */
     
+    pr = 0xFFFFFFFF/2-1;    // 2^32/2+1
+    divisor = SystemCoreClock / targetfreq / (pr+1);
+    
+    if (divisor < 8)
+        {
+            if (divisor < 4)
+            {
+                if (divisor < 2)
+                {
+                    TIMER1_SET_CORE_CLK_DIVISOR_1();
+                    pclk = SystemCoreClock;
+                }
+                else
+                {
+                    TIMER1_SET_CORE_CLK_DIVISOR_2();
+                    pclk = SystemCoreClock/2;
+                }
+            }
+            else
+            {
+                TIMER1_SET_CORE_CLK_DIVISOR_4();
+                pclk = SystemCoreClock/4;
+            }
+        }
+        else
+        {
+            TIMER1_SET_CORE_CLK_DIVISOR_8();
+            pclk = SystemCoreClock/8;
+        }
+        
+    pr = (uint32)((pclk/targetfreq)-1)+1;
+    
+    mr0 = intervalUs/(1E6/(pclk/(pr+1)));
+    
+    TIMER1_SET_PRESCALER(pr);                   /* Set the clock prescaler */
+    TIMER1_SET_MATCH_REGISTER_0(mr0);           /* Set the match register */
+   
     TIMER1_RESET();                             /* Reset Timer Counter and Prescale Counter */
-    TIMER1_SET_KHZ(khz);                        /* Configure the timer to run with the given frequency */
-    TIMER1_SET_INTERVAL_US(intervalUs);         /* Set interval */
     TIMER1_RESET_IRQS();                        /* Reset all interrupts */
     TIMER1_RESET_AND_IRQ_ON_MATCH();            /* Reset the TC and generate an interrupt */
     TIMER1_ENABLE_IRQ();                        /* Enable IRQ for Timer_32_0) */
@@ -346,7 +428,6 @@ int8 deinitializeTimer1(void)
     if (TIMER1_RUNNING())                       /* if timer is already in use return -1 */
         return -1;
     
-    TIMER1_DISABLE_CLK();                               /* Disable the timer */
     TIMER1_DISABLE_IRQ();                               /* Disable timer interrupt */
     
     return 0;
@@ -419,7 +500,8 @@ int8 delayUsTimer1(uint32 us)
     if (TIMER1_RUNNING())                       /* if timer is already in use return -1 */
         return -1;
     
-    TIMER1_ENABLE_CLK();                                /* Enable clock for timer */
+    TIMER1_ENABLE_POWER();
+    TIMER1_SET_CORE_CLK_DIVISOR_1();
     
     TIMER1_RESET();                                     /* Reset the timer */
     TIMER1_SET_PRESCALER(OPTIMIZE_PRESCALER_US());      /* Set prescaler to 2 */
@@ -439,7 +521,6 @@ int8 delayUsTimer1(uint32 us)
     } 
     while(TIMER1_RUNNING());                            /* Wait until the timer has finished */ 
     
-    TIMER1_DISABLE_CLK();                               /* Disable the timer again */
     TIMER1_DISABLE_IRQ();                               /* Disable timer interrupt */
     
     return 0;
@@ -450,7 +531,8 @@ int8 delayMsTimer1(uint32 ms)
     if (TIMER1_RUNNING())                       /* if timer is already in use return -1 */
         return -1;
     
-    TIMER1_ENABLE_CLK();                                /* Enable clock for timer */
+    TIMER1_ENABLE_POWER();
+    TIMER1_SET_CORE_CLK_DIVISOR_1();
     
     TIMER1_RESET();                                     /* Reset the timer */
     TIMER1_SET_PRESCALER(OPTIMIZE_PRESCALER_MS());      /* Set prescaler to 2 */
@@ -470,7 +552,6 @@ int8 delayMsTimer1(uint32 ms)
     } 
     while(TIMER1_RUNNING());                            /* Wait until the timer has finished */ 
     
-    TIMER1_DISABLE_CLK();                               /* Disable the timer again */
     TIMER1_DISABLE_IRQ();                               /* Disable timer interrupt */
     
     return 0;
@@ -481,7 +562,8 @@ int8 singleShotTimer1(uint32 ms, void (* func)(void))
     if (TIMER1_RUNNING())                       /* if timer is already in use return 1 */
         return -1;
     
-    TIMER1_ENABLE_CLK();                                /* Enable clock for timer */
+    TIMER1_ENABLE_POWER();
+    TIMER1_SET_CORE_CLK_DIVISOR_1();
     
     TIMER1_RESET();                                     /* Reset the timer */
     TIMER1_SET_PRESCALER(OPTIMIZE_PRESCALER_MS());      /* Set prescaler to 0 */
@@ -517,14 +599,55 @@ void TIMER1_IRQHANDLER()
 
 int8 initializeTimer2(uint32 khz, uint32 intervalUs)
 {
-    if (TIMER2_RUNNING())                       /* if timer is already in use return 1 */
+    uint32 pclk;
+    uint32 pr;
+    uint32 targetfreq = khz*1000;
+    uint32 divisor;
+    uint32 mr0;
+    
+    if (TIMER2_RUNNING())                       /* if timer is already in use return -1 */
         return -1;
     
-    TIMER2_ENABLE_CLK();                        /* Enable clock */
+    TIMER2_ENABLE_POWER();                      /* Enable power */
     
+    pr = 0xFFFFFFFF/2-1;    // 2^32/2+1
+    divisor = SystemCoreClock / targetfreq / (pr+1);
+    
+    if (divisor < 8)
+        {
+            if (divisor < 4)
+            {
+                if (divisor < 2)
+                {
+                    TIMER2_SET_CORE_CLK_DIVISOR_1();
+                    pclk = SystemCoreClock;
+                }
+                else
+                {
+                    TIMER2_SET_CORE_CLK_DIVISOR_2();
+                    pclk = SystemCoreClock/2;
+                }
+            }
+            else
+            {
+                TIMER2_SET_CORE_CLK_DIVISOR_4();
+                pclk = SystemCoreClock/4;
+            }
+        }
+        else
+        {
+            TIMER2_SET_CORE_CLK_DIVISOR_8();
+            pclk = SystemCoreClock/8;
+        }
+        
+    pr = (uint32)((pclk/targetfreq)-1)+1;
+    
+    mr0 = intervalUs/(1E6/(pclk/(pr+1)));
+    
+    TIMER2_SET_PRESCALER(pr);                   /* Set the clock prescaler */
+    TIMER2_SET_MATCH_REGISTER_0(mr0);           /* Set the match register */
+
     TIMER2_RESET();                             /* Reset Timer Counter and Prescale Counter */
-    TIMER2_SET_KHZ(khz);                        /* Configure the timer to run with the given frequency */
-    TIMER2_SET_INTERVAL_US(intervalUs);         /* Set interval */
     TIMER2_RESET_IRQS();                        /* Reset all interrupts */
     TIMER2_RESET_AND_IRQ_ON_MATCH();            /* Reset the TC and generate an interrupt */
     TIMER2_ENABLE_IRQ();                        /* Enable IRQ for Timer_32_0) */
@@ -540,7 +663,6 @@ int8 deinitializeTimer2(void)
     if (TIMER2_RUNNING())                       /* if timer is already in use return -1 */
         return -1;
     
-    TIMER2_DISABLE_CLK();                               /* Disable the timer */
     TIMER2_DISABLE_IRQ();                               /* Disable timer interrupt */
     
     return 0;
@@ -613,7 +735,8 @@ int8 delayUsTimer2(uint32 us)
     if (TIMER2_RUNNING())                       /* if timer is already in use return -1 */
         return -1;
     
-    TIMER2_ENABLE_CLK();                                /* Enable clock for timer */
+    TIMER2_ENABLE_POWER();
+    TIMER2_SET_CORE_CLK_DIVISOR_1();
     
     TIMER2_RESET();                                     /* Reset the timer */
     TIMER2_SET_PRESCALER(OPTIMIZE_PRESCALER_US());      /* Set prescaler to 2 */
@@ -633,7 +756,6 @@ int8 delayUsTimer2(uint32 us)
     } 
     while(TIMER2_RUNNING());                            /* Wait until the timer has finished */ 
     
-    TIMER2_DISABLE_CLK();                               /* Disable the timer again */
     TIMER2_DISABLE_IRQ();                               /* Disable timer interrupt */
     
     return 0;
@@ -644,7 +766,8 @@ int8 delayMsTimer2(uint32 ms)
     if (TIMER2_RUNNING())                       /* if timer is already in use return -1 */
         return -1;
     
-    TIMER2_ENABLE_CLK();                                /* Enable clock for timer */
+    TIMER2_ENABLE_POWER();
+    TIMER2_SET_CORE_CLK_DIVISOR_1();
     
     TIMER2_RESET();                                     /* Reset the timer */
     TIMER2_SET_PRESCALER(OPTIMIZE_PRESCALER_MS());      /* Set prescaler to 2 */
@@ -664,7 +787,6 @@ int8 delayMsTimer2(uint32 ms)
     } 
     while(TIMER2_RUNNING());                            /* Wait until the timer has finished */ 
     
-    TIMER2_DISABLE_CLK();                               /* Disable the timer again */
     TIMER2_DISABLE_IRQ();                               /* Disable timer interrupt */
     
     return 0;
@@ -675,7 +797,8 @@ int8 singleShotTimer2(uint32 ms, void (* func)(void))
     if (TIMER2_RUNNING())                       /* if timer is already in use return 1 */
         return -1;
     
-    TIMER2_ENABLE_CLK();                                /* Enable clock for timer */
+    TIMER2_ENABLE_POWER();
+    TIMER2_SET_CORE_CLK_DIVISOR_1();
     
     TIMER2_RESET();                                     /* Reset the timer */
     TIMER2_SET_PRESCALER(OPTIMIZE_PRESCALER_MS());      /* Set prescaler to 0 */
@@ -711,14 +834,55 @@ void TIMER2_IRQHANDLER()
 
 int8 initializeTimer3(uint32 khz, uint32 intervalUs)
 {
-    if (TIMER3_RUNNING())                       /* if timer is already in use return 1 */
+    uint32 pclk;
+    uint32 pr;
+    uint32 targetfreq = khz*1000;
+    uint32 divisor;
+    uint32 mr0;
+    
+    if (TIMER3_RUNNING())                       /* if timer is already in use return -1 */
         return -1;
     
-    TIMER3_ENABLE_CLK();                        /* Enable clock */
+    TIMER3_ENABLE_POWER();                      /* Enable power */
     
+    pr = 0xFFFFFFFF/2-1;    // 2^32/2+1
+    divisor = SystemCoreClock / targetfreq / (pr+1);
+    
+    if (divisor < 8)
+        {
+            if (divisor < 4)
+            {
+                if (divisor < 2)
+                {
+                    TIMER3_SET_CORE_CLK_DIVISOR_1();
+                    pclk = SystemCoreClock;
+                }
+                else
+                {
+                    TIMER3_SET_CORE_CLK_DIVISOR_2();
+                    pclk = SystemCoreClock/2;
+                }
+            }
+            else
+            {
+                TIMER3_SET_CORE_CLK_DIVISOR_4();
+                pclk = SystemCoreClock/4;
+            }
+        }
+        else
+        {
+            TIMER3_SET_CORE_CLK_DIVISOR_8();
+            pclk = SystemCoreClock/8;
+        }
+        
+    pr = (uint32)((pclk/targetfreq)-1)+1;
+    
+    mr0 = intervalUs/(1E6/(pclk/(pr+1)));
+    
+    TIMER3_SET_PRESCALER(pr);                   /* Set the clock prescaler */
+    TIMER3_SET_MATCH_REGISTER_0(mr0);           /* Set the match register */
+
     TIMER3_RESET();                             /* Reset Timer Counter and Prescale Counter */
-    TIMER3_SET_KHZ(khz);                        /* Configure the timer to run with the given frequency */
-    TIMER3_SET_INTERVAL_US(intervalUs);         /* Set interval */
     TIMER3_RESET_IRQS();                        /* Reset all interrupts */
     TIMER3_RESET_AND_IRQ_ON_MATCH();            /* Reset the TC and generate an interrupt */
     TIMER3_ENABLE_IRQ();                        /* Enable IRQ for Timer_32_0) */
@@ -734,7 +898,6 @@ int8 deinitializeTimer3(void)
     if (TIMER3_RUNNING())                       /* if timer is already in use return -1 */
         return -1;
     
-    TIMER3_DISABLE_CLK();                               /* Disable the timer */
     TIMER3_DISABLE_IRQ();                               /* Disable timer interrupt */
     
     return 0;
@@ -807,7 +970,8 @@ int8 delayUsTimer3(uint32 us)
     if (TIMER3_RUNNING())                       /* if timer is already in use return -1 */
         return -1;
     
-    TIMER3_ENABLE_CLK();                                /* Enable clock for timer */
+    TIMER3_ENABLE_POWER();
+    TIMER3_SET_CORE_CLK_DIVISOR_1();
     
     TIMER3_RESET();                                     /* Reset the timer */
     TIMER3_SET_PRESCALER(OPTIMIZE_PRESCALER_US());      /* Set prescaler to 2 */
@@ -827,7 +991,6 @@ int8 delayUsTimer3(uint32 us)
     } 
     while(TIMER3_RUNNING());                            /* Wait until the timer has finished */ 
     
-    TIMER3_DISABLE_CLK();                               /* Disable the timer again */
     TIMER3_DISABLE_IRQ();                               /* Disable timer interrupt */
     
     return 0;
@@ -838,7 +1001,8 @@ int8 delayMsTimer3(uint32 ms)
     if (TIMER3_RUNNING())                       /* if timer is already in use return -1 */
         return -1;
     
-    TIMER3_ENABLE_CLK();                                /* Enable clock for timer */
+    TIMER3_ENABLE_POWER();
+    TIMER3_SET_CORE_CLK_DIVISOR_1();
     
     TIMER3_RESET();                                     /* Reset the timer */
     TIMER3_SET_PRESCALER(OPTIMIZE_PRESCALER_MS());      /* Set prescaler to 2 */
@@ -858,7 +1022,6 @@ int8 delayMsTimer3(uint32 ms)
     } 
     while(TIMER3_RUNNING());                            /* Wait until the timer has finished */ 
     
-    TIMER3_DISABLE_CLK();                               /* Disable the timer again */
     TIMER3_DISABLE_IRQ();                               /* Disable timer interrupt */
     
     return 0;
@@ -869,7 +1032,8 @@ int8 singleShotTimer3(uint32 ms, void (* func)(void))
     if (TIMER3_RUNNING())                       /* if timer is already in use return 1 */
         return -1;
     
-    TIMER3_ENABLE_CLK();                                /* Enable clock for timer */
+    TIMER3_ENABLE_POWER();
+    TIMER3_SET_CORE_CLK_DIVISOR_1();
     
     TIMER3_RESET();                                     /* Reset the timer */
     TIMER3_SET_PRESCALER(OPTIMIZE_PRESCALER_MS());      /* Set prescaler to 0 */
