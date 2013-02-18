@@ -43,7 +43,7 @@ int8 initializeHardware(void)
    
     delayMs(500);
     initializeRfm12();
-    prepareSendingRfm12();
+    prepareReceivingRfm12();
     
     //putcharSsp1(0, 0x8209); // clk on
     //delayMs(100);
