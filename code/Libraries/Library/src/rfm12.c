@@ -7,10 +7,10 @@
 #define RFM12_GETCHAR              // getcharSSP0
 #define RFM12_INIT                  initializeSsp1
 
-int8 initializeRfm12(void)
+int8 initializeRfm12(uint8 id, GpioPair selPair, GpioPair dataPair)
 {
     //init ssp
-    RFM12_INIT(2.5E6, 
+    initializeSsp1(2.5E6, 
                SspDataSize16Bit, 
                SspFrameFormatSPI, 
                SspMasterMode, 
@@ -19,12 +19,11 @@ int8 initializeRfm12(void)
                SspLowClockOutPolarity,
                SspFirstClockOutPhase
               );
-    initializeSelSsp1(0, 0, 25);
-    initializeSelSsp1(1, 0, 26);
+    initializeSelSsp1(id, selPair.port, selPair.pin);
+    //initializeSelSsp1(1, 0, 26);
     
-    setGpioDirection(2, 2, GpioDirectionOutput );   // nFS pin must be set
-    setPinMode(2,2, PinModePullUp);
-    setGpio(2,2);
+    setGpioDirection(dataPair.port, dataPair.pin, GpioDirectionInput );   // nFS pin must be set
+    setPinMode(dataPair.port, dataPair.pin, PinModeNoPullUpDown);
     
     return 0;
 }
@@ -71,5 +70,4 @@ void prepareReceivingRfm12(void)
     RFXX_WRT_CMD(0xC000); // clock output 1.00MHz, can be used to see if SPI works
     RFXX_WRT_CMD(0xE000); // disable wakeuptimer
     RFXX_WRT_CMD(0xC800); // disable low duty cycle
-    
 }

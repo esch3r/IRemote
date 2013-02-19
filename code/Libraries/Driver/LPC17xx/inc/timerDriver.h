@@ -21,6 +21,7 @@
 #define TIMER0_STOP()                   LPC_TIM0->TCR = 0x00
 #define TIMER0_RUNNING()                (LPC_TIM0->TCR & 0x01)  // Here the PCONP should not be checked, but why???
 #define TIMER0_SET_PRESCALER(x)         LPC_TIM0->PR = (uint32)(x)
+#define TIMER0_GET_PRESCALER()          LPC_TIM0->PR
 #define TIMER0_SET_KHZ(x)               TIMER0_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E3))-1)
 #define TIMER0_SET_MHZ(x)               TIMER0_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E6))-1)
 #define TIMER0_RESET_IRQS()             LPC_TIM0->IR  = 0xff
@@ -46,6 +47,7 @@
 #define TIMER1_STOP()                   LPC_TIM1->TCR = 0x00
 #define TIMER1_RUNNING()                (LPC_TIM1->TCR & 0x01)
 #define TIMER1_SET_PRESCALER(x)         LPC_TIM1->PR = (uint32)(x)
+#define TIMER1_GET_PRESCALER()          LPC_TIM1->PR
 #define TIMER1_SET_KHZ(x)               TIMER1_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E3))-1)
 #define TIMER1_SET_MHZ(x)               TIMER1_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E6))-1)
 #define TIMER1_RESET_IRQS()             LPC_TIM1->IR  = 0xff
@@ -71,6 +73,7 @@
 #define TIMER2_STOP()                   LPC_TIM2->TCR = 0x00
 #define TIMER2_RUNNING()                (LPC_SC->PCONP & (1 << 22)) && (LPC_TIM2->TCR & 0x01)   // Here the PCONP must be checked, but why???
 #define TIMER2_SET_PRESCALER(x)         LPC_TIM2->PR = (uint32)(x)
+#define TIMER2_GET_PRESCALER()          LPC_TIM2->PR
 #define TIMER2_SET_KHZ(x)               TIMER2_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E3))-1)
 #define TIMER2_SET_MHZ(x)               TIMER2_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E6))-1)
 #define TIMER2_SET_MATCH_REGISTER_0(x)  LPC_TIM2->MR0 = x
@@ -96,6 +99,7 @@
 #define TIMER3_STOP()                   LPC_TIM3->TCR = 0x00
 #define TIMER3_RUNNING()                (LPC_SC->PCONP & (1 << 23)) && (LPC_TIM3->TCR & 0x01)
 #define TIMER3_SET_PRESCALER(x)         LPC_TIM3->PR = (uint32)(x)
+#define TIMER3_GET_PRESCALER()          LPC_TIM3->PR
 #define TIMER3_SET_KHZ(x)               TIMER3_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E3))-1)
 #define TIMER3_SET_MHZ(x)               TIMER3_SET_PRESCALER((uint32)((SYSTEMCLK)/(x*1E6))-1)
 #define TIMER3_SET_MATCH_REGISTER_0(x)  LPC_TIM3->MR0 = x

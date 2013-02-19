@@ -17,8 +17,9 @@ int8 initializeTimer0(uint32 khz, uint32 intervalUs)
         return -1;
     
     TIMER0_ENABLE_POWER();                      /* Enable power */
+    TIMER0_SET_CORE_CLK_DIVISOR_1();
     
-    pr = 0xFFFFFFFF/2-1;    // 2^32/2+1
+    /*pr = 0xFFFFFFFF/2-1;    // 2^32/2+1
     divisor = SystemCoreClock / targetfreq / (pr+1);
     
     if (divisor < 8)
@@ -46,8 +47,10 @@ int8 initializeTimer0(uint32 khz, uint32 intervalUs)
         {
             TIMER0_SET_CORE_CLK_DIVISOR_8();
             pclk = SystemCoreClock/8;
-        }
+        }*/
         
+    pclk = SystemCoreClock;
+    
     pr = (uint32)((pclk/targetfreq)-1)+1;
     
     mr0 = intervalUs/(1E6/(pclk/(pr+1)));
@@ -215,10 +218,18 @@ void connectFunctionTimer0(void (* func)(void))
 
 void setIntervalUsTimer0(uint32 us)
 {
+    uint32 pclk;
+    uint32 pr;
+    uint32 mr0;
+    
     uint8 wasRunning = TIMER0_RUNNING();
     
+    pclk = SystemCoreClock;
+    pr = TIMER0_GET_PRESCALER();
+    mr0 = us/(1E6/(pclk/(pr+1)));
+    
     TIMER0_RESET();
-    TIMER0_SET_INTERVAL_US(us);
+    TIMER0_SET_MATCH_REGISTER_0(mr0);
     
     if (wasRunning)
         TIMER0_START();
@@ -228,10 +239,18 @@ void setIntervalUsTimer0(uint32 us)
 
 void setIntervalMsTimer0(uint32 ms)
 {
+    uint32 pclk;
+    uint32 pr;
+    uint32 mr0;
+    
     uint8 wasRunning = TIMER0_RUNNING();
     
+    pclk = SystemCoreClock;
+    pr = TIMER0_GET_PRESCALER();
+    mr0 = ms/(1E3/(pclk/(pr+1)));
+    
     TIMER0_RESET();
-    TIMER0_SET_INTERVAL_MS(ms);
+    TIMER0_SET_MATCH_REGISTER_0(mr0);
     
     if (wasRunning)
         TIMER0_START();
@@ -374,8 +393,9 @@ int8 initializeTimer1(uint32 khz, uint32 intervalUs)
         return -1;
     
     TIMER1_ENABLE_POWER();                      /* Enable power */
+    TIMER1_SET_CORE_CLK_DIVISOR_1();
     
-    pr = 0xFFFFFFFF/2-1;    // 2^32/2+1
+    /*pr = 0xFFFFFFFF/2-1;    // 2^32/2+1
     divisor = SystemCoreClock / targetfreq / (pr+1);
     
     if (divisor < 8)
@@ -403,8 +423,10 @@ int8 initializeTimer1(uint32 khz, uint32 intervalUs)
         {
             TIMER1_SET_CORE_CLK_DIVISOR_8();
             pclk = SystemCoreClock/8;
-        }
+        }*/
         
+    pclk = SystemCoreClock;
+     
     pr = (uint32)((pclk/targetfreq)-1)+1;
     
     mr0 = intervalUs/(1E6/(pclk/(pr+1)));
@@ -464,10 +486,18 @@ void connectFunctionTimer1(void (* func)(void))
 
 void setIntervalUsTimer1(uint32 us)
 {
+    uint32 pclk;
+    uint32 pr;
+    uint32 mr0;
+    
     uint8 wasRunning = TIMER1_RUNNING();
     
+    pclk = SystemCoreClock;
+    pr = TIMER1_GET_PRESCALER();
+    mr0 = us/(1E6/(pclk/(pr+1)));
+    
     TIMER1_RESET();
-    TIMER1_SET_INTERVAL_US(us);
+    TIMER1_SET_MATCH_REGISTER_0(mr0);
     
     if (wasRunning)
         TIMER1_START();
@@ -477,10 +507,18 @@ void setIntervalUsTimer1(uint32 us)
 
 void setIntervalMsTimer1(uint32 ms)
 {
+    uint32 pclk;
+    uint32 pr;
+    uint32 mr0;
+    
     uint8 wasRunning = TIMER1_RUNNING();
     
+    pclk = SystemCoreClock;
+    pr = TIMER1_GET_PRESCALER();
+    mr0 = ms/(1E3/(pclk/(pr+1)));
+    
     TIMER1_RESET();
-    TIMER1_SET_INTERVAL_MS(ms);
+    TIMER1_SET_MATCH_REGISTER_0(mr0);
     
     if (wasRunning)
         TIMER1_START();
@@ -609,8 +647,9 @@ int8 initializeTimer2(uint32 khz, uint32 intervalUs)
         return -1;
     
     TIMER2_ENABLE_POWER();                      /* Enable power */
+    TIMER2_SET_CORE_CLK_DIVISOR_1();
     
-    pr = 0xFFFFFFFF/2-1;    // 2^32/2+1
+    /*pr = 0xFFFFFFFF/2-1;    // 2^32/2+1
     divisor = SystemCoreClock / targetfreq / (pr+1);
     
     if (divisor < 8)
@@ -638,7 +677,8 @@ int8 initializeTimer2(uint32 khz, uint32 intervalUs)
         {
             TIMER2_SET_CORE_CLK_DIVISOR_8();
             pclk = SystemCoreClock/8;
-        }
+        }*/
+    pclk = SystemCoreClock;
         
     pr = (uint32)((pclk/targetfreq)-1)+1;
     
@@ -699,10 +739,18 @@ void connectFunctionTimer2(void (* func)(void))
 
 void setIntervalUsTimer2(uint32 us)
 {
+    uint32 pclk;
+    uint32 pr;
+    uint32 mr0;
+    
     uint8 wasRunning = TIMER2_RUNNING();
     
+    pclk = SystemCoreClock;
+    pr = TIMER2_GET_PRESCALER();
+    mr0 = us/(1E6/(pclk/(pr+1)));
+    
     TIMER2_RESET();
-    TIMER2_SET_INTERVAL_US(us);
+    TIMER2_SET_MATCH_REGISTER_0(mr0);
     
     if (wasRunning)
         TIMER2_START();
@@ -712,10 +760,18 @@ void setIntervalUsTimer2(uint32 us)
 
 void setIntervalMsTimer2(uint32 ms)
 {
+    uint32 pclk;
+    uint32 pr;
+    uint32 mr0;
+    
     uint8 wasRunning = TIMER2_RUNNING();
     
+    pclk = SystemCoreClock;
+    pr = TIMER2_GET_PRESCALER();
+    mr0 = ms/(1E3/(pclk/(pr+1)));
+    
     TIMER2_RESET();
-    TIMER2_SET_INTERVAL_MS(ms);
+    TIMER2_SET_MATCH_REGISTER_0(mr0);
     
     if (wasRunning)
         TIMER2_START();
@@ -844,8 +900,9 @@ int8 initializeTimer3(uint32 khz, uint32 intervalUs)
         return -1;
     
     TIMER3_ENABLE_POWER();                      /* Enable power */
+    TIMER3_SET_CORE_CLK_DIVISOR_1();
     
-    pr = 0xFFFFFFFF/2-1;    // 2^32/2+1
+    /*pr = 0xFFFFFFFF/2-1;    // 2^32/2+1
     divisor = SystemCoreClock / targetfreq / (pr+1);
     
     if (divisor < 8)
@@ -873,7 +930,9 @@ int8 initializeTimer3(uint32 khz, uint32 intervalUs)
         {
             TIMER3_SET_CORE_CLK_DIVISOR_8();
             pclk = SystemCoreClock/8;
-        }
+        }*/
+    
+    pclk = SystemCoreClock;
         
     pr = (uint32)((pclk/targetfreq)-1)+1;
     
@@ -934,10 +993,18 @@ void connectFunctionTimer3(void (* func)(void))
 
 void setIntervalUsTimer3(uint32 us)
 {
+    uint32 pclk;
+    uint32 pr;
+    uint32 mr0;
+    
     uint8 wasRunning = TIMER3_RUNNING();
     
+    pclk = SystemCoreClock;
+    pr = TIMER3_GET_PRESCALER();
+    mr0 = us/(1E6/(pclk/(pr+1)));
+    
     TIMER3_RESET();
-    TIMER3_SET_INTERVAL_US(us);
+    TIMER3_SET_MATCH_REGISTER_0(mr0);
     
     if (wasRunning)
         TIMER3_START();
@@ -947,10 +1014,18 @@ void setIntervalUsTimer3(uint32 us)
 
 void setIntervalMsTimer3(uint32 ms)
 {
+    uint32 pclk;
+    uint32 pr;
+    uint32 mr0;
+    
     uint8 wasRunning = TIMER3_RUNNING();
     
+    pclk = SystemCoreClock;
+    pr = TIMER3_GET_PRESCALER();
+    mr0 = ms/(1E3/(pclk/(pr+1)));
+    
     TIMER3_RESET();
-    TIMER3_SET_INTERVAL_MS(ms);
+    TIMER3_SET_MATCH_REGISTER_0(mr0);
     
     if (wasRunning)
         TIMER3_START();

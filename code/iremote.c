@@ -42,7 +42,15 @@ int8 initializeHardware(void)
     printfData("Id: %i, Version: %i, Serial: %i\r",readIdIap(),readVersionIap(),readSerialIap());
    
     delayMs(500);
-    initializeRfm12();
+    
+    GpioPair selPair;
+    selPair.port = 0;
+    selPair.pin = 25;
+    GpioPair dataPair;
+    dataPair.port = 2;
+    dataPair.pin = 2;
+    initializeRfm12(0, selPair, dataPair);
+    
     prepareReceivingRfm12();
     
     //putcharSsp1(0, 0x8209); // clk on
