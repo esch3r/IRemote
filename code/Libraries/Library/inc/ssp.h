@@ -12,7 +12,6 @@
 
 #include <sspDriver.h>
 #include <types.h>
-#include <LPC17xx.h>
 #include <gpio.h>
 #include <pincon.h>
 
