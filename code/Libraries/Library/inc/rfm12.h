@@ -16,13 +16,13 @@
 #include <sys/types.h>
 
 typedef enum {
-    Rfm12EnableTxFifo = 0,
-    Rfm12DisableTxFifo = 1
+    Rfm12EnableTxFifo = 1,
+    Rfm12DisableTxFifo = 0
 } Rfm12TxFifoEnable;
     
 typedef enum {
-    Rfm12EnableRxFifo = 0,
-    Rfm12DisableRxFifo = 1
+    Rfm12EnableRxFifo = 1,
+    Rfm12DisableRxFifo = 0
 } Rfm12RxFifoEnable;
 
 typedef enum {
@@ -87,9 +87,9 @@ typedef enum {
 } Rfm12WakeupEnable;
 
 typedef enum {
-    Rfm12EnableClock = 0,
-    Rfm12DisableClock = 1
-} Rfm12ClockEnable;
+    Rfm12EnableClockOutput = 0,
+    Rfm12DisableClockOutput = 1
+} Rfm12ClockOutputEnable;
 
 typedef enum {
     Rfm12WeakOutputBuffer = 0b00,   /** < 2.5MHz */
@@ -185,6 +185,12 @@ typedef enum {
     Rfm12MediumDqdThreshold = 0b100,
     Rfm12MaximumDqdThreshold = 0b111
 } Rfm12DqdThreshold;
+
+/** This bit is undocumented, however it is necessary to use OOK modulation/demodulation */
+typedef enum {
+    Rfm12EnableOokModulation = 0,
+    Rfm12DisableOokModulation = 1
+} Rfm12OokModulationEnable;
 
 typedef enum {
     Rfm12BitInterruptLevel = 0b0001,
@@ -310,7 +316,7 @@ void setRfm12PowerManagement(Rfm12ReceiverEnable receiverEnable,
                              Rfm12XtalEnable xtalEnable,
                              Rfm12BrownoutEnable brownoutEnable,
                              Rfm12WakeupEnable wakeupEnable,
-                             Rfm12ClockEnable clockEnable);
+                             Rfm12ClockOutputEnable clockEnable);
 
 void setRfm12ClockGenerator(Rfm12OutputBuffer outputBuffer,
                             Rfm12LowPowerXtal lowPowerXtal,
@@ -337,7 +343,8 @@ void setRfm12SynchronPattern(uint8 pattern);
 void setRfm12DataFilter(Rfm12AutoLock autoLock,
                         Rfm12ManualLock manualLock,
                         Rfm12Filter filter,
-                        Rfm12DqdThreshold dqdThreshold);
+                        Rfm12DqdThreshold dqdThreshold,
+                        Rfm12OokModulationEnable ookModulationEnable);
 
 void setRfm12FifoAndResetMode(Rfm12FifoInterruptLevel fifoInterruptLevel,
                               Rfm12SyncPatternLength syncPatternLength,
