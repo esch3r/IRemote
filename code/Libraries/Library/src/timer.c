@@ -10,7 +10,7 @@ int8 initializeTimer0(uint32 khz, uint32 intervalUs)
     uint32 pclk;
     uint32 pr;
     uint32 targetfreq = khz*1000;
-    uint32 divisor;
+    //uint32 divisor;
     uint32 mr0;
     
     if (TIMER0_RUNNING())                       /* if timer is already in use return -1 */
@@ -386,7 +386,7 @@ int8 initializeTimer1(uint32 khz, uint32 intervalUs)
     uint32 pclk;
     uint32 pr;
     uint32 targetfreq = khz*1000;
-    uint32 divisor;
+    //uint32 divisor;
     uint32 mr0;
     
     if (TIMER1_RUNNING())                       /* if timer is already in use return -1 */
@@ -640,7 +640,7 @@ int8 initializeTimer2(uint32 khz, uint32 intervalUs)
     uint32 pclk;
     uint32 pr;
     uint32 targetfreq = khz*1000;
-    uint32 divisor;
+    //uint32 divisor;
     uint32 mr0;
     
     if (TIMER2_RUNNING())                       /* if timer is already in use return -1 */
@@ -893,7 +893,7 @@ int8 initializeTimer3(uint32 khz, uint32 intervalUs)
     uint32 pclk;
     uint32 pr;
     uint32 targetfreq = khz*1000;
-    uint32 divisor;
+    //uint32 divisor;
     uint32 mr0;
     
     if (TIMER3_RUNNING())                       /* if timer is already in use return -1 */
