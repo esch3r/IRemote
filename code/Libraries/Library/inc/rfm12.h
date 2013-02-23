@@ -72,19 +72,19 @@ typedef enum {
 } Rfm12SynthesizerEnable;
 
 typedef enum {
-    Rfm12EnableXtal = 1,
-    Rfm12DisableXtal = 0
-} Rfm12XtalEnable;
+    Rfm12EnableOscillator = 1,
+    Rfm12DisableOscillator = 0
+} Rfm12OscillatorEnable;
 
 typedef enum {
-    Rfm12EnableBrownout = 1,
-    Rfm12DisableBrownout = 0
-} Rfm12BrownoutEnable;
+    Rfm12EnableBrownoutDetection = 1,
+    Rfm12DisableBrownoutDetection = 0
+} Rfm12BrownoutDetectionEnable;
 
 typedef enum {
-    Rfm12EnableWakeup = 1,
-    Rfm12DisableWakeup = 0
-} Rfm12WakeupEnable;
+    Rfm12EnableWakeupTimer = 1,
+    Rfm12DisableWakeupTimer = 0
+} Rfm12WakeupTimerEnable;
 
 typedef enum {
     Rfm12EnableClockOutput = 0,
@@ -92,30 +92,30 @@ typedef enum {
 } Rfm12ClockOutputEnable;
 
 typedef enum {
-    Rfm12WeakOutputBuffer = 0b00,   /** < 2.5MHz */
-    Rfm12MediumOutputBuffer = 0b10, /** 3.3MHz */
-    Rfm12StrongOutputBuffer = 0b11  /** 5 to 10MHz */
-} Rfm12OutputBuffer;
+    Rfm12WeakClockOutputBuffer = 0b00,   /** < 2.5MHz */
+    Rfm12MediumClockOutputBuffer = 0b10, /** 3.3MHz */
+    Rfm12StrongClockOutputBuffer = 0b11  /** 5 to 10MHz */
+} Rfm12ClockOutputBuffer;
 
 typedef enum {
-    Rfm12_1msXtal = 0,
-    Rfm12_2msXtal = 1
-} Rfm12LowPowerXtal;
+    Rfm12_1msOscillatorStartup = 0,
+    Rfm12_2msOscillatorStartup = 1
+} Rfm12OscillatorLowPowerMode;
 
 typedef enum {
-    Rfm12DisablePhaseDelay = 0,
-    Rfm12EnablePhaseDelay = 1
-} Rfm12PhaseDelay;
+    Rfm12DisablePhaseDetectorDelay = 0,
+    Rfm12EnablePhaseDetectorDelay = 1
+} Rfm12PhaseDetectorDelay;
 
 typedef enum {
-    Rfm12EnableDithering = 0,
-    Rfm12DisableDithering = 1
-} Rfm12DitheringEnable;
+    Rfm12EnablePllDithering = 0,
+    Rfm12DisablePllDithering = 1
+} Rfm12PllDitheringEnable;
 
 typedef enum {
-    Rfm12Bandwith1 = 0x10,
-    Rfm12Bandwith2 = 0x11
-} Rfm12Bandwith;
+    Rfm12PllBandwith1 = 0x10,
+    Rfm12PllBandwith2 = 0x11
+} Rfm12PllBandwith;
 
 typedef enum {
     Rfm12_1MHzClock = 0b000,
@@ -129,9 +129,9 @@ typedef enum {
 } Rfm12Clock;
 
 typedef enum {
-    Rfm12PinInt = 0,
-    Rfm12PinVdi = 1
-} Rfm12PinIntVdi;
+    Rfm12IntPin = 0,
+    Rfm12VdiPin = 1
+} Rfm12IntVdiPin;
 
 typedef enum {
     Rfm12FastValidDataIndicatorResponse = 0b00,
@@ -193,8 +193,8 @@ typedef enum {
 } Rfm12OokModulationEnable;
 
 typedef enum {
-    Rfm12BitInterruptLevel = 0b0001,
-    Rfm12ByteInterruptLevel = 0b1000
+    Rfm12BitFifoInterruptLevel = 0b0001,
+    Rfm12ByteFifoInterruptLevel = 0b1000
 } Rfm12FifoInterruptLevel;
 
 typedef enum {
@@ -203,19 +203,19 @@ typedef enum {
 } Rfm12SyncPatternLength;
 
 typedef enum {
-    Rfm12FillInstant = 1,
-    Rfm12FillPattern = 0
-} Rfm12AlwayFill;
+    Rfm12AlwaysFillFifo = 1,
+    Rfm12SynchronPatternFillFifo = 0
+} Rfm12FifoFillCondition;
 
 typedef enum {
-    Rfm12EmptyAndLockFifo = 0,
+    Rfm12ClearAndLockFifo = 0,
     Rfm12ReleaseFifo = 1
 } Rfm12FifoFill;
 
 typedef enum {
-    Rfm12EnableSensReset = 1,
-    Rfm12DisableSensReset = 0
-} Rfm12SensResetEnable;
+    Rfm12EnableSensitiveReset = 1,
+    Rfm12DisableSensitiveReset = 0
+} Rfm12SensitiveResetEnable;
 
 typedef enum {
     Rfm12NoAutoMode = 0b00,
@@ -301,8 +301,8 @@ typedef enum {
 
 int8 initializeRfm12(uint8 id, GpioPair selPair, GpioPair dataPair);
 
-void prepareSendingRfm12(void);
-void prepareReceivingRfm12(void);
+void prepareOokSendingRfm12(void);
+void prepareOokReceivingRfm12(Rfm12FrequencyBand frequencyBand, float frequency, uint32 dataRate);
 
 void setRfm12BaseConfig(Rfm12TxFifoEnable txFifoEnable, 
                         Rfm12RxFifoEnable rxFifoEnable, 
@@ -313,16 +313,16 @@ void setRfm12PowerManagement(Rfm12ReceiverEnable receiverEnable,
                              Rfm12BasebandEnbale basebandEnable,
                              Rfm12TransmitterEnable transmitterEnable,
                              Rfm12SynthesizerEnable synthesizerEnable,
-                             Rfm12XtalEnable xtalEnable,
-                             Rfm12BrownoutEnable brownoutEnable,
-                             Rfm12WakeupEnable wakeupEnable,
+                             Rfm12OscillatorEnable xtalEnable,
+                             Rfm12BrownoutDetectionEnable brownoutEnable,
+                             Rfm12WakeupTimerEnable wakeupEnable,
                              Rfm12ClockOutputEnable clockEnable);
 
-void setRfm12ClockGenerator(Rfm12OutputBuffer outputBuffer,
-                            Rfm12LowPowerXtal lowPowerXtal,
-                            Rfm12PhaseDelay phaseDelay,
-                            Rfm12DitheringEnable ditheringEnable,
-                            Rfm12Bandwith bandwith);
+void setRfm12ClockGenerator(Rfm12ClockOutputBuffer outputBuffer,
+                            Rfm12OscillatorLowPowerMode lowPowerXtal,
+                            Rfm12PhaseDetectorDelay phaseDelay,
+                            Rfm12PllDitheringEnable ditheringEnable,
+                            Rfm12PllBandwith bandwith);
 
 void setRfm12LowBatteryDetectorAndClockDivider(Rfm12Clock clock,
                                                uint16 thresholdVoltage);
@@ -332,7 +332,7 @@ void setRfm12Frequency(Rfm12FrequencyBand frequencyBand,
 
 void setRfm12DataRate(uint32 baudrate);
 
-void setRfm12ReceiverControl(Rfm12PinIntVdi pinIntVdi,
+void setRfm12ReceiverControl(Rfm12IntVdiPin pinIntVdi,
                              Rfm12ValidDataIndicatorResponse validDataIndicatorResponse,
                              Rfm12ReceiverBasebandBandwidth receiverBasebandBandwidth,
                              Rfm12LnaGainSelect lnaGainSelect,
@@ -348,9 +348,9 @@ void setRfm12DataFilter(Rfm12AutoLock autoLock,
 
 void setRfm12FifoAndResetMode(Rfm12FifoInterruptLevel fifoInterruptLevel,
                               Rfm12SyncPatternLength syncPatternLength,
-                              Rfm12AlwayFill alwayFill,
+                              Rfm12FifoFillCondition alwayFill,
                               Rfm12FifoFill fifoFill,
-                              Rfm12SensResetEnable sensResetEnable);
+                              Rfm12SensitiveResetEnable sensResetEnable);
 
 void setRfm12AutomaticFrequencyControl(Rfm12AutoMode autoMode,
                                        Rfm12RangeLimit rangeLimit,
