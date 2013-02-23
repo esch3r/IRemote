@@ -36,8 +36,8 @@ typedef enum
 /** The frame format which should be used for the SSP bus */
 typedef enum
 {
-  SspFrameFormatSPI       = 0b00,
-  SspFrameFormatTI        = 0b01,
+  SspFrameFormatSpi       = 0b00,
+  SspFrameFormatTi        = 0b01,
   SspFrameFormatMicrowire = 0b10,
 }SspFrameFormat;
 

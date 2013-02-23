@@ -51,7 +51,7 @@ int8 initializeHardware(void)
     dataPair.pin = 2;
     initializeRfm12(0, selPair, dataPair);
     
-    prepareOokReceivingRfm12(Rfm12_433MhzBand, 433.92, 4200);
+    prepareOokReceivingRfm12(Rfm12FrequencyBand433Mhz, 433.92, 4200);
     
     //putcharSsp1(0, 0x8209); // clk on
     //delayMs(100);

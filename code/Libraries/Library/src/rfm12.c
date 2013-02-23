@@ -5,14 +5,14 @@
 //#define RFM12_GETCHAR              // getcharSSP0
 #define RFM12_INIT                  initializeSsp1
 
-Rfm12ReceiverSenderMode receiverSenderMode;
+Rfm12Mode receiverSenderMode;
 
 int8 initializeRfm12(uint8 id, GpioPair selPair, GpioPair dataPair)
 {
     //init ssp
     initializeSsp1(2.5E6, 
                SspDataSize16Bit, 
-               SspFrameFormatSPI, 
+               SspFrameFormatSpi, 
                SspMasterMode, 
                SspLoopbackDisabled,
                SspSlaveOutputEnabled,
@@ -25,7 +25,7 @@ int8 initializeRfm12(uint8 id, GpioPair selPair, GpioPair dataPair)
     setGpioDirection(dataPair.port, dataPair.pin, GpioDirectionInput );   // nFS pin must be set
     setPinMode(dataPair.port, dataPair.pin, PinModeNoPullUpDown);
     
-    receiverSenderMode = Rfm12NoMode;
+    receiverSenderMode = Rfm12ModeNone;
     
     return 0;
 }
@@ -45,63 +45,63 @@ void prepareOokSendingRfm12(void)
     RFXX_WRT_CMD(0xC800);//NOT USE
     RFXX_WRT_CMD(0xC400);//1.66MHz,2.2V*/
     
-    setRfm12BaseConfig(                 Rfm12DisableTxFifo, 
-                                        Rfm12DisableRxFifo, 
-                                        Rfm12_433MhzBand, 
-                                        Rfm12_12_0pFCrystalLoadCapacitance
+    setRfm12BaseConfig(                 Rfm12TxFifoDisabled, 
+                                        Rfm12RxFifoDisabled, 
+                                        Rfm12FrequencyBand433Mhz, 
+                                        Rfm12CrystalLoadCapacitance12_0pF
                       );
-    setRfm12PowerManagement(            Rfm12DisableReceiver,
-                                        Rfm12DisableBaseband,
-                                        Rfm12DisableTransmitter,
-                                        Rfm12DisableSynthesizer,
-                                        Rfm12EnableOscillator,
-                                        Rfm12DisableBrownoutDetection,
-                                        Rfm12DisableWakeupTimer,
-                                        Rfm12EnableClockOutput
+    setRfm12PowerManagement(            Rfm12ReceiverDisabled,
+                                        Rfm12BasebandDisabled,
+                                        Rfm12TransmitterDisabled,
+                                        Rfm12SynthesizerDisabled,
+                                        Rfm12OscillatorEnabled,
+                                        Rfm12BrownoutDetectionDisabled,
+                                        Rfm12WakeupTimerDisabled,
+                                        Rfm12ClockOutputEnabled
                            );
-    setRfm12Frequency(                  Rfm12_433MhzBand,
+    setRfm12Frequency(                  Rfm12FrequencyBand433Mhz,
                                         433.92
                      );
     setRfm12DataRate(                   4800
     );
-    setRfm12ReceiverControl(            Rfm12VdiPin,
-                                        Rfm12FastValidDataIndicatorResponse,
-                                        Rfm12_134kHzReceiverBasebandBandwidth,
-                                        Rfm12_6dBLnaGain,
-                                        Rfm12_97dBRssiDetectorThreshold
+    setRfm12ReceiverControl(            Rfm12DataPinVdi,
+                                        Rfm12ValidDataIndicatorResponseFast,
+                                        Rfm12ReceiverBasebandBandwidth134kHz,
+                                        Rfm12LnaGain6dB,
+                                        Rfm12RssiDetectorThreshold97dB
                            );
-    setRfm12DataFilter(                 Rfm12DisableAutoLock,
-                                        Rfm12SlowManualLock,
+    setRfm12DataFilter(                 Rfm12AutoLockDisabled,
+                                        Rfm12ManualLockSlow,
                                         Rfm12DigitalFilter,
-                                        Rfm12AlwayOnDqdThreshold,
-                                        Rfm12EnableOokModulation
+                                        Rfm12DqdThresholdAlwayOn,
+                                        Rfm12OokModulationEnabled
                       );
-    setRfm12FifoAndResetMode(           Rfm12ByteFifoInterruptLevel,
-                                        Rfm12_2ByteSyncPatternLength,
-                                        Rfm12SynchronPatternFillFifo,
-                                        Rfm12ClearAndLockFifo,
-                                        Rfm12DisableSensitiveReset
+    setRfm12FifoAndResetMode(           Rfm12FifoInterruptLevelByte,
+                                        Rfm12SyncPatternLength2Byte,
+                                        Rfm12FifoFillConditionSynchronPattern,
+                                        Rfm12FifoFillModeClearAndLock,
+                                        Rfm12SensitiveResetDisabled
                             );
-     setRfm12AutomaticFrequencyControl( Rfm12StartupAutoMode,
-                                        Rfm12SmallRangeLimit,
-                                        Rfm12DisableStrobeEdge,
-                                        Rfm12DisableFineMode,
-                                        Rfm12EnableAfcOffset,
-                                        Rfm12EnableAfc
+     setRfm12AutomaticFrequencyControl( Rfm12AfcAutoModeStartup,
+                                        Rfm12AfcRangeLimitSmall,
+                                        Rfm12AfcStrobeEdgeDisabled,
+                                        Rfm12AfcFineModeDisabled,
+                                        Rfm12AfcOffsetEnabled,
+                                        Rfm12AfcEnabled
                                      );
-    setRfm12ClockGenerator(             Rfm12WeakClockOutputBuffer,
-                                        Rfm12_1msOscillatorStartup,
-                                        Rfm12DisablePhaseDetectorDelay,
-                                        Rfm12DisablePllDithering,
+    setRfm12ClockGenerator(             Rfm12ClockOutputBufferWeak,
+                                        Rfm12OsciallatorLowPowerMode1msStartup,
+                                        Rfm12PhaseDetectorDelayDisabled,
+                                        Rfm12PllDitheringDisabled,
                                         Rfm12PllBandwith2
                           );
     setRfm12WakeUpTimer(                0,                          // disable wakeuptimer
                                         0
                        );   
     setRfm12LowDutyCycle(               0, 
-                                        Rfm12DisableCyclicWakeup    // disable low duty cycle
+                                        Rfm12CyclicWakeupDisabled    // disable low duty cycle
                         ); 
-    setRfm12LowBatteryDetectorAndClockDivider(Rfm12_1_6MHzClock,
+    setRfm12LowBatteryDetectorAndClockDivider(Rfm12Clock1_6MHz,
                                               225);
 }
 
@@ -120,68 +120,68 @@ void prepareOokReceivingRfm12(Rfm12FrequencyBand frequencyBand, float frequency,
     RFXX_WRT_CMD(0xC800);//NOT USE
     RFXX_WRT_CMD(0xC400);//1.66MHz,2.2V*/
     
-    setRfm12BaseConfig(                 Rfm12DisableTxFifo, 
-                                        Rfm12DisableRxFifo, 
-                                        Rfm12_868MhzBand, 
-                                        Rfm12_12_0pFCrystalLoadCapacitance
+    setRfm12BaseConfig(                 Rfm12TxFifoDisabled, 
+                                        Rfm12RxFifoDisabled, 
+                                        Rfm12FrequencyBand868Mhz, 
+                                        Rfm12CrystalLoadCapacitance12_0pF
                       );
-    setRfm12PowerManagement(            Rfm12EnableReceiver,
-                                        Rfm12EnableBaseband,
-                                        Rfm12DisableTransmitter,
-                                        Rfm12DisableSynthesizer,
-                                        Rfm12DisableOscillator,
-                                        Rfm12DisableBrownoutDetection,
-                                        Rfm12DisableWakeupTimer,
-                                        Rfm12DisableClockOutput
+    setRfm12PowerManagement(            Rfm12ReceiverEnabled,
+                                        Rfm12BasebandEnabled,
+                                        Rfm12TransmitterDisabled,
+                                        Rfm12SynthesizerDisabled,
+                                        Rfm12OscillatorDisabled,
+                                        Rfm12BrownoutDetectionDisabled,
+                                        Rfm12WakeupTimerDisabled,
+                                        Rfm12ClockOutputDisabled
                            );
     setRfm12Frequency(                  frequencyBand, 
                                         frequency
                      );
     setRfm12DataRate(                   dataRate
     );
-    setRfm12ReceiverControl(            Rfm12VdiPin,
-                                        Rfm12FastValidDataIndicatorResponse,
-                                        Rfm12_200kHzReceiverBasebandBandwidth,
-                                        Rfm12_6dBLnaGain,
-                                        Rfm12_97dBRssiDetectorThreshold
+    setRfm12ReceiverControl(            Rfm12DataPinVdi,
+                                        Rfm12ValidDataIndicatorResponseFast,
+                                        Rfm12ReceiverBasebandBandwidth200kHz,
+                                        Rfm12LnaGain6dB,
+                                        Rfm12RssiDetectorThreshold97dB
                            );
-    setRfm12DataFilter(                 Rfm12DisableAutoLock,
-                                        Rfm12SlowManualLock,
+    setRfm12DataFilter(                 Rfm12AutoLockDisabled,
+                                        Rfm12ManualLockSlow,
                                         Rfm12DigitalFilter,
-                                        Rfm12AlwayOnDqdThreshold,
-                                        Rfm12EnableOokModulation
+                                        Rfm12DqdThresholdAlwayOn,
+                                        Rfm12OokModulationEnabled
                       );
-    setRfm12FifoAndResetMode(           Rfm12ByteFifoInterruptLevel,
-                                        Rfm12_2ByteSyncPatternLength,
-                                        Rfm12SynchronPatternFillFifo,
-                                        Rfm12ClearAndLockFifo,
-                                        Rfm12DisableSensitiveReset
+    setRfm12FifoAndResetMode(           Rfm12FifoInterruptLevelByte,
+                                        Rfm12SyncPatternLength2Byte,
+                                        Rfm12FifoFillConditionSynchronPattern,
+                                        Rfm12FifoFillModeClearAndLock,
+                                        Rfm12SensitiveResetDisabled
                             );
-    setRfm12AutomaticFrequencyControl(  Rfm12StartupAutoMode,
-                                        Rfm12SmallRangeLimit,
-                                        Rfm12DisableStrobeEdge,
-                                        Rfm12DisableFineMode,
-                                        Rfm12EnableAfcOffset,
-                                        Rfm12EnableAfc
+    setRfm12AutomaticFrequencyControl(  Rfm12AfcAutoModeStartup,
+                                        Rfm12AfcRangeLimitSmall,
+                                        Rfm12AfcStrobeEdgeDisabled,
+                                        Rfm12AfcFineModeDisabled,
+                                        Rfm12AfcOffsetEnabled,
+                                        Rfm12AfcEnabled
                                      );
-    setRfm12ClockGenerator(             Rfm12WeakClockOutputBuffer,
-                                        Rfm12_1msOscillatorStartup,
-                                        Rfm12DisablePhaseDetectorDelay,
-                                        Rfm12DisablePllDithering,
+    setRfm12ClockGenerator(             Rfm12ClockOutputBufferWeak,
+                                        Rfm12OsciallatorLowPowerMode1msStartup,
+                                        Rfm12PhaseDetectorDelayDisabled,
+                                        Rfm12PllDitheringDisabled,
                                         Rfm12PllBandwith2
                           );
     setRfm12WakeUpTimer(                0,
                                         0
                        );   // disable wakeuptimer
     setRfm12LowDutyCycle(               0, 
-                                        Rfm12DisableCyclicWakeup
+                                        Rfm12CyclicWakeupDisabled
                         ); // disable low duty cycle
-    setRfm12LowBatteryDetectorAndClockDivider(Rfm12_1MHzClock,
+    setRfm12LowBatteryDetectorAndClockDivider(Rfm12Clock1MHz,
                                               225);
 }
 
-void setRfm12BaseConfig(Rfm12TxFifoEnable txFifoEnable, 
-                        Rfm12RxFifoEnable rxFifoEnable, 
+void setRfm12BaseConfig(Rfm12TxFifo txFifoEnable, 
+                        Rfm12RxFifo rxFifoEnable, 
                         Rfm12FrequencyBand frequencyBand, 
                         Rfm12CrystalLoadCapacitance loadCapacitance)
 {
@@ -193,14 +193,14 @@ void setRfm12BaseConfig(Rfm12TxFifoEnable txFifoEnable,
     RFXX_WRT_CMD(data);
 }
 
-void setRfm12PowerManagement(Rfm12ReceiverEnable receiverEnable,
-                             Rfm12BasebandEnbale basebandEnable,
-                             Rfm12TransmitterEnable transmitterEnable,
-                             Rfm12SynthesizerEnable synthesizerEnable,
-                             Rfm12OscillatorEnable xtalEnable,
-                             Rfm12BrownoutDetectionEnable brownoutEnable,
-                             Rfm12WakeupTimerEnable wakeupEnable,
-                             Rfm12ClockOutputEnable clockEnable)
+void setRfm12PowerManagement(Rfm12Receiver receiverEnable,
+                             Rfm12Baseband basebandEnable,
+                             Rfm12Transmitter transmitterEnable,
+                             Rfm12Synthesizer synthesizerEnable,
+                             Rfm12Oscillator xtalEnable,
+                             Rfm12BrownoutDetection brownoutEnable,
+                             Rfm12WakeupTimer wakeupEnable,
+                             Rfm12ClockOutput clockEnable)
 {
     uint16 data;
     data = 0x8200 | (receiverEnable << 7) 
@@ -213,24 +213,24 @@ void setRfm12PowerManagement(Rfm12ReceiverEnable receiverEnable,
                   | (clockEnable << 0);
     RFXX_WRT_CMD(data);
     
-    if (receiverEnable == Rfm12EnableReceiver)
+    if (receiverEnable == Rfm12ReceiverEnabled)
     {
-        receiverSenderMode = Rfm12ReceiverMode;
+        receiverSenderMode = Rfm12ModeReceiver;
     }
-    else if (transmitterEnable == Rfm12EnableTransmitter)
+    else if (transmitterEnable == Rfm12TransmitterEnabled)
     {
-        receiverSenderMode = Rfm12SenderMode;
+        receiverSenderMode = Rfm12ModeSender;
     }
     else
     {
-        receiverSenderMode = Rfm12NoMode;
+        receiverSenderMode = Rfm12ModeNone;
     }
 }
 
 void setRfm12ClockGenerator(Rfm12ClockOutputBuffer outputBuffer,
                             Rfm12OscillatorLowPowerMode lowPowerXtal,
                             Rfm12PhaseDetectorDelay phaseDelay,
-                            Rfm12PllDitheringEnable ditheringEnable,
+                            Rfm12PllDithering ditheringEnable,
                             Rfm12PllBandwith bandwith)
 {
     uint16 data;
@@ -260,19 +260,19 @@ void setRfm12Frequency(Rfm12FrequencyBand frequencyBand, float frequency)
     uint16 data;
     uint16 frequencyData;
     
-    if (frequencyBand == Rfm12_315MhzBand)
+    if (frequencyBand == Rfm12FrequencyBand315Mhz)
     {
         frequencyData = (frequency - 310.0) * 400.0;
     }
-    else if (frequencyBand == Rfm12_433MhzBand)
+    else if (frequencyBand == Rfm12FrequencyBand433Mhz)
     {
         frequencyData = (frequency - 430.0) * 400.0;
     }
-    else if (frequencyBand == Rfm12_868MhzBand)
+    else if (frequencyBand == Rfm12FrequencyBand868Mhz)
     {
         frequencyData = (frequency - 860.0) * 200.0;
     }
-    else if (frequencyBand == Rfm12_915MhzBand)
+    else if (frequencyBand == Rfm12FrequencyBand915Mhz)
     {
         frequencyData = (frequency - 900.0) * 133.3;
     }
@@ -303,10 +303,10 @@ void setRfm12DataRate(uint32 baudrate)
     RFXX_WRT_CMD(data);
 }
 
-void setRfm12ReceiverControl(Rfm12IntVdiPin pinIntVdi,
+void setRfm12ReceiverControl(Rfm12DataPin pinIntVdi,
                              Rfm12ValidDataIndicatorResponse validDataIndicatorResponse,
                              Rfm12ReceiverBasebandBandwidth receiverBasebandBandwidth,
-                             Rfm12LnaGainSelect lnaGainSelect,
+                             Rfm12LnaGain lnaGainSelect,
                              Rfm12RssiDetectorThreshold rssiDetectorThreshold)
 {
     uint16 data;
@@ -329,7 +329,7 @@ void setRfm12DataFilter(Rfm12AutoLock autoLock,
                         Rfm12ManualLock manualLock,
                         Rfm12Filter filter,
                         Rfm12DqdThreshold dqdThreshold,
-                        Rfm12OokModulationEnable ookModulationEnable)
+                        Rfm12OokModulation ookModulationEnable)
 {
     uint16 data;
     data = 0xC200 | (autoLock << 7)
@@ -344,8 +344,8 @@ void setRfm12DataFilter(Rfm12AutoLock autoLock,
 void setRfm12FifoAndResetMode(Rfm12FifoInterruptLevel fifoInterruptLevel,
                               Rfm12SyncPatternLength syncPatternLength,
                               Rfm12FifoFillCondition alwayFill,
-                              Rfm12FifoFill fifoFill,
-                              Rfm12SensitiveResetEnable sensResetEnable)
+                              Rfm12FifoFillMode fifoFill,
+                              Rfm12SensitiveReset sensResetEnable)
 {
     uint16 data;
     data = 0xCA00 | (fifoInterruptLevel << 4)
@@ -356,12 +356,12 @@ void setRfm12FifoAndResetMode(Rfm12FifoInterruptLevel fifoInterruptLevel,
     RFXX_WRT_CMD(data);
 }
 
-void setRfm12AutomaticFrequencyControl(Rfm12AutoMode autoMode,
-                                       Rfm12RangeLimit rangeLimit,
-                                       Rfm12StrobeEdgeEnable strobeEdgeEnable,
-                                       Rfm12FineModeEnable fineModeEnable,
-                                       Rfm12AfcOffsetEnable afcOffsetEnable,
-                                       Rfm12AfcEnable afcEnable)
+void setRfm12AutomaticFrequencyControl(Rfm12AfcAutoMode autoMode,
+                                       Rfm12AfcRangeLimit rangeLimit,
+                                       Rfm12AfcStrobeEdge strobeEdgeEnable,
+                                       Rfm12AfcFineMode fineModeEnable,
+                                       Rfm12AfcOffset afcOffsetEnable,
+                                       Rfm12Afc afcEnable)
 {
     uint16 data;
     data = 0xC400 | (autoMode << 6)
@@ -392,7 +392,7 @@ void setRfm12WakeUpTimer(uint8 radix, uint8 mantissa)
 }
 
 void setRfm12LowDutyCycle(uint8 duration,
-                          Rfm12CyclicWakeupEnable cyclicWakeupEnable)
+                          Rfm12CyclicWakeup cyclicWakeupEnable)
 {
     uint16 data;
     data = 0xC800 | (duration << 1)
