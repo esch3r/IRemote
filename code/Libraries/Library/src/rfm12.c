@@ -1,25 +1,25 @@
 #include "rfm12.h"
 
 //#define RFM12_WRITEDATA             writeDataSSP0
-#define RFXX_WRT_CMD(x)               putcharSsp1(0, x)
+#define RFXX_WRT_CMD(x)               Ssp1_putchar(0, x)
 //#define RFM12_GETCHAR              // getcharSSP0
 #define RFM12_INIT                  initializeSsp1
 
-Rfm12Mode receiverSenderMode;
+volatile Rfm12Mode receiverSenderMode;
 
 int8 initializeRfm12(uint8 id, GpioPair selPair, GpioPair dataPair)
 {
     //init ssp
-    initializeSsp1(2.5E6, 
-               SspDataSize16Bit, 
-               SspFrameFormatSpi, 
-               SspMasterMode, 
-               SspLoopbackDisabled,
-               SspSlaveOutputEnabled,
-               SspLowClockOutPolarity,
-               SspFirstClockOutPhase
+    Ssp1_initialize(2.5E6, 
+               Ssp_DataSize_16Bit, 
+               Ssp_FrameFormat_Spi, 
+               Ssp_Mode_Master, 
+               Ssp_Loopback_Disabled,
+               Ssp_SlaveOutput_Enabled,
+               Ssp_ClockOutPolarity_Low,
+               Ssp_ClockOutPhase_First
               );
-    initializeSelSsp1(id, selPair.port, selPair.pin);
+    Ssp1_initializeSel(id, selPair.port, selPair.pin);
     //initializeSelSsp1(1, 0, 26);
     
     setGpioDirection(dataPair.port, dataPair.pin, GpioDirectionInput );   // nFS pin must be set
@@ -411,7 +411,7 @@ uint16 readRfm12Status()
     uint16 writeData = 0x000;
     uint16 readData;
     
-    readWriteSsp1(1,writeData, &readData);
+    Ssp1_readWrite(1,writeData, &readData);
     
     return readData;
 }
@@ -421,7 +421,7 @@ char getcharRfm12()
     uint16 writeData = 0xB000;
     uint16 readData;
     
-    readWriteSsp1(1,writeData, &readData);
+    Ssp1_readWrite(1,writeData, &readData);
     
     return (char)(readData & (0x0F));
 }

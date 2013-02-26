@@ -1,29 +1,29 @@
 #include "ssp.h"
 
-volatile SspMasterSlave ssp0MasterSlave;
-volatile SspLoopbackMode ssp0LoopbackMode;
-volatile SspMasterSlave ssp1MasterSlave;
-volatile SspLoopbackMode ssp1LoopbackMode;
+volatile Ssp_Mode ssp0_masterSlave;
+volatile Ssp_Loopback ssp0_loopbackMode;
+volatile Ssp_Mode ssp1_masterSlave;
+volatile Ssp_Loopback ssp1_loopbackMode;
 
-volatile GpioPair ssp0SelPins[SSP_MAX_SEL_PINS];
-volatile GpioPair ssp1SelPins[SSP_MAX_SEL_PINS];
+volatile GpioPair ssp0_selPins[SSP_MAX_SEL_PINS];
+volatile GpioPair ssp1_selPins[SSP_MAX_SEL_PINS];
 
-volatile uint32 ssp0InterruptOverRunStat = 0;
-volatile uint32 ssp0InterruptRxTimeoutStat = 0;
-volatile uint32 ssp0InterruptRxStat = 0;
+volatile uint32 ssp0_interruptOverRunStat = 0;
+volatile uint32 ssp0_interruptRxTimeoutStat = 0;
+volatile uint32 ssp0_interruptRxStat = 0;
 
-volatile uint32 ssp1InterruptOverRunStat = 0;
-volatile uint32 ssp1InterruptRxTimeoutStat = 0;
-volatile uint32 ssp1InterruptRxStat = 0;
+volatile uint32 ssp1_interruptOverRunStat = 0;
+volatile uint32 ssp1_interruptRxTimeoutStat = 0;
+volatile uint32 ssp1_interruptRxStat = 0;
 
-void initializeSsp0(uint32 baudrate,
-                    SspDataSize dataSize,
-                    SspFrameFormat frameFormat, 
-                    SspMasterSlave masterSlave, 
-                    SspLoopbackMode loopbackMode,
-                    SspSlaveOutput slaveOutput,
-                    SspClockOutPolarity clockOutPolarity,
-                    SspClockOutPhase clockOutPhase
+void Ssp0_initialize(uint32 baudrate,
+                    Ssp_DataSize dataSize,
+                    Ssp_FrameFormat frameFormat, 
+                    Ssp_Mode masterSlave, 
+                    Ssp_Loopback loopbackMode,
+                    Ssp_SlaveOutput slaveOutput,
+                    Ssp_ClockOutPolarity clockOutPolarity,
+                    Ssp_ClockOutPhase clockOutPhase
                     )
 {
    uint8 i;
@@ -39,7 +39,7 @@ void initializeSsp0(uint32 baudrate,
    cpsdvsr = 2;
    scr = 0;
    
-   if (masterSlave == SspMasterMode)
+   if (masterSlave == Ssp_Mode_Master)
    { 
         cpsdvsr = 126;
         scr = 127;
@@ -84,7 +84,7 @@ void initializeSsp0(uint32 baudrate,
         
         SSP0_SET_MASTER();
    }
-   else if (masterSlave == SspSlaveMode)
+   else if (masterSlave == Ssp_Mode_Slave)
    {
        pclk = baudrate * 12;            // the ssp core clock needs to be 12 time as fast as the ssp clock 
        divisor = SystemCoreClock/pclk;
@@ -114,7 +114,7 @@ void initializeSsp0(uint32 baudrate,
        
        SSP0_CLEAR_MASTER();
    }
-   ssp1MasterSlave = masterSlave;
+   ssp1_masterSlave = masterSlave;
    
    SSP0_INIT_SCK();
    SSP0_INIT_MISO();
@@ -134,11 +134,11 @@ void initializeSsp0(uint32 baudrate,
    
    SSP0_SET_SCR(scr);
    
-   if (loopbackMode == SspLoopbackEnabled)
+   if (loopbackMode == Ssp_Loopback_Enabled)
    {
        SSP0_SET_LOOPBACK();
    }
-   ssp1LoopbackMode = loopbackMode;
+   ssp1_loopbackMode = loopbackMode;
    
    for (i = 0; i < SSP_FIFOSIZE; i++)   // CLEAR THE FIFO
    {
@@ -148,14 +148,14 @@ void initializeSsp0(uint32 baudrate,
    SSP0_ENABLE_SSP();
 }
 
-void initializeSsp1(uint32 baudrate,
-                    SspDataSize dataSize,
-                    SspFrameFormat frameFormat, 
-                    SspMasterSlave masterSlave, 
-                    SspLoopbackMode loopbackMode,
-                    SspSlaveOutput slaveOutput,
-                    SspClockOutPolarity clockOutPolarity,
-                    SspClockOutPhase clockOutPhase
+void Ssp1_initialize(uint32 baudrate,
+                    Ssp_DataSize dataSize,
+                    Ssp_FrameFormat frameFormat, 
+                    Ssp_Mode masterSlave, 
+                    Ssp_Loopback loopbackMode,
+                    Ssp_SlaveOutput slaveOutput,
+                    Ssp_ClockOutPolarity clockOutPolarity,
+                    Ssp_ClockOutPhase clockOutPhase
                     )
 {
    uint8 i;
@@ -171,7 +171,7 @@ void initializeSsp1(uint32 baudrate,
    cpsdvsr = 2;
    scr = 0;
    
-   if (masterSlave == SspMasterMode)
+   if (masterSlave == Ssp_Mode_Master)
    { 
         cpsdvsr = 126;
         scr = 127;
@@ -216,7 +216,7 @@ void initializeSsp1(uint32 baudrate,
         
         SSP1_SET_MASTER();
    }
-   else if (masterSlave == SspSlaveMode)
+   else if (masterSlave == Ssp_Mode_Slave)
    {
        pclk = baudrate * 12;            // the ssp core clock needs to be 12 time as fast as the ssp clock 
        divisor = SystemCoreClock/pclk;
@@ -246,7 +246,7 @@ void initializeSsp1(uint32 baudrate,
        
        SSP1_CLEAR_MASTER();
    }
-   ssp1MasterSlave = masterSlave;
+   ssp1_masterSlave = masterSlave;
    
    SSP1_INIT_SCK();
    SSP1_INIT_MISO();
@@ -264,11 +264,11 @@ void initializeSsp1(uint32 baudrate,
    SSP1_SET_SCR(scr);
    SSP1_SET_SOD(slaveOutput);
    
-   if (loopbackMode == SspLoopbackEnabled)
+   if (loopbackMode == Ssp_Loopback_Enabled)
    {
        SSP1_SET_LOOPBACK();
    }
-   ssp1LoopbackMode = loopbackMode;
+   ssp1_loopbackMode = loopbackMode;
    
    for (i = 0; i < SSP_FIFOSIZE; i++)   // CLEAR THE FIFO
    {
@@ -285,18 +285,18 @@ void SSP0_IRQHANDLER()
     regValue = SSP0_GET_INTERRUPT_STATUS();
     if ( regValue & SSPMIS_RORMIS )       /* Receive overrun interrupt */
     {
-            ssp0InterruptOverRunStat++;
+            ssp0_interruptOverRunStat++;
             SSP0_RESET_RORIC_INTERRUPT();
     }
     if ( regValue & SSPMIS_RTMIS )        /* Receive timeout interrupt */
     {
-            ssp0InterruptRxTimeoutStat++;
+            ssp0_interruptRxTimeoutStat++;
             SSP0_RESET_RTIC_INTERRUPT();
     }
 
     if ( regValue & SSPMIS_RXMIS )        /* Rx at least half full */
     {
-        ssp0InterruptRxStat++;             /* receive until it's empty */          
+        ssp0_interruptRxStat++;             /* receive until it's empty */          
     }
 }
 
@@ -307,36 +307,36 @@ void SSP1_IRQHANDLER()
     regValue = SSP1_GET_INTERRUPT_STATUS();
     if ( regValue & SSPMIS_RORMIS )       /* Receive overrun interrupt */
     {
-            ssp1InterruptOverRunStat++;
+            ssp1_interruptOverRunStat++;
             SSP1_RESET_RORIC_INTERRUPT();
     }
     if ( regValue & SSPMIS_RTMIS )        /* Receive timeout interrupt */
     {
-            ssp1InterruptRxTimeoutStat++;
+            ssp1_interruptRxTimeoutStat++;
             SSP1_RESET_RTIC_INTERRUPT();
     }
 
     if ( regValue & SSPMIS_RXMIS )        /* Rx at least half full */
     {
-        ssp1InterruptRxStat++;             /* receive until it's empty */          
+        ssp1_interruptRxStat++;             /* receive until it's empty */          
     }
 }
 
-void initializeSelSsp1(uint8 id, uint8 port, uint8 pin)
+void Ssp1_initializeSel(uint8 id, uint8 port, uint8 pin)
 {
-    ssp1SelPins[id].pin = pin;
-    ssp1SelPins[id].port = port;
+    ssp1_selPins[id].pin = pin;
+    ssp1_selPins[id].port = port;
     
     setGpioDirection(port, pin, GpioDirectionOutput);
     setPinMode(port, pin, PinModePullUp);
     setGpio(port, pin);
 }
 
-void putcharSsp1(uint8 selId, uint16 data)
+void Ssp1_putchar(uint8 selId, uint16 data)
 {
    uint16 dummy = dummy;
    
-   clearGpio(ssp1SelPins[selId].port, ssp1SelPins[selId].pin);
+   clearGpio(ssp1_selPins[selId].port, ssp1_selPins[selId].pin);
    
     /* Move on only if NOT busy and TX FIFO not full. */
     while ( SSP1_TRANSMIT_BUFFER_NOT_EMPTY_OR_BUSY() )
@@ -344,36 +344,36 @@ void putcharSsp1(uint8 selId, uint16 data)
     
     SSP1_WRITE_DATA_REGISTER(data);
    
-    if (ssp1LoopbackMode == SspLoopbackDisabled)
+    if (ssp1_loopbackMode == Ssp_Loopback_Disabled)
     {
         while (SSP1_RECEIVE_BUFFER_EMPTY_OR_BUSY()) // wait for incoming
                 ; 
         dummy = SSP1_READ_CHAR();
     }
-    else if (ssp1LoopbackMode == SspLoopbackEnabled)
+    else if (ssp1_loopbackMode == Ssp_Loopback_Enabled)
     {
         /* Wait until the Busy bit is cleared. */
         while ( SSP1_BUSY() )
             ;
     }
     
-    setGpio(ssp1SelPins[selId].port, ssp1SelPins[selId].pin);
+    setGpio(ssp1_selPins[selId].port, ssp1_selPins[selId].pin);
 }
 
-void getcharSsp1(uint8 selId, uint16 *data)
+void Ssp1_getchar(uint8 selId, uint16 *data)
 {
-    clearGpio(ssp1SelPins[selId].port, ssp1SelPins[selId].pin);
+    clearGpio(ssp1_selPins[selId].port, ssp1_selPins[selId].pin);
     
-    if (ssp1LoopbackMode == SspLoopbackDisabled)
+    if (ssp1_loopbackMode == Ssp_Loopback_Disabled)
     {
-        if (ssp1MasterSlave == SspMasterMode)
+        if (ssp1_masterSlave == Ssp_Mode_Master)
         {
             SSP1_WRITE_DATA_REGISTER(0xFF); // write anything to the bus
         
             while (SSP0_RECEIVE_BUFFER_EMPTY_OR_BUSY()) // wait for incoming
                 ;
         }
-        else if (ssp1MasterSlave == SspSlaveMode)
+        else if (ssp1_masterSlave == Ssp_Mode_Slave)
         {
             while (!SSP0_RECEIVE_BUFFER_NOT_EMPTY())
             ;
@@ -387,12 +387,12 @@ void getcharSsp1(uint8 selId, uint16 *data)
 
     *data = SSP0_READ_DATA_REGISTER();
     
-    setGpio(ssp1SelPins[selId].port, ssp1SelPins[selId].pin);
+    setGpio(ssp1_selPins[selId].port, ssp1_selPins[selId].pin);
 }
 
-void readWriteSsp1(uint8 selId, uint16 writeData, uint16 *readData)
+void Ssp1_readWrite(uint8 selId, uint16 writeData, uint16 *readData)
 {
-    clearGpio(ssp1SelPins[selId].port, ssp1SelPins[selId].pin);
+    clearGpio(ssp1_selPins[selId].port, ssp1_selPins[selId].pin);
     
     SSP1_WRITE_DATA_REGISTER(writeData); // write something to the bus
         
@@ -401,22 +401,22 @@ void readWriteSsp1(uint8 selId, uint16 writeData, uint16 *readData)
     
     *readData = SSP0_READ_DATA_REGISTER();
     
-    setGpio(ssp1SelPins[selId].port, ssp1SelPins[selId].pin);
+    setGpio(ssp1_selPins[selId].port, ssp1_selPins[selId].pin);
 }
 
-void initializeSelSsp0(uint8 id, uint8 port, uint8 pin)
+void Ssp0_initializeSel(uint8 id, uint8 port, uint8 pin)
 {
-    ssp0SelPins[id].pin = pin;
-    ssp0SelPins[id].port = port;
+    ssp0_selPins[id].pin = pin;
+    ssp0_selPins[id].port = port;
     
     setGpioDirection(port, pin, GpioDirectionOutput);
     setPinMode(port, pin, PinModePullUp);
     setGpio(port, pin);
 }
 
-void putcharSsp0(uint8 selId, uint16 data)
+void Ssp0_putchar(uint8 selId, uint16 data)
 {
-    clearGpio(ssp0SelPins[selId].port, ssp0SelPins[selId].pin);
+    clearGpio(ssp0_selPins[selId].port, ssp0_selPins[selId].pin);
     
     uint16 dummy = dummy;
    
@@ -426,34 +426,34 @@ void putcharSsp0(uint8 selId, uint16 data)
     
     SSP0_WRITE_DATA_REGISTER(data);
    
-    if (ssp0LoopbackMode == SspLoopbackDisabled)
+    if (ssp0_loopbackMode == Ssp_Loopback_Disabled)
     {
         while (SSP0_RECEIVE_BUFFER_EMPTY_OR_BUSY()) // wait for incoming
                 ; 
         dummy = SSP0_READ_CHAR();
     }
-    else if (ssp0LoopbackMode == SspLoopbackEnabled)
+    else if (ssp0_loopbackMode == Ssp_Loopback_Enabled)
     {
         /* Wait until the Busy bit is cleared. */
         while ( SSP0_BUSY() )
             ;
     }
     
-     setGpio(ssp0SelPins[selId].port, ssp0SelPins[selId].pin);
+     setGpio(ssp0_selPins[selId].port, ssp0_selPins[selId].pin);
 }
 
-void getcharSsp0(uint8 selId, uint16 *data)
+void Ssp0_getchar(uint8 selId, uint16 *data)
 {
-    clearGpio(ssp0SelPins[selId].port, ssp0SelPins[selId].pin);
+    clearGpio(ssp0_selPins[selId].port, ssp0_selPins[selId].pin);
     
-    if (ssp0MasterSlave == SspMasterMode)
+    if (ssp0_masterSlave == Ssp_Mode_Master)
     {
         SSP0_WRITE_DATA_REGISTER(0xFF); // write anything to the bus
         
         while (SSP0_RECEIVE_BUFFER_EMPTY_OR_BUSY()) // wait for incoming
             ;
     }
-    else if (ssp0MasterSlave == SspSlaveMode)
+    else if (ssp0_masterSlave == Ssp_Mode_Slave)
     {
         while (!SSP0_RECEIVE_BUFFER_NOT_EMPTY())
             ;
@@ -461,12 +461,12 @@ void getcharSsp0(uint8 selId, uint16 *data)
     
     *data = SSP0_READ_DATA_REGISTER();
     
-    setGpio(ssp0SelPins[selId].port, ssp0SelPins[selId].pin);
+    setGpio(ssp0_selPins[selId].port, ssp0_selPins[selId].pin);
 }
 
-void readWriteSsp0(uint8 selId, uint16 writeData, uint16 *readData)
+void Ssp0_readWrite(uint8 selId, uint16 writeData, uint16 *readData)
 {
-   clearGpio(ssp0SelPins[selId].port, ssp0SelPins[selId].pin);
+   clearGpio(ssp0_selPins[selId].port, ssp0_selPins[selId].pin);
 
     SSP0_WRITE_DATA_REGISTER(writeData); // write anything to the bus
         
@@ -475,5 +475,5 @@ void readWriteSsp0(uint8 selId, uint16 writeData, uint16 *readData)
         
     *readData = SSP0_READ_DATA_REGISTER();
     
-    setGpio(ssp0SelPins[selId].port, ssp0SelPins[selId].pin);
+    setGpio(ssp0_selPins[selId].port, ssp0_selPins[selId].pin);
 }
