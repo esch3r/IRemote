@@ -56,13 +56,13 @@
 
 /** Size of circular buffer for reading */
 #ifndef SSP_READ_BUFFER_SIZE
-#define SSP1_READ_BUFFER_SIZE       100
-#define SSP0_READ_BUFFER_SIZE       100
+#define SSP1_READ_BUFFER_SIZE       100U
+#define SSP0_READ_BUFFER_SIZE       100U
 #endif
 /** Size of circular buffer for writing */
 #ifndef SSP_WRITE_BUFFER_SIZE
-#define SSP0_WRITE_BUFFER_SIZE      100
-#define SSP1_WRITE_BUFFER_SIZE      100
+#define SSP0_WRITE_BUFFER_SIZE      100U
+#define SSP1_WRITE_BUFFER_SIZE      100U
 #endif
 /** Defines wheter the buffer should be used or not */
 #ifndef USE_SSP_BUFFER
@@ -70,7 +70,7 @@
 #endif
 
 /** Defines how many SEL lines are possible */
-#define SSP_MAX_SEL_PINS   10
+#define SSP_MAX_SEL_PINS   10U
 
 #define SSP_RXIM     (1 << 2)    //Interrupt when RxFifo half full
 #define SSP_TXIM    (1 << 3)     //Interrupt Enable TxFifo half empty
@@ -78,7 +78,7 @@
 #define SSP_RTIM    (1 << 1)     //Interrupt when receive timeout
 
 #define SYSTEM_CLK      SystemCoreClock
-#define SSP_FIFOSIZE    8
+#define SSP_FIFOSIZE    8U
 
 #define SSP0_SET_CPSR(x)                      LPC_SSP0->CPSR = x
 #define SSP0_SET_CORE_CLK_DIVISOR_1()         LPC_SC->PCLKSEL1 &= ~(0b11<< 10); LPC_SC->PCLKSEL1 |= (0b01<< 10);

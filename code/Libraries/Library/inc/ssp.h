@@ -15,6 +15,12 @@
 #include <gpio.h>
 #include <pincon.h>
 
+typedef enum
+{
+    Ssp0 = 0,
+    Ssp1 = 1
+} Ssp;
+
 /** Maintains the data size of one transmission byte */
 typedef enum
 {
@@ -80,17 +86,19 @@ typedef enum
     Ssp_SlaveOutput_Disabled = 1
 } Ssp_SlaveOutput;
 
-/** Initializes SSP1 hardware device
- *  @param baudrate The baudrate the SSP device should be initialized with.
- *  @param dataSize The size of one chunk that is transfered.
- *  @param frameFormat The frame format the hardware should be initialized with.
- *  @param masterSlave Slave or master mode.
- *  @param loopbackMode Enable or disables the loopback mode.
- *  @param slaveOutput Defines wheter a slave should output bytes or not.
+/** Initializes SSP hardware device
+ *  @param ssp              The SSP device to initialize.
+ *  @param baudrate         The baudrate the SSP device should be initialized with.
+ *  @param dataSize         The size of one chunk that is transfered.
+ *  @param frameFormat      The frame format the hardware should be initialized with.
+ *  @param masterSlave      Slave or master mode.
+ *  @param loopbackMode     Enable or disables the loopback mode.
+ *  @param slaveOutput      Defines wheter a slave should output bytes or not.
  *  @param clockOutPolarity Defines the clock out polarity if device is in SPI mode.
- *  @param clockOutPhase Defines the clock out phase if device is in SPI mode.
+ *  @param clockOutPhase    Defines the clock out phase if device is in SPI mode.
  */
-extern void Ssp1_initialize(uint32 baudrate,
+extern void Ssp_initialize(Ssp ssp,
+                           uint32 baudrate,
                            Ssp_DataSize dataSize,
                            Ssp_FrameFormat frameFormat, 
                            Ssp_Mode masterSlave, 
@@ -99,70 +107,32 @@ extern void Ssp1_initialize(uint32 baudrate,
                            Ssp_ClockOutPolarity clockOutPolarity,
                            Ssp_ClockOutPhase clockOutPhase
                           );
-/** Initializes a SEL pin for the SSP1 device.
- *  @param id Id of the SEL pin.
+/** Initializes a SEL pin for the SSP device.
+ *  @param ssp  The SSP device to initialize.
+ *  @param id   Id of the SEL pin.
  *  @param port The port of the pin.
- *  @param pin The pin number.
+ *  @param pin  The pin number.
  */
-extern void Ssp1_initializeSel(uint8 id, uint8 port, uint8 pin);
+extern void Ssp_initializeSel(Ssp ssp, uint8 id, uint8 port, uint8 pin);
 /** Puts a character to the SSP1 bus and discards the received data.
- *  @param selId Id of the SEL pin.
- *  @param data The data to write.
+ *  @param ssp      The SSP device to write to.
+ *  @param selId    Id of the SEL pin.
+ *  @param data     The data to write.
  */
-extern void Ssp1_putchar(uint8 selId, uint16 data);
-/** Gets a character from the SSP1 bus and writes 0 to the bus 
- *  @param selId Id of the SEL pin.
- *  @param data A pointer to the data to read.
+extern void Ssp_write(Ssp ssp, uint8 selId, uint16 data);
+/** Gets a character from the SSP1 bus and writes 0 to the bus.
+ *  @param ssp      The SSP device to read from.
+ *  @param selId    Id of the SEL pin.
+ *  @param data     A pointer to the data to read.
  */
-extern void Ssp1_getchar(uint8 selId, uint16* data);
+extern void Ssp_read(Ssp ssp, uint8 selId, uint16* data);
 /** Reads and writes data to the SSP1 bus
- *  @param selId Id of the SEL pin.
- *  @param writeData The data to write.
- *  @param readData A pointer to the data to read.
+ *  @param ssp          The SSP device to read write to.
+ *  @param selId        Id of the SEL pin.
+ *  @param writeData    The data to write.
+ *  @param readData     A pointer to the data to read.
  */
-extern void Ssp1_readWrite(uint8 selId, uint16 writeData, uint16* readData);
-
-/** Initializes SSP0 hardware device
- *  @param baudrate The baudrate the SSP device should be initialized with.
- *  @param dataSize The size of one chunk that is transfered.
- *  @param frameFormat The frame format the hardware should be initialized with.
- *  @param masterSlave Slave or master mode.
- *  @param loopbackMode Enable or disables the loopback mode.
- *  @param slaveOutput Defines wheter a slave should output bytes or not.
- *  @param clockOutPolarity Defines the clock out polarity if device is in SPI mode.
- *  @param clockOutPhase Defines the clock out phase if device is in SPI mode.
- */
-extern void Ssp0_initialize(uint32 baudrate,
-                           Ssp_DataSize dataSize,
-                           Ssp_FrameFormat frameFormat, 
-                           Ssp_Mode masterSlave, 
-                           Ssp_Loopback loopbackMode,
-                           Ssp_SlaveOutput slaveOutput,
-                           Ssp_ClockOutPolarity clockOutPolarity,
-                           Ssp_ClockOutPhase clockOutPhase
-                          );
-/** Initializes a SEL pin for the SSP0 device.
- *  @param id Id of the SEL pin.
- *  @param port The port of the pin.
- *  @param pin The pin number.
- */
-extern void Ssp0_initializeSel(uint8 id, uint8 port, uint8 pin);
-/** Puts a character to the SSP0 bus and discards the received data.
- *  @param selId Id of the SEL pin.
- *  @param data The data to write.
- */
-extern void Ssp0_putchar(uint8 selId, uint16 data);
-/** Gets a character from the SSP0 bus and writes 0 to the bus 
- *  @param selId Id of the SEL pin.
- *  @param data A pointer to the data to read.
- */
-extern void Ssp0_getchar(uint8 selId, uint16* data);
-/** Reads and writes data to the SSP0 bus
- *  @param selId Id of the SEL pin.
- *  @param writeData The data to write.
- *  @param readData A pointer to the data to read.
- */
-extern void Ssp0_readWrite(uint8 selId, uint16 writeData, uint16* readData);
+extern void Ssp_readWrite(Ssp ssp, uint8 selId, uint16 writeData, uint16* readData);
 
 /**
  * @}

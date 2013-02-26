@@ -44,18 +44,23 @@ int8 initializeHardware(void)
     delayMs(500);
     
     GpioPair selPair;
+    GpioPair dataPair;
+    
+    // Initialize 433MHz module
     selPair.port = 0;
     selPair.pin = 25;
-    GpioPair dataPair;
     dataPair.port = 2;
     dataPair.pin = 2;
-    initializeRfm12(0, selPair, dataPair);
+    Rfm12_initialize(Rfm12_0, Ssp1, selPair, dataPair);
+    Rfm12_prepareOokReceiving(Rfm12_0, Rfm12_FrequencyBand433Mhz, 433.92, 4200);
     
-    prepareOokReceivingRfm12(Rfm12FrequencyBand433Mhz, 433.92, 4200);
-    
-    //putcharSsp1(0, 0x8209); // clk on
-    //delayMs(100);
-    //putcharSsp1(0, 0xC0E0); // clk 1.6MHz
+    // Initialize 868MHz module
+    selPair.port = 0;
+    selPair.pin = 26;
+    dataPair.port = 0;
+    dataPair.pin = 22;
+    Rfm12_initialize(Rfm12_1, Ssp1, selPair, dataPair);
+    Rfm12_prepareOokReceiving(Rfm12_1, Rfm12_FrequencyBand868Mhz, 868, 4200);
     
     clearLed(3);
     blinkLed2(0);   //onboard we came through the initialization
