@@ -5,40 +5,39 @@
 
 uint8 timerId;
 
-int8 initializeTimeout(int8 id)
+int8 Timeout_initialize(Timer timerId)
 {
     
-    if (id == -1)
+    if (timerId == -1)
     {
-        timerId = initializeTimer(TIMEOUT_TIMER_KHZ, TIMEOUT_TIMER_INTERVAL);
+        timerId = Timer_initializeRandom(TIMEOUT_TIMER_KHZ, TIMEOUT_TIMER_INTERVAL);
     }
     else
     {
-        timerId = id;
         if (timerId == 0)
         {
-            if (initializeTimer0(TIMEOUT_TIMER_KHZ, TIMEOUT_TIMER_INTERVAL) == -1)
+            if (Timer_initialize(Timer0, TIMEOUT_TIMER_KHZ, TIMEOUT_TIMER_INTERVAL) == -1)
             {
                 return -1;
             }
         }
         else if (timerId == 1)
         {
-            if (initializeTimer1(TIMEOUT_TIMER_KHZ, TIMEOUT_TIMER_INTERVAL) == -1)
+            if (Timer_initialize(Timer1, TIMEOUT_TIMER_KHZ, TIMEOUT_TIMER_INTERVAL) == -1)
             {
                 return -1;
             }
         }
         else if (timerId == 2)
         {
-            if (initializeTimer2(TIMEOUT_TIMER_KHZ, TIMEOUT_TIMER_INTERVAL) == -1)
+            if (Timer_initialize(Timer2, TIMEOUT_TIMER_KHZ, TIMEOUT_TIMER_INTERVAL) == -1)
             {
                 return -1;
             }
         }
         else if (timerId == 3)
         {
-            if (initializeTimer3(TIMEOUT_TIMER_KHZ, TIMEOUT_TIMER_INTERVAL) == -1)
+            if (Timer_initialize(Timer3, TIMEOUT_TIMER_KHZ, TIMEOUT_TIMER_INTERVAL) == -1)
             {
                 return -1;
             }
@@ -52,17 +51,17 @@ int8 initializeTimeout(int8 id)
     if (timerId == -1)
         return -1;
     
-    startTimer(timerId);
+    Timer_start(timerId);
     
     return 0;
 }
 
-uint32 timeoutMsecs(void)
+uint32 Timeout_msecs(void)
 {
-    return getCounterValueTimer(timerId);
+    return Timer_counterValue(timerId);
 }
 
-void resetTimeout(void)
+void Timeout_reset(void)
 {
-    resetTimer(timerId);
+    Timer_reset(timerId);
 }

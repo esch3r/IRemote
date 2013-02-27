@@ -16,13 +16,13 @@
 /** Initializes a free timer to work as counter for timeouts.
  *  @return 0 if successful, -1 on error
  */
-int8 initializeTimeout(int8 timerId);
+int8 Timeout_initialize(Timer timerId);
 /** Returns current timeout value in msecs
  *  @return timeout value in ms
  */
-uint32 timeoutMsecs(void);
+uint32 Timeout_msecs(void);
 /** Resets the timeout timer. */
-void resetTimeout(void);
+void Timeout_reset(void);
 
 /**
  * @}

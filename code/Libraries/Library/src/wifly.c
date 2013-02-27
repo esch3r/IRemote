@@ -662,15 +662,15 @@ int8 actionWiFlyEnterCommandMode(uint8 isAfterReboot)
     {
         if (isAfterReboot == 1)
         {
-            delayMs(1000);  // This delay is so characters aren't missed after a reboot.
+            Timer_delayMs(1000);  // This delay is so characters aren't missed after a reboot.
         }
         
-        delayMs(WIFLY_COMMAND_MODE_GUARD_TIME);
+        Timer_delayMs(WIFLY_COMMAND_MODE_GUARD_TIME);
     
         WIFLY_FLUSH();
         WIFLY_PRINTF("%c%c%c",commChar,commChar,commChar);  // Print the command chars
         
-        delayMs(WIFLY_COMMAND_MODE_GUARD_TIME);
+        Timer_delayMs(WIFLY_COMMAND_MODE_GUARD_TIME);
         
         WIFLY_PRINTF("\r\r");                               // Print 2 carriage return to make shure it has entered command mode
 
@@ -691,7 +691,7 @@ int8 actionWiFlyExitCommandMode()
 {
     WIFLY_FLUSH();
     WIFLY_PRINTF("exit\r");
-    delayMs(WIFLY_COMMAND_SETTLE_TIME);
+    Timer_delayMs(WIFLY_COMMAND_SETTLE_TIME);
     
     if (findInResponse("EXIT", 1000) == 0)
     { 
@@ -901,22 +901,22 @@ int8 findInResponse(const char* toMatch, uint32 timeout)
     
     for (offset = 0; offset < strlen(toMatch); offset++)
     {
-        timeoutTarget = timeoutMsecs() + timeout;
+        timeoutTarget = Timeout_msecs() + timeout;
         
         while (getcharWiFly(&byteRead) != 0)
         {
             // Wait with timeout
             if (timeout > 0)
             {
-                if (timeoutMsecs() > timeoutTarget)
+                if (Timeout_msecs() > timeoutTarget)
                 {
                     return -1;
                 }
             }
-            delayMs(2); // Improves reliability, 1ms just makes this thing freak out
+            Timer_delayMs(2); // Improves reliability, 1ms just makes this thing freak out
         }
         
-        delayMs(10);    // Seems to be necessary, don't know why
+        Timer_delayMs(10);    // Seems to be necessary, don't know why
         
         if (byteRead != toMatch[offset]) {
             offset = 0;
@@ -949,19 +949,19 @@ int8 findWiFlyVersion(uint32 timeout)
     
     for (i = 0; i < WIFLY_VERSION_LENGTH; i++)
     {
-        timeoutTarget = timeoutMsecs() + timeout;
+        timeoutTarget = Timeout_msecs() + timeout;
         
         while (getcharWiFly(&byteRead) != 0)
         {
             // Wait with timeout
             if (timeout > 0)
             {
-                if (timeoutMsecs() > timeoutTarget)
+                if (Timeout_msecs() > timeoutTarget)
                 {
                     return -1;
                 }
             }
-            delayMs(1); // Improves reliability
+            Timer_delayMs(1); // Improves reliability
         }
         
         wiFlyVersion[1 + i] = byteRead;
@@ -982,15 +982,15 @@ int8 responseMatched(const char* toMatch)
     
     for (offset = 0; offset < strlen(toMatch); offset++)
     {
-        timeout = timeoutMsecs();
+        timeout = Timeout_msecs();
         while (getcharWiFly(&byteRead) != 0)
         {
             // Wait, with optional timeout
-            if ((timeoutMsecs() - timeout) > 5000)
+            if ((Timeout_msecs() - timeout) > 5000)
             {
                 return -1;
             }
-            delayMs(1);
+            Timer_delayMs(1);
         }
         
         if (byteRead != toMatch[offset])
@@ -1007,7 +1007,7 @@ int8 setCommand(char* command)
 {
     WIFLY_FLUSH();          // Empty buffers
     WIFLY_PRINTF(command);  // Send command
-    delayMs(WIFLY_COMMAND_SETTLE_TIME);
+    Timer_delayMs(WIFLY_COMMAND_SETTLE_TIME);
     return findInResponse(WIFLY_SET_OK, WIFLY_RESPONSE_TIMEOUT);
 }
 

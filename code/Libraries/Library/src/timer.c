@@ -5,6 +5,71 @@ void (* functionPointer1)(void) = NULL;
 void (* functionPointer2)(void) = NULL;
 void (* functionPointer3)(void) = NULL;
 
+int8 initializeTimer0(uint32 khz, uint32 intervalUs);
+int8 initializeTimer1(uint32 khz, uint32 intervalUs);
+int8 initializeTimer2(uint32 khz, uint32 intervalUs);
+int8 initializeTimer3(uint32 khz, uint32 intervalUs);
+
+int8 deinitializeTimer0(void);
+int8 deinitializeTimer1(void);
+int8 deinitializeTimer2(void);
+int8 deinitializeTimer3(void);
+
+void startTimer0(void);
+void startTimer1(void);
+void startTimer2(void);
+void startTimer3(void);
+
+void stopTimer0(void);
+void stopTimer1(void);
+void stopTimer2(void);
+void stopTimer3(void);
+
+void resetTimer0(void);
+void resetTimer1(void);
+void resetTimer2(void);
+void resetTimer3(void);
+
+void setIntervalUsTimer0(uint32 us);
+void setIntervalUsTimer1(uint32 us);
+void setIntervalUsTimer2(uint32 us);
+void setIntervalUsTimer3(uint32 us);
+
+void setIntervalMsTimer0(uint32 ms);
+void setIntervalMsTimer1(uint32 ms);
+void setIntervalMsTimer2(uint32 ms);
+void setIntervalMsTimer3(uint32 ms);
+
+void setPriorityTimer0(uint8 priority);
+void setPriorityTimer1(uint8 priority);
+void setPriorityTimer2(uint8 priority);
+void setPriorityTimer3(uint8 priority);
+
+void connectFunctionTimer0(void (* func)(void));
+void connectFunctionTimer1(void (* func)(void));
+void connectFunctionTimer2(void (* func)(void));
+void connectFunctionTimer3(void (* func)(void));
+
+int8 delayUsTimer0(uint32 us);
+int8 delayUsTimer1(uint32 us);
+int8 delayUsTimer2(uint32 us);
+int8 delayUsTimer3(uint32 us);
+
+int8 delayMsTimer0(uint32 ms);
+int8 delayMsTimer1(uint32 ms);
+int8 delayMsTimer2(uint32 ms);
+int8 delayMsTimer3(uint32 ms);
+
+int8 singleShotTimer0(uint32 ms, void (* func)(void));
+int8 singleShotTimer1(uint32 ms, void (* func)(void));
+int8 singleShotTimer2(uint32 ms, void (* func)(void));
+int8 singleShotTimer3(uint32 ms, void (* func)(void));
+
+uint32 getCounterValueTimer0();
+uint32 getCounterValueTimer1();
+uint32 getCounterValueTimer2();
+uint32 getCounterValueTimer3();
+
 int8 initializeTimer0(uint32 khz, uint32 intervalUs)
 {
     uint32 pclk;
@@ -350,7 +415,7 @@ int8 singleShotTimer0(uint32 ms, void (* func)(void))
     return 0;
 }
 
-inline uint32 getCounterValueTimer(uint8 id)
+inline uint32 Timer_counterValue(Timer id)
 {
     if (id == 0)
         return TIMER0_COUNTER_VALUE();
@@ -1142,7 +1207,31 @@ void TIMER3_IRQHANDLER()
 }
 #endif
 
-int8 initializeTimer(uint32 khz, uint32 intervalUs)
+int8 Timer_initialize(Timer timer, uint32 khz, uint32 intervalUs)
+{
+    if (timer == Timer0)
+    {
+        return initializeTimer0(khz, intervalUs);
+    }
+    else if (timer == Timer1)
+    {
+        return initializeTimer1(khz, intervalUs);
+    }
+    else if (timer == Timer2)
+    {
+        return initializeTimer2(khz, intervalUs);
+    }
+    else if (timer == Timer3)
+    {
+        return initializeTimer3(khz, intervalUs);
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+int8 Timer_initializeRandom(uint32 khz, uint32 intervalUs)
 {
    if (!TIMER0_RUNNING())
    {
@@ -1168,175 +1257,175 @@ int8 initializeTimer(uint32 khz, uint32 intervalUs)
        return -1;
 }
 
-int8 deinitializeTimer(uint8 id)
+int8 Timer_deinitialize(Timer id)
 {
-    if (id == TIMER0)
+    if (id == Timer0)
     {
         return deinitializeTimer0();
     }
-    else if (id == TIMER1)
+    else if (id == Timer1)
     {
         return deinitializeTimer1();
     }
-    else if (id == TIMER2)
+    else if (id == Timer2)
     {
         return deinitializeTimer2();
     }
-    else if (id == TIMER3)
+    else if (id == Timer3)
     {
         return deinitializeTimer3();
     }
     return 0;
 }
 
-void startTimer(uint8 id)
+void Timer_start(Timer id)
 {
-    if (id == TIMER0)
+    if (id == Timer0)
     {
         return startTimer0();
     }
-    else if (id == TIMER1)
+    else if (id == Timer1)
     {
         return startTimer1();
     }
-    else if (id == TIMER2)
+    else if (id == Timer2)
     {
         return startTimer2();
     }
-    else if (id == TIMER3)
+    else if (id == Timer3)
     {
         return startTimer3();
     }
     return;
 }
 
-void stopTimer(uint8 id)
+void Timer_stop(Timer id)
 {
-    if (id == TIMER0)
+    if (id == Timer0)
     {
         return stopTimer0();
     }
-    else if (id == TIMER1)
+    else if (id == Timer1)
     {
         return stopTimer1();
     }
-    else if (id == TIMER2)
+    else if (id == Timer2)
     {
         return stopTimer2();
     }
-    else if (id == TIMER3)
+    else if (id == Timer3)
     {
         return stopTimer3();
     }
     return;
 }
 
-void resetTimer(uint8 id)
+void Timer_reset(Timer id)
 {
-    if (id == TIMER0)
+    if (id == Timer0)
     {
         return resetTimer0();
     }
-    else if (id == TIMER1)
+    else if (id == Timer1)
     {
         return resetTimer1();
     }
-    else if (id == TIMER2)
+    else if (id == Timer2)
     {
         return resetTimer2();
     }
-    else if (id == TIMER3)
+    else if (id == Timer3)
     {
         return resetTimer3();
     }
     return;
 }
 
-void setTimerIntervalUs(uint8 id, uint32 us)
+void Timer_setIntervalUs(Timer id, uint32 us)
 {
-    if (id == TIMER0)
+    if (id == Timer0)
     {
         return setIntervalUsTimer0(us);
     }
-    else if (id == TIMER1)
+    else if (id == Timer1)
     {
         return setIntervalUsTimer1(us);
     }
-    else if (id == TIMER2)
+    else if (id == Timer2)
     {
         return setIntervalUsTimer2(us);
     }
-    else if (id == TIMER3)
+    else if (id == Timer3)
     {
         return setIntervalUsTimer3(us);
     }
     return;
 }
 
-void setTimerIntervalMs(uint8 id, uint32 ms)
+void Timer_setIntervalMs(Timer id, uint32 ms)
 {
-    if (id == TIMER0)
+    if (id == Timer0)
     {
         return setIntervalMsTimer0(ms);
     }
-    else if (id == TIMER1)
+    else if (id == Timer1)
     {
         return setIntervalMsTimer1(ms);
     }
-    else if (id == TIMER2)
+    else if (id == Timer2)
     {
         return setIntervalMsTimer2(ms);
     }
-    else if (id == TIMER3)
+    else if (id == Timer3)
     {
         return setIntervalMsTimer3(ms);
     }
     return;
 }
 
-void connectTimerFunction(uint8 id, void (* func)(void))
+void Timer_connectFunction(Timer id, void (* func)(void))
 {
-    if (id == TIMER0)
+    if (id == Timer0)
     {
         return connectFunctionTimer0(func);
     }
-    else if (id == TIMER1)
+    else if (id == Timer1)
     {
         return connectFunctionTimer1(func);
     }
-    else if (id == TIMER2)
+    else if (id == Timer2)
     {
         return connectFunctionTimer2(func);
     }
-    else if (id == TIMER3)
+    else if (id == Timer3)
     {
         return connectFunctionTimer3(func);
     }
     return;
 }
 
-void setTimerPriority(uint8 id, uint8 priority)
+void Timer_setPriority(Timer id, uint8 priority)
 {
-    if (id == TIMER0)
+    if (id == Timer0)
     {
         setPriorityTimer0(priority);
     }
-    else if (id == TIMER1)
+    else if (id == Timer1)
     {
         setPriorityTimer1(priority);
     }
-    else if (id == TIMER2)
+    else if (id == Timer2)
     {
         setPriorityTimer2(priority);
     }
-    else if (id == TIMER3)
+    else if (id == Timer3)
     {
         setPriorityTimer3(priority);
     }
     return;
 }
 
-int8 delayUs(uint32 us)
+int8 Timer_delayUs(uint32 us)
 {
    if (delayUsTimer0(us) == 0)
    {
@@ -1358,7 +1447,7 @@ int8 delayUs(uint32 us)
        return -1;
 }
 
-int8 delayMs(uint32 ms)
+int8 Timer_delayMs(uint32 ms)
 {
     if (!TIMER0_RUNNING())
    {
@@ -1384,7 +1473,7 @@ int8 delayMs(uint32 ms)
        return -1;
 }
 
-int8 singleShotTimer(uint32 ms, void (* func)(void))
+int8 Timer_singleShot(uint32 ms, void (* func)(void))
 {
     if (!TIMER0_RUNNING())
    {

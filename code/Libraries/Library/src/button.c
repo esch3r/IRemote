@@ -26,23 +26,23 @@ void valueButton(void);
  */
 void putVal(uint8 i, uint8 pressed);
 
-uint8 initializeButtons(uint32 khz, uint32 sampleInterval, uint32 timeoutInterval)
+uint8 Button_initialize(uint32 khz, uint32 sampleInterval, uint32 timeoutInterval)
 {
     if (initializeCb(&buttonBuffer,20,sizeof(ButtonValue)) == -1)
         return -1;
     
-	if (initializeTimer2(khz, sampleInterval) == -1)
+	if (Timer_initialize(Timer2, khz, sampleInterval) == -1)
         return -1;
     
     maxunset = (uint32)(timeoutInterval/sampleInterval);
     
-    connectFunctionTimer2(valueButton);
-    startTimer2();
+    Timer_connectFunction(Timer2, valueButton);
+    Timer_start(Timer2);
 
     return 0;
 }
 
-void initializeButton(uint8 id, uint8 port, uint8 pin,ButtonType type)
+void Button_initializeButton(uint8 id, uint8 port, uint8 pin,ButtonType type)
 {
     setGpioDirection(port, pin, GpioDirectionInput );    //direction 0=input
     if(type == ButtonTypeLowActive)
@@ -101,7 +101,7 @@ void putVal(uint8 i,uint8 pressed)
 	}
 }
 
-int8 getButtonPress(ButtonValue *value)
+int8 Button_getPress(ButtonValue *value)
 {
     return getCb(&buttonBuffer, (void*)value);
 }

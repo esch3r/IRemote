@@ -34,11 +34,11 @@ typedef struct {
  *@param Pin  Is the pin of the button.
  *@param Type set "0" for low_active, or" 1" for high_active
  */
-uint8 initializeButtons(uint32 khz, uint32 sampleInterval, uint32 timeoutInterval);
+uint8 Button_initialize(uint32 khz, uint32 sampleInterval, uint32 timeoutInterval);
 
-void initializeButton(uint8 id, uint8 port, uint8 pin, ButtonType type);
+void Button_initializeButton(uint8 id, uint8 port, uint8 pin, ButtonType type);
 
-int8 getButtonPress(ButtonValue *value);
+int8 Button_getPress(ButtonValue *value);
 
 /**
  * @}

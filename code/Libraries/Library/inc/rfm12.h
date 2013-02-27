@@ -26,13 +26,13 @@ typedef enum {
 } Rfm12;
 
 typedef enum {
-    Rfm12_TxFifoEnabled = 1,
-    Rfm12_TxFifoDisabled = 0
+    Rfm12_TxFifo_Enabled = 1,
+    Rfm12_TxFifo_Disabled = 0
 } Rfm12_TxFifo;
     
 typedef enum {
-    Rfm12_RxFifoEnabled = 1,
-    Rfm12_RxFifoDisabled = 0
+    Rfm12_RxFifo_Enabled = 1,
+    Rfm12_RxFifo_Disabled = 0
 } Rfm12_RxFifo;
 
 typedef enum {

@@ -27,312 +27,103 @@
 #define TIMER3_IRQ_ENABLED 1
 #endif
 
-#define TIMER0 0
-#define TIMER1 1
-#define TIMER2 2
-#define TIMER3 3
-
 #include <types.h>
 #include <timerDriver.h>
 
+typedef enum {
+    Timer0 = 0,
+    Timer1 = 1,
+    Timer2 = 2,
+    Timer3 = 3
+} Timer;
+
 /** Initializes some hardware timer.
+ *  @param timer The timer to initialize.
  *  @param khz The frequency the timer should run with. 
  *  @param intervalUs Tick interval in µs.
  *  @return Returns the id of the timer that was initialized or -1 if all timers are already in use.
  */
-extern int8 initializeTimer(uint32 khz, uint32 intervalUs);
-/** Initializes hardware timer 0.
+extern int8 Timer_initialize(Timer timer, uint32 khz, uint32 intervalUs);
+/** Initializes some random hardware timer.
  *  @param khz The frequency the timer should run with. 
  *  @param intervalUs Tick interval in µs.
- *  @return Returns 0 if successful or -1 if timer is already running.
+ *  @return Returns the id of the timer that was initialized or -1 if all timers are already in use.
  */
-extern int8 initializeTimer0(uint32 khz, uint32 intervalUs);
-/** Initializes hardware timer 1.
- *  @param khz The frequency the timer should run with. 
- *  @param intervalUs Tick interval in µs.
- *  @return Returns 0 if successful or -1 if timer is already running.
- */
-extern int8 initializeTimer1(uint32 khz, uint32 intervalUs);
-/** Initializes hardware timer 2.
- *  @param khz The frequency the timer should run with. 
- *  @param intervalUs Tick interval in µs.
- *  @return Returns 0 if successful or -1 if timer is already running.
- */
-extern int8 initializeTimer2(uint32 khz, uint32 intervalUs);
-/** Initializes hardware timer 3.
- *  @param khz The frequency the timer should run with. 
- *  @param intervalUs Tick interval in µs.
- *  @return Returns 0 if successful or -1 if timer is already running.
- */
-extern int8 initializeTimer3(uint32 khz, uint32 intervalUs);
-
+extern int8 Timer_initializeRandom(uint32 khz, uint32 intervalUs);
 
 /** Deinitializes timer id 
  *  @param id Id of the timer that should be deinitialized.
  *  @return Return 0 on successful or -1 if timer is running.
  */
-extern int8 deinitializeTimer(uint8 id);
-/** Deinitializes timer 0
- *  @param id Id of the timer that should be deinitialized.
- *  @return Return 0 on successful or -1 if timer is running.
- */
-extern int8 deinitializeTimer0(void);
-/** Deinitializes timer 1
- *  @param id Id of the timer that should be deinitialized.
- *  @return Return 0 on successful or -1 if timer is running.
- */
-extern int8 deinitializeTimer1(void);
-/** Deinitializes timer 2
- *  @param id Id of the timer that should be deinitialized.
- *  @return Return 0 on successful or -1 if timer is running.
- */
-extern int8 deinitializeTimer2(void);
-/** Deinitializes timer 3
- *  @param id Id of the timer that should be deinitialized.
- *  @return Return 0 on successful or -1 if timer is running.
- */
-extern int8 deinitializeTimer3(void);
-
+extern int8 Timer_deinitialize(Timer id);
 
 /** Starts timer id.
  *  @param id Id of the timer that should be started. 0-3
  */
-extern void startTimer(uint8 id);
-/** Starts timer 0. */
-extern void startTimer0(void);
-/** Starts timer 1. */
-extern void startTimer1(void);
-/** Starts timer 2. */
-extern void startTimer2(void);
-/** Starts timer 3. */
-extern void startTimer3(void);
+extern void Timer_start(Timer id);
 
 /** Stops timer id.
  *  @param id Id of the timer that should be stopped. 0-3
  */
-extern void stopTimer(uint8 id);
-/** Stops timer 0. */
-extern void stopTimer0(void);
-/** Stops timer 1. */
-extern void stopTimer1(void);
-/** Stops timer 2. */
-extern void stopTimer2(void);
-/** Stops timer 3. */
-extern void stopTimer3(void);
+extern void Timer_stop(Timer id);
 
 /** Resets timer id.
  *  @param id Id of the timer that should be reset. 0-3
  */
-extern void resetTimer(uint8 id);
-/** Resets timer 0. */
-extern void resetTimer0(void);
-/** Resets timer 1. */
-extern void resetTimer1(void);
-/** Resets timer 2. */
-extern void resetTimer2(void);
-/** Resets timer 3. */
-extern void resetTimer3(void);
-
+extern void Timer_reset(Timer id);
 
 /** Sets tick inteval of timer id in microseconds.
  *  @param id Id of the timer. 0-3
  *  @param us Tick interval in µs.
  */
-extern void setTimerIntervalUs(uint8 id, uint32 us);
-/** Sets tick inteval of timer 0 in microseconds.
- *  @param us Tick interval in µs.
- */
-extern void setIntervalUsTimer0(uint32 us);
-/** Sets tick inteval of timer 1 in microseconds.
- *  @param us Tick interval in µs.
- */
-extern void setIntervalUsTimer1(uint32 us);
-/** Sets tick inteval of timer 2 in microseconds.
- *  @param us Tick interval in µs.
- */
-extern void setIntervalUsTimer2(uint32 us);
-/** Sets tick inteval of timer 1 in microseconds.
- *  @param us Tick interval in µs.
- */
-extern void setIntervalUsTimer3(uint32 us);
+extern void Timer_setIntervalUs(Timer id, uint32 us);
 
 /** Sets tick inteval of timer id in milliseconds.
  *  @param id Id of the timer. 0-3
  *  @param ms Tick interval in ms.
  */
-extern void setTimerIntervalMs(uint8 id, uint32 ms);
-/** Sets tick inteval of timer 3 in milliseconds.
- *  @param ms Tick interval in ms.
- */
-extern void setIntervalMsTimer0(uint32 ms);
-/** Sets tick inteval of timer 1 in milliseconds.
- *  @param ms Tick interval in ms.
- */
-extern void setIntervalMsTimer1(uint32 ms);
-/** Sets tick inteval of timer 2 in milliseconds.
- *  @param ms Tick interval in ms.
- */
-extern void setIntervalMsTimer2(uint32 ms);
-/** Sets tick inteval of timer 3 in milliseconds.
- *  @param ms Tick interval in ms.
- */
-extern void setIntervalMsTimer3(uint32 ms);
+extern void Timer_setIntervalMs(Timer id, uint32 ms);
 
 /** Sets interrupt priority of the timer id.
  *  @param id Id of the timer. 0-3
  *  @param priority Priority level, smaller value means higher priority. Look at __NVIC_PRIO_BITS to see how many bits can be used.
  */
-extern void setTimerPriority(uint8 id, uint8 priority);
-/** Sets interrupt priority of the timer 0.
- *  @param priority Priority level, smaller value means higher priority. Look at __NVIC_PRIO_BITS to see how many bits can be used.
- */
-extern void setPriorityTimer0(uint8 priority);
-/** Sets interrupt priority of the timer 1.
- *  @param priority Priority level, smaller value means higher priority. Look at __NVIC_PRIO_BITS to see how many bits can be used.
- */
-extern void setPriorityTimer1(uint8 priority);
-/** Sets interrupt priority of the timer 2.
- *  @param priority Priority level, smaller value means higher priority. Look at __NVIC_PRIO_BITS to see how many bits can be used.
- */
-extern void setPriorityTimer2(uint8 priority);
-/** Sets interrupt priority of the timer 3.
- *  @param priority Priority level, smaller value means higher priority. Look at __NVIC_PRIO_BITS to see how many bits can be used.
- */
-extern void setPriorityTimer3(uint8 priority);
+extern void Timer_setPriority(Timer id, uint8 priority);
 
-
+/** Returns the counter value of a timer.
+ *  @param id Id of the target timer
+ *  @return counter value
+ */
+extern uint32 Timer_counterValue(Timer id);
 
 /** Connects a function to the interrupt of timer id.
  *  @param id Id of the timer. 0-3
  *  @param func A pointer to the function that should be connected. e.g,; &allLedsDown
  */
-extern void connectTimerFunction(uint8 id, void (* func)(void));
-/** Connects a function to the interrupt of timer 0.
- *  @param func A pointer to the function that should be connected. e.g,; &allLedsDown
- */
-extern void connectFunctionTimer0(void (* func)(void));
-/** Connects a function to the interrupt of timer 1.
- *  @param func A pointer to the function that should be connected. e.g,; &allLedsDown
- */
-extern void connectFunctionTimer1(void (* func)(void));
-/** Connects a function to the interrupt of timer 2.
- *  @param func A pointer to the function that should be connected. e.g,; &allLedsDown
- */
-extern void connectFunctionTimer2(void (* func)(void));
-/** Connects a function to the interrupt of timer 3.
- *  @param func A pointer to the function that should be connected. e.g,; &allLedsDown
- */
-extern void connectFunctionTimer3(void (* func)(void));
+extern void Timer_connectFunction(Timer id, void (* func)(void));
 
 /** A simple delay function that runs on some timer.
  *  @param us Delay time in milliseconds.
  */
-extern int8 delayUs(uint32 ms);
-/** A simple delay function that runs on timer 0.
- *  Per default all delay functions should run on timer 0.
- *  @param us Delay time in microseconds.
- *  @return Returns the id of the timer that was initialized or -1 if all timers are already in use.
- */
-extern int8 delayUsTimer0(uint32 us);
-/** A simple delay function that runs on timer 1.
- *  @param us Delay time in microseconds.
- *  @return Returns 0 if successful or -1 if timer is already running.
- */
-extern int8 delayUsTimer1(uint32 us);
-/** A simple delay function that runs on timer 2.
- *  @param us Delay time in microseconds.
- *  @return Returns 0 if successful or -1 if timer is already running.
- */
-extern int8 delayUsTimer2(uint32 us);
-/** A simple delay function that runs on timer 3.
- *  @param us Delay time in microseconds.
- *  @return Returns 0 if successful or -1 if timer is already running.
- */
-extern int8 delayUsTimer3(uint32 us);
+extern int8 Timer_delayUs(uint32 ms);
+
 /** A simple delay function that runs on some timer.
  *  @param ms Delay time in milliseconds.
  *  @return Returns 0 if successful or -1 if timer is already running.
  */
-extern int8 delayMs(uint32 ms);
-/** A simple delay function that runs on timer 0.
- *  Per default all delay functions should run on timer 0.
- *  @param ms Delay time in milliseconds.
- *  @return Returns the id of the timer that was initialized or -1 if all timers are already in use.
- */
-extern int8 delayMsTimer0(uint32 ms);
-/** A simple delay function that runs on timer 1.
- *  @param ms Delay time in milliseconds.
- *  @return Returns 0 if successful or -1 if timer is already running.
- */
-extern int8 delayMsTimer1(uint32 ms);
-/** A simple delay function that runs on timer 2.
- *  @param ms Delay time in milliseconds.
- *  @return Returns 0 if successful or -1 if timer is already running.
- */
-extern int8 delayMsTimer2(uint32 ms);
-/** A simple delay function that runs on timer 3.
- *  @param ms Delay time in milliseconds.
- *  @return Returns 0 if successful or -1 if timer is already running.
- */
-extern int8 delayMsTimer3(uint32 ms);
+extern int8 Timer_delayMs(uint32 ms);
 
 /** Sets timer id to run only one interval and then call a function.
  *  @param ms Interval in milliseconds.
  *  @param func A pointer to the function that should be connected. e.g,; &allLedsDown
  *  @return Returns the id of the timer that was initialized or -1 if all timers are already in use.
  */
-extern int8 singleShotTimer(uint32 ms, void (* func)(void));
-/** Sets timer 0 to run only one interval and then call a function.
- *  @param ms Interval in milliseconds.
- *  @param func A pointer to the function that should be connected. e.g,; &allLedsDown
- *  @return Returns 0 if successful or -1 if timer is already running.
- */
-extern int8 singleShotTimer0(uint32 ms, void (* func)(void));
-/** Sets timer 1 to run only one interval and then call a function.
- *  @param ms Interval in milliseconds.
- *  @param func A pointer to the function that should be connected. e.g,; &allLedsDown
- *  @return Returns 0 if successful or -1 if timer is already running.
- */
-extern int8 singleShotTimer1(uint32 ms, void (* func)(void));
-/** Sets timer 2 to run only one interval and then call a function.
- *  @param ms Interval in milliseconds.
- *  @param func A pointer to the function that should be connected. e.g,; &allLedsDown
- *  @return Returns 0 if successful or -1 if timer is already running.
- */
-extern int8 singleShotTimer2(uint32 ms, void (* func)(void));
-/** Sets timer 3 to run only one interval and then call a function.
- *  @param ms Interval in milliseconds.
- *  @param func A pointer to the function that should be connected. e.g,; &allLedsDown
- *  @return Returns 0 if successful or -1 if timer is already running.
- */
-extern int8 singleShotTimer3(uint32 ms, void (* func)(void));
+extern int8 Timer_singleShot(uint32 ms, void (* func)(void));
 
-/** Returns the counter value of a timer.
- *  @param id Id of the target timer
- *  @return counter value
- */
-inline uint32 getCounterValueTimer(uint8 id);
-/** Returns the counter value of TIMER0.
- *  @return counter value
- */
-inline uint32 getCounterValueTimer0();
-/** Returns the counter value of TIMER1.
- *  @return counter value
- */
-inline uint32 getCounterValueTimer1();
-/** Returns the counter value of TIMER2.
- *  @return counter value
- */
-inline uint32 getCounterValueTimer2();
-/** Returns the counter value of TIMER3.
- *  @return counter value
- */
-inline uint32 getCounterValueTimer3();
-
-extern int8 initializeCapCom0(uint32 khz, uint8 pin, void (* func)(void));
-extern int8 initializeCapCom1(uint32 khz, uint8 pin, void (* func)(void));
-extern int8 initializeCapCom2(uint32 khz, uint8 pin, void (* func)(void));
-extern int8 initializeCapCom3(uint32 khz, uint8 pin, void (* func)(void));
+//extern int8 initializeCapCom0(uint32 khz, uint8 pin, void (* func)(void));
+//extern int8 initializeCapCom1(uint32 khz, uint8 pin, void (* func)(void));
+//extern int8 initializeCapCom2(uint32 khz, uint8 pin, void (* func)(void));
+//extern int8 initializeCapCom3(uint32 khz, uint8 pin, void (* func)(void));
 
 /**
  * @}

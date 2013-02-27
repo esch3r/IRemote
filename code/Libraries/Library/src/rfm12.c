@@ -50,8 +50,8 @@ void Rfm12_prepareOokSending(Rfm12 id)
     RFXX_WRT_CMD(0xC800);//NOT USE
     RFXX_WRT_CMD(0xC400);//1.66MHz,2.2V*/
     
-    Rfm12_setBaseConfig(id,             Rfm12_TxFifoDisabled, 
-                                        Rfm12_RxFifoDisabled, 
+    Rfm12_setBaseConfig(id,             Rfm12_TxFifo_Disabled, 
+                                        Rfm12_RxFifo_Disabled, 
                                         Rfm12_FrequencyBand433Mhz, 
                                         Rfm12_CrystalLoadCapacitance12_0pF
                       );
@@ -125,8 +125,8 @@ void Rfm12_prepareOokReceiving(Rfm12 id, Rfm12_FrequencyBand frequencyBand, floa
     RFXX_WRT_CMD(0xC800);//NOT USE
     RFXX_WRT_CMD(0xC400);//1.66MHz,2.2V*/
     
-    Rfm12_setBaseConfig(id,             Rfm12_TxFifoDisabled, 
-                                        Rfm12_RxFifoDisabled, 
+    Rfm12_setBaseConfig(id,             Rfm12_TxFifo_Disabled, 
+                                        Rfm12_RxFifo_Disabled, 
                                         Rfm12_FrequencyBand868Mhz, 
                                         Rfm12_CrystalLoadCapacitance12_0pF
                       );

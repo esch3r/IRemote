@@ -9,24 +9,24 @@ ApplicationSettings applicationSettings;
 int8 initializeHardware(void)
 {
     crcInit();                    // init crc function for firmware flashing
-    initializeTimeout(TIMER1);    // initialize Timer1 for general timeout functions
+    Timeout_initialize(Timer1);    // initialize Timer1 for general timeout functions
         
-    initializeLed(1,29, TRUE);     // led 0 - onboard
-    initializeLed(0,0, FALSE);     // led 1 - green
-    initializeLed(0,1, FALSE);     // led 2 - yellow
-    initializeLed(0,10, FALSE);    // led 3 - red
-    clearAllLeds();
+    Led_initialize(1,29, TRUE);     // led 0 - onboard
+    Led_initialize(0,0, FALSE);     // led 1 - green
+    Led_initialize(0,1, FALSE);     // led 2 - yellow
+    Led_initialize(0,10, FALSE);    // led 3 - red
+    Led_clearAll();
     
-    initializeButtons(1000, 1E4, 1E5);  //100kHz timer, 10ms timeout
-    initializeButton(0, 2, 4, ButtonTypeLowActive);
-    initializeButton(1, 2, 5, ButtonTypeLowActive);
-    initializeButton(2, 2, 10, ButtonTypeLowActive);
+    Button_initialize(1000, 1E4, 1E5);  //100kHz timer, 10ms timeout
+    Button_initializeButton(0, 2, 4, ButtonTypeLowActive);
+    Button_initializeButton(1, 2, 5, ButtonTypeLowActive);
+    Button_initializeButton(2, 2, 10, ButtonTypeLowActive);
    
     //Program started notifier
-    setLed(3);    
-    blinkLed(2);
-    setLed(1);
-    delayMs(200);
+    Led_set(Led3);    
+    Led_blink(Led2);
+    Led_set(Led1);
+    Timer_delayMs(200);
     
     initializeIrControl();
     
@@ -41,7 +41,7 @@ int8 initializeHardware(void)
     printfData("Welcome to IRemote!\r");    // Send a welcome message
     printfData("Id: %i, Version: %i, Serial: %i\r",readIdIap(),readVersionIap(),readSerialIap());
    
-    delayMs(500);
+    Timer_delayMs(500);
     
     GpioPair selPair;
     GpioPair dataPair;
@@ -62,8 +62,8 @@ int8 initializeHardware(void)
     Rfm12_initialize(Rfm12_1, Ssp1, selPair, dataPair);
     Rfm12_prepareOokReceiving(Rfm12_1, Rfm12_FrequencyBand868Mhz, 868, 4200);
     
-    clearLed(3);
-    blinkLed2(0);   //onboard we came through the initialization
+    Led_clear(3);
+    Led_blink2(0);   //onboard we came through the initialization
     
     return 0;
 }
@@ -258,19 +258,19 @@ void errorWiFly()
 void printUnknownCommand(void)
 {
     printfData("CMD?\r");
-    clearLed(2);
+    Led_clear(2);
 }
 
 void printParameterMissing(void)
 {
     printfData("Missing parameter.\r");
-    clearLed(2);
+    Led_clear(2);
 }
 
 void printAcknowledgement(void)
 {
     printfData("ACK\r");
-    clearLed(2);
+    Led_clear(2);
 }
 
 void printError(char *message)
@@ -281,7 +281,7 @@ void printError(char *message)
 void printAliveMessage(void)
 {
     printfData("yes\r");
-    clearLed(2);
+    Led_clear(2);
 }
 
 bool compareBaseCommand(char *original, char *received)
@@ -299,7 +299,7 @@ void processCommand(char *buffer)
 {
     char *dataPointer;
     
-    setLed(2);  // set the yellow led to indicate incoming data status
+    Led_set(2);  // set the yellow led to indicate incoming data status
     
     dataPointer = strtok(buffer," ");
     
@@ -845,7 +845,7 @@ void startState(ApplicationState state)
         applicationState = ApplicationStateCaptureCommand;
         
         printfData("Capturing data\r");
-        blinkLed2(2);
+        Led_blink2(2);
         startIrCapture();
     }
     else if (state == ApplicationStateRunCommand)
@@ -853,12 +853,12 @@ void startState(ApplicationState state)
         applicationState = ApplicationStateRunCommand;
                 
         printfData("Running command\r");
-        blinkLed(2);
+        Led_blink(2);
         runIrCommand(currentCommand);
     }
     else if (state == ApplicationStateFlashFirmware)
     {
-        setAllLeds();
+        Led_setAll();
         
     }
     else if (state == ApplicationStateWiFlyTest)
@@ -915,37 +915,37 @@ void ledTask(void)
     
     if ((activeConnections & NetworkConnection))
     {
-        setLed(1);  // Green LED
+        Led_set(1);  // Green LED
     }
     else
     {
         if (applicationSettings.networkMode == AdhocNetworkMode)
         {
-            toggleLed(1);   // Green LED
+            Led_toggle(1);   // Green LED
         }
         else if (applicationSettings.networkMode == InfrastructureNetworkMode)
         {
-            if (readLed(1))
+            if (Led_read(1))
             {
-                clearLed(1);
-                setLed(3);
+                Led_clear(1);
+                Led_set(3);
             }
             else
             {
-                clearLed(3);
-                setLed(1);
+                Led_clear(3);
+                Led_set(1);
             }
             
         }
     }
     
-    clearLed(2);    // clear the yellow led in case it is still running
+    Led_clear(2);    // clear the yellow led in case it is still running
 }
 
 void buttonTask(void )
 {
     ButtonValue buttonValue;
-    if (getButtonPress(&buttonValue) == 0)
+    if (Button_getPress(&buttonValue) == 0)
     {
         printfData("pressed %u, %u\r", buttonValue.id, buttonValue.count);
         if ((buttonValue.id == 0) && (buttonValue.count == 1))

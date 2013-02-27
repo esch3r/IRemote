@@ -30,7 +30,7 @@ int8 initializeIrControl(void)
         
     setGpioDirection(IR_CAPTURE_PORT, IR_CAPTURE_PIN, GpioDirectionInput); // TSOP input pin
 
-    if (initializeTimer3(1000,1E9) == -1)
+    if (Timer_initialize(Timer3, 1000,1E9) == -1)
         return -1;
     
     return 0;
@@ -69,16 +69,16 @@ void startIrCapture(void)
     frameReceived = 0;
     firstCapture = 1;
         
-    setIntervalMsTimer3(1E6);
-    connectFunctionTimer3(NULL);
+    Timer_setIntervalMs(Timer3, 1E6);
+    Timer_connectFunction(Timer3, NULL);
     enableGpioInterrupt(IR_CAPTURE_PORT, IR_CAPTURE_PIN, GpioInterruptFallingAndRisingEdge, &captureFunction);
     //startTimer3();
-    resetTimer3();
+    Timer_reset(Timer3);
 }
 
 void stopIrCapture(void)
 {
-    stopTimer3();
+    Timer_start(Timer3);
     disableGpioInterrupt(IR_CAPTURE_PORT, IR_CAPTURE_PIN);
 }
 
@@ -88,7 +88,7 @@ void captureFunction(void)
     
     //if (firstCapture != 1)                     // Check for first run, ignore value
     //{
-        timeDiff = (uint16)getCounterValueTimer3();
+        timeDiff = (uint16) Timer_counterValue(Timer3);
 
         if (timeDiff >= receiveTimeout)     // Detected a timeout => frameReceived
         {
@@ -112,7 +112,7 @@ void captureFunction(void)
         firstCapture = 0;
     }*/
     
-    resetTimer3();                      // Reset the timer
+    Timer_reset(Timer3);                      // Reset the timer
 }
 
 int8 saveIrFrame(CircularBuffer *buffer, IrCommand *command)
@@ -144,14 +144,14 @@ void runIrCommand(IrCommand* command)
     currentPosition = 0;
     commandRunning = 1;     // Set the variable which indicates that a command is running
     
-    connectFunctionTimer3(&runFunction);
-    setIntervalUsTimer3(10);
-    startTimer3();
+    Timer_connectFunction(Timer3, &runFunction);
+    Timer_setIntervalUs(Timer3, 10);
+    Timer_start(Timer3);
 }
 
 void stopIrCommand(void )
 {
-    stopTimer3();
+    Timer_start(Timer3);
     stopPwm(IR_PWM_PIN);
     currentRepeatCount++;
     
@@ -163,8 +163,8 @@ void stopIrCommand(void )
     else
     {
         currentPosition = 0;
-        setIntervalUsTimer3(sendTimeout);    // Timeout between commands
-        startTimer3();
+        Timer_setIntervalUs(Timer3, sendTimeout);    // Timeout between commands
+        Timer_start(Timer3);
     }
 }
 
@@ -173,7 +173,7 @@ void runFunction(void )
     togglePwm(IR_PWM_PIN);
     if (currentPosition < tmpCommand->length)
     {
-        setIntervalUsTimer3(tmpCommand->data[currentPosition]);
+        Timer_setIntervalUs(Timer3, tmpCommand->data[currentPosition]);
 
         currentPosition++;
     }

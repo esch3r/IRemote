@@ -25,7 +25,7 @@ int main(void)
         }
         ledTiming++;
         
-        delayMs(5);
+        Timer_delayMs(5);
      }
 
     return 0 ;
