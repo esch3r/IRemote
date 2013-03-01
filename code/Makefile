@@ -65,8 +65,8 @@ CSRC += $(LIBRARYPATH)/button.c
 CSRC += $(LIBRARYPATH)/crc.c
 CSRC += $(LIBRARYPATH)/ssp.c
 CSRC += $(LIBRARYPATH)/rfm12.c
-CSRC += irData.c
-CSRC += irControl.c
+CSRC += remotecommand.c
+CSRC += remotecontrol.c
 CSRC += iremote.c
 
 ASRC = $(SYSPATH)/startup_LPC17xx.asm

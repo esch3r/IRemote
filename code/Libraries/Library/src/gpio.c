@@ -1,6 +1,9 @@
 #include "gpio.h"
 
-inline void setGpioDirection(uint8 port, uint8 pin, enum GpioDirection direction)
+void (* functionPointers0[GPIO0_INT_PIN_COUNT])(void);
+void (* functionPointers2[GPIO2_INT_PIN_COUNT])(void);
+
+inline void Gpio_setDirection(uint8 port, uint8 pin, enum GpioDirection direction)
 {
     switch (port)
     {
@@ -21,7 +24,7 @@ inline void setGpioDirection(uint8 port, uint8 pin, enum GpioDirection direction
     return;
 }
 
-inline uint8 readGpio(uint8 port, uint8 pin)
+inline uint8 Gpio_read(uint8 port, uint8 pin)
 {
     switch (port)
     {
@@ -34,7 +37,7 @@ inline uint8 readGpio(uint8 port, uint8 pin)
     return 0;
 }
 
-inline void writeGpio(uint8 port, uint8 pin, uint8 value)
+inline void Gpio_write(uint8 port, uint8 pin, uint8 value)
 {
     switch (port)
     {
@@ -51,7 +54,7 @@ inline void writeGpio(uint8 port, uint8 pin, uint8 value)
     return;
 }
 
-inline void setGpio(uint8 port, uint8 pin)
+inline void Gpio_set(uint8 port, uint8 pin)
 {
     switch (port)
     {
@@ -68,7 +71,7 @@ inline void setGpio(uint8 port, uint8 pin)
     return;
 }
 
-inline void clearGpio(uint8 port, uint8 pin)
+inline void Gpio_clear(uint8 port, uint8 pin)
 {
     switch (port)
     {
@@ -85,7 +88,7 @@ inline void clearGpio(uint8 port, uint8 pin)
     return;
 }
 
-inline void toggleGpio(uint8 port, uint8 pin)
+inline void Gpio_toggle(uint8 port, uint8 pin)
 {
     switch (port)
     {
@@ -102,7 +105,7 @@ inline void toggleGpio(uint8 port, uint8 pin)
     return;
 }
 
-void enableGpioInterrupt(uint8 port, uint8 pin, enum GpioInterruptType type, void (* func)(void))
+void Gpio_enableInterrupt(uint8 port, uint8 pin, enum GpioInterruptType type, void (* func)(void))
 {
     switch (port)
     {
@@ -134,7 +137,7 @@ void enableGpioInterrupt(uint8 port, uint8 pin, enum GpioInterruptType type, voi
     return;
 }
 
-void disableGpioInterrupt(uint8 port, uint8 pin)
+void Gpio_disableInterrupt(uint8 port, uint8 pin)
 {
     switch (port)
     {

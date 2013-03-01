@@ -8,6 +8,7 @@
 volatile Rfm12_Mode receiverSenderMode;
 volatile Ssp ssps[RFM12_MAX_COUNT];
 volatile GpioPair dataPairs[RFM12_MAX_COUNT];
+volatile bool ookStatus[RFM12_MAX_COUNT];
 
 int8 Rfm12_initialize(Rfm12 id, Ssp ssp, GpioPair selPair, GpioPair dataPair)
 {
@@ -27,7 +28,7 @@ int8 Rfm12_initialize(Rfm12 id, Ssp ssp, GpioPair selPair, GpioPair dataPair)
     dataPairs[id] = dataPair;
     ssps[id] = ssp;
     
-    setGpioDirection(dataPair.port, dataPair.pin, GpioDirectionInput );   // nFS pin must be set
+    Gpio_setDirection(dataPair.port, dataPair.pin, GpioDirectionInput );   // nFS pin must be set
     setPinMode(dataPair.port, dataPair.pin, PinModeNoPullUpDown);
     
     receiverSenderMode = Rfm12_ModeNone;
@@ -35,7 +36,7 @@ int8 Rfm12_initialize(Rfm12 id, Ssp ssp, GpioPair selPair, GpioPair dataPair)
     return 0;
 }
 
-void Rfm12_prepareOokSending(Rfm12 id)
+void Rfm12_prepareOokSending(Rfm12 id, Rfm12_FrequencyBand frequencyBand, float frequency, uint32 dataRate)
 {
     /*RFXX_WRT_CMD(0x80D7);//EL,EF,12.0pF
     RFXX_WRT_CMD(0x8239);//!er,!ebb,ET,ES,EX,!eb,!ew,DC
@@ -62,16 +63,16 @@ void Rfm12_prepareOokSending(Rfm12 id)
                                         Rfm12_OscillatorEnabled,
                                         Rfm12_BrownoutDetectionDisabled,
                                         Rfm12_WakeupTimerDisabled,
-                                        Rfm12_ClockOutputEnabled
+                                        Rfm12_ClockOutputDisabled
                            );
-    Rfm12_setFrequency(id,              Rfm12_FrequencyBand433Mhz,
-                                        433.92
+    Rfm12_setFrequency(id,              frequencyBand,
+                                        frequency
                      );
-    Rfm12_setDataRate(id,               4800
+    Rfm12_setDataRate(id,               dataRate
     );
     Rfm12_setReceiverControl(id,        Rfm12_DataPinVdi,
                                         Rfm12_ValidDataIndicatorResponseFast,
-                                        Rfm12_ReceiverBasebandBandwidth134kHz,
+                                        Rfm12_ReceiverBasebandBandwidth200kHz,
                                         Rfm12_LnaGain6dB,
                                         Rfm12_RssiDetectorThreshold97dB
                            );
@@ -87,27 +88,33 @@ void Rfm12_prepareOokSending(Rfm12 id)
                                         Rfm12_FifoFillModeClearAndLock,
                                         Rfm12_SensitiveResetDisabled
                             );
-     Rfm12_setAutomaticFrequencyControl(id, Rfm12_AfcAutoModeStartup,
-                                        Rfm12_AfcRangeLimitSmall,
+     Rfm12_setAutomaticFrequencyControl(id, Rfm12_AfcAutoModeAlways,
+                                        Rfm12_AfcRangeLimitUnlimited,
                                         Rfm12_AfcStrobeEdgeDisabled,
                                         Rfm12_AfcFineModeDisabled,
                                         Rfm12_AfcOffsetEnabled,
                                         Rfm12_AfcEnabled
                                      );
-    Rfm12_setClockGenerator(id,         Rfm12_ClockOutputBufferWeak,
+    Rfm12_setClockGenerator(id,         Rfm12_ClockOutputBufferStrong,
                                         Rfm12_OsciallatorLowPowerMode1msStartup,
                                         Rfm12_PhaseDetectorDelayDisabled,
                                         Rfm12_PllDitheringDisabled,
                                         Rfm12_PllBandwith2
                           );
+    Rfm12_setTxConfiguration(id,        Rfm12_ModulationPolarityNormal,
+                                        Rfm12_FrequencyDeviation15kHz,
+                                        Rfm12_RelativeOutputPower0dB);
     Rfm12_setWakeUpTimer(id,            0,                          // disable wakeuptimer
                                         0
                        );   
     Rfm12_setLowDutyCycle(id,           0, 
                                         Rfm12_CyclicWakeupDisabled    // disable low duty cycle
                         ); 
-    Rfm12_setLowBatteryDetectorAndClockDivider(id, Rfm12_Clock1_6MHz,
+    Rfm12_setLowBatteryDetectorAndClockDivider(id, Rfm12_Clock1MHz,
                                               225);
+
+    
+    ookStatus[id] = false;
 }
 
 void Rfm12_prepareOokReceiving(Rfm12 id, Rfm12_FrequencyBand frequencyBand, float frequency, uint32 dataRate)
@@ -146,8 +153,8 @@ void Rfm12_prepareOokReceiving(Rfm12 id, Rfm12_FrequencyBand frequencyBand, floa
     );
     Rfm12_setReceiverControl(id,        Rfm12_DataPinVdi,
                                         Rfm12_ValidDataIndicatorResponseFast,
-                                        Rfm12_ReceiverBasebandBandwidth200kHz,
-                                        Rfm12_LnaGain6dB,
+                                        Rfm12_ReceiverBasebandBandwidth400kHz,
+                                        Rfm12_LnaGain0dB,
                                         Rfm12_RssiDetectorThreshold97dB
                            );
     Rfm12_setDataFilter(id,             Rfm12_AutoLockDisabled,
@@ -185,6 +192,47 @@ void Rfm12_prepareOokReceiving(Rfm12 id, Rfm12_FrequencyBand frequencyBand, floa
                                               225);
 }
 
+void Rfm12_ookSet(Rfm12 id)
+{
+    Rfm12_setPowerManagement(id,        Rfm12_ReceiverDisabled,
+                                        Rfm12_BasebandDisabled,
+                                        Rfm12_TransmitterEnabled,
+                                        Rfm12_SynthesizerEnabled,
+                                        Rfm12_OscillatorEnabled,
+                                        Rfm12_BrownoutDetectionDisabled,
+                                        Rfm12_WakeupTimerDisabled,
+                                        Rfm12_ClockOutputEnabled
+                           );
+    ookStatus[id] = true;
+}
+
+void Rfm12_ookClear(Rfm12 id)
+{
+    Rfm12_setPowerManagement(id,        Rfm12_ReceiverDisabled,
+                                        Rfm12_BasebandDisabled,
+                                        Rfm12_TransmitterDisabled,
+                                        Rfm12_SynthesizerDisabled,
+                                        Rfm12_OscillatorEnabled,
+                                        Rfm12_BrownoutDetectionDisabled,
+                                        Rfm12_WakeupTimerDisabled,
+                                        Rfm12_ClockOutputDisabled
+                           );
+    ookStatus[id] = false;
+}
+
+void Rfm12_ookToggle(Rfm12 id)
+{
+    if (ookStatus[id] == true)
+    {
+        Rfm12_ookClear(id);
+        ookStatus[id] = false;
+    }
+    else 
+    {  
+        Rfm12_ookSet(id);
+        ookStatus[id] = true;
+    }
+}
 void Rfm12_setBaseConfig(Rfm12 id,
                         Rfm12_TxFifo txFifoEnable, 
                         Rfm12_RxFifo rxFifoEnable, 

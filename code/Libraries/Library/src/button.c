@@ -1,6 +1,7 @@
 #include "button.h"
 
 CircularBuffer buttonBuffer;
+volatile ButtonValue buttonBufferData[BUTTON_BUFFER_SIZE];
 
 typedef struct {
     uint8 id;
@@ -10,11 +11,11 @@ typedef struct {
     uint8 type;
 } Button;
 
-Button	buttons[20];
-ButtonValue val[20];
-uint8	buttonCount = 0;
+volatile Button  buttons[BUTTON_BUFFER_SIZE];
+volatile ButtonValue val[BUTTON_BUFFER_SIZE];
+volatile uint8   buttonCount = 0;
 
-uint32 maxunset;
+volatile uint32 maxunset;
 
 /** reads the button values
  */
@@ -28,7 +29,7 @@ void putVal(uint8 i, uint8 pressed);
 
 uint8 Button_initialize(uint32 khz, uint32 sampleInterval, uint32 timeoutInterval)
 {
-    if (initializeCb(&buttonBuffer,20,sizeof(ButtonValue)) == -1)
+    if (Cb_initialize(&buttonBuffer, BUTTON_BUFFER_SIZE, sizeof(ButtonValue), (void*)(&buttonBufferData)) == -1)
         return -1;
     
 	if (Timer_initialize(Timer2, khz, sampleInterval) == -1)
@@ -44,7 +45,7 @@ uint8 Button_initialize(uint32 khz, uint32 sampleInterval, uint32 timeoutInterva
 
 void Button_initializeButton(uint8 id, uint8 port, uint8 pin,ButtonType type)
 {
-    setGpioDirection(port, pin, GpioDirectionInput );    //direction 0=input
+    Gpio_setDirection(port, pin, GpioDirectionInput );    //direction 0=input
     if(type == ButtonTypeLowActive)
       setPinMode(port, pin, PinModePullUp);
     if(type == ButtonTypeHighActive)
@@ -69,11 +70,11 @@ void valueButton(void){
     {
         if(buttons[i].type == ButtonTypeLowActive)
         {
-            readGpio(buttons[i].port,buttons[i].pin) ? putVal(i,0): putVal(i,1);
+            Gpio_read(buttons[i].port,buttons[i].pin) ? putVal(i,0): putVal(i,1);
         }
         else if(buttons[i].type == ButtonTypeLowActive)
         {
-            readGpio(buttons[i].port,buttons[i].pin) ? putVal(i,1): putVal(i,0);
+            Gpio_read(buttons[i].port,buttons[i].pin) ? putVal(i,1): putVal(i,0);
         }
 	}
 }
@@ -94,7 +95,7 @@ void putVal(uint8 i,uint8 pressed)
         }
 		if((buttons[i].unset > maxunset) && (val[i].count != 0) )
         {
-			putCb(&buttonBuffer,(void*)(&val[i]));
+			Cb_put(&buttonBuffer,(void*)(&val[i]));
 			val[i].count = 0;
 			buttons[i].unset =0;
 		}
@@ -103,5 +104,5 @@ void putVal(uint8 i,uint8 pressed)
 
 int8 Button_getPress(ButtonValue *value)
 {
-    return getCb(&buttonBuffer, (void*)value);
+    return Cb_get(&buttonBuffer, (void*)value);
 }

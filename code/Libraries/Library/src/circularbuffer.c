@@ -1,10 +1,18 @@
 #include "circularbuffer.h"
 
-int8 initializeCb(CircularBuffer *buffer, uint16 bufferSize, uint16 dataSize)
+int8 Cb_initialize(CircularBuffer *buffer, uint16 bufferSize, uint16 dataSize, void *data)
 {
     buffer->dataSize = dataSize;
-    buffer->bufferSize = bufferSize*dataSize;
-    buffer->startPointer = calloc(bufferSize,dataSize);
+    buffer->bufferSize = bufferSize * dataSize;
+    
+    if (data == NULL)
+    {
+        buffer->startPointer = calloc(bufferSize, dataSize);
+    }
+    else
+    {
+        buffer->startPointer = data;
+    }
     
     if (buffer->startPointer == NULL)    //memory full
         return -1;
@@ -15,13 +23,15 @@ int8 initializeCb(CircularBuffer *buffer, uint16 bufferSize, uint16 dataSize)
     return 0;
 }
 
-int8 putCb(CircularBuffer *buffer, void *item)
+int8 Cb_put(CircularBuffer *buffer, void *item)
 {
     if ((buffer->inPointer == (buffer->outPointer - buffer->dataSize)) || 
         ((buffer->inPointer == (buffer->startPointer+buffer->bufferSize)) && (buffer->outPointer == buffer->startPointer)))  //buffer full
+    {
         return -1;
+    }
     
-    memcpy(buffer->inPointer,item,buffer->dataSize);
+    memcpy(buffer->inPointer, item, buffer->dataSize);
     
     //increase the pointer
     if (buffer->inPointer == (buffer->startPointer+buffer->bufferSize))
@@ -36,7 +46,7 @@ int8 putCb(CircularBuffer *buffer, void *item)
     return 0;
 }
 
-int8 getCb(CircularBuffer *buffer, void *item)
+int8 Cb_get(CircularBuffer *buffer, void *item)
 {
     if (buffer->outPointer == buffer->inPointer)   //buffer empty
         return -1;

@@ -27,4 +27,4 @@
 #define PWM1_ENABLE_OUTPUT(ch)     LPC_PWM1->PCR |= (1<<(ch+9))                                 //Output enabled for PWM1-5
 #define PWM1_DISABLE_OUTPUT(ch)    LPC_PWM1->PCR &= ~(1<<(ch+9))                                // Output disabled for PWM1-5
 #define PWM1_SET_0                 LPC_PWM1->TC = LPC_PWM1->MR1-1                               // Nasty but awesome workaround to set the output to 0
-#define PWM1_TOGGLE_OUTPUT(ch)     (LPC_PWM1->PCR & (1<<(ch+9))) ? stopPwm(ch) : startPWM(ch);  // Toggles output for PWM1
+#define PWM1_TOGGLE_OUTPUT(ch)     (LPC_PWM1->PCR & (1<<(ch+9))) ? Pwm_stop(ch) : Pwm_start(ch);  // Toggles output for PWM1

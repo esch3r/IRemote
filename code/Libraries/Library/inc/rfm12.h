@@ -311,8 +311,12 @@ typedef enum {
 
 int8 Rfm12_initialize(Rfm12 id, Ssp ssp, GpioPair selPair, GpioPair dataPair);
 
-void Rfm12_prepareOokSending(Rfm12 id);
+void Rfm12_prepareOokSending(Rfm12 id, Rfm12_FrequencyBand frequencyBand, float frequency, uint32 dataRate);
 void Rfm12_prepareOokReceiving(Rfm12 id, Rfm12_FrequencyBand frequencyBand, float frequency, uint32 dataRate);
+
+void Rfm12_ookSet(Rfm12 id);
+void Rfm12_ookClear(Rfm12 id);
+void Rfm12_ookToggle(Rfm12 id);
 
 void Rfm12_setBaseConfig(Rfm12 id,
                         Rfm12_TxFifo txFifoEnable, 

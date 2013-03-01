@@ -2,7 +2,7 @@
 
 ActiveConnection activeConnections = 0;
 
-IrCommand *currentCommand;
+RemoteCommand *currentCommand;
 ApplicationState applicationState = ApplicationStateIdle;
 ApplicationSettings applicationSettings;
 
@@ -28,7 +28,7 @@ int8 initializeHardware(void)
     Led_set(Led1);
     Timer_delayMs(200);
     
-    initializeIrControl();
+    RemoteControl_initialize();
     
     // initialize Network Connections
     initializeSerialConnection();
@@ -43,25 +43,6 @@ int8 initializeHardware(void)
    
     Timer_delayMs(500);
     
-    GpioPair selPair;
-    GpioPair dataPair;
-    
-    // Initialize 433MHz module
-    selPair.port = 0;
-    selPair.pin = 25;
-    dataPair.port = 2;
-    dataPair.pin = 2;
-    Rfm12_initialize(Rfm12_0, Ssp1, selPair, dataPair);
-    Rfm12_prepareOokReceiving(Rfm12_0, Rfm12_FrequencyBand433Mhz, 433.92, 4200);
-    
-    // Initialize 868MHz module
-    selPair.port = 0;
-    selPair.pin = 26;
-    dataPair.port = 0;
-    dataPair.pin = 22;
-    Rfm12_initialize(Rfm12_1, Ssp1, selPair, dataPair);
-    Rfm12_prepareOokReceiving(Rfm12_1, Rfm12_FrequencyBand868Mhz, 868, 4200);
-    
     Led_clear(3);
     Led_blink2(0);   //onboard we came through the initialization
     
@@ -71,7 +52,7 @@ int8 initializeHardware(void)
 int8 initializeVariables(void )
 {
     // init variables
-    currentCommand = createIrCommand();
+    currentCommand = RemoteCommand_create();
     
     //load settings....
     loadSettings(&applicationSettings, sizeof(ApplicationSettings));
@@ -99,9 +80,9 @@ int8 initializeVariables(void )
     }
     
     
-    setIrReceiveTimeout(applicationSettings.irReceiveTimeout);
-    setIrSendTimeout(applicationSettings.irSendTimeout);
-    setIrRepeatCount(applicationSettings.irRepeatCount);
+    RemoteControl_setReceiveTimeout(RemoteControl_Medium_Ir, applicationSettings.irReceiveTimeout);
+    RemoteControl_setSendTimeout(RemoteControl_Medium_Ir, applicationSettings.irSendTimeout);
+    RemoteControl_setRepeatCount(RemoteControl_Medium_Ir, applicationSettings.irRepeatCount);
     
     return 0;
 }
@@ -325,12 +306,32 @@ void processCommand(char *buffer)
     }
     else if (compareBaseCommand("capture", dataPointer))
     {
-        // We have a capture command
-        startState(ApplicationStateCaptureCommand);
+        dataPointer = strtok(NULL," ");
+        if (dataPointer == NULL)
+        {
+            printUnknownCommand();
+            return;
+        }
+        else if (compareExtendedCommand("ir",dataPointer))
+        {
+            startState(ApplicationStateCaptureIrCommand);
+        }
+        else if (compareExtendedCommand("radio433", dataPointer))
+        {
+            startState(ApplicationStateCaptureRadio433MhzCommand);
+        }
+        else if (compareExtendedCommand("radio868", dataPointer))
+        {
+            startState(ApplicationStateCaptureRadio868MhzCommand);
+        }
+        else
+        {
+            printUnknownCommand();
+            return;
+        }
     }
     else if (compareBaseCommand("stop", dataPointer))
     {
-        // We have a capture command
         startState(ApplicationStateIdle);
     }
     else if (compareBaseCommand("flash", dataPointer))
@@ -547,7 +548,7 @@ void processCommand(char *buffer)
                 if (dataPointer != NULL)
                 {
                     applicationSettings.irReceiveTimeout = atoi(dataPointer)*1000;
-                    setIrReceiveTimeout(applicationSettings.irReceiveTimeout);
+                    RemoteControl_setReceiveTimeout(RemoteControl_Medium_Ir, applicationSettings.irReceiveTimeout);
                     printAcknowledgement();
                     return;
                 }
@@ -564,7 +565,7 @@ void processCommand(char *buffer)
                 if (dataPointer != NULL)
                 {
                     applicationSettings.irSendTimeout = atoi(dataPointer)*1000;
-                    setIrSendTimeout(applicationSettings.irSendTimeout);
+                    RemoteControl_setSendTimeout(RemoteControl_Medium_Ir, applicationSettings.irSendTimeout);
                     printAcknowledgement();
                     return;
                 }
@@ -581,7 +582,139 @@ void processCommand(char *buffer)
                 if (dataPointer != NULL)
                 {
                     applicationSettings.irRepeatCount = atoi(dataPointer);
-                    setIrRepeatCount(applicationSettings.irRepeatCount);
+                    RemoteControl_setRepeatCount(RemoteControl_Medium_Ir, applicationSettings.irRepeatCount);
+                    printAcknowledgement();
+                    return;
+                }
+                else
+                {
+                    printParameterMissing();
+                    return;
+                }
+            }
+            else
+            {
+                printUnknownCommand();
+                return;
+            }
+        }
+        else if (compareExtendedCommand("radio433",dataPointer))
+        {
+            // set ir
+            dataPointer = strtok(NULL," ");
+            if (dataPointer == NULL)
+            {
+                printUnknownCommand();
+                return;
+            }
+            else if (compareExtendedCommand("receiveTimeout",dataPointer))
+            {
+
+                dataPointer = strtok(NULL," ");
+                if (dataPointer != NULL)
+                {
+                    applicationSettings.irReceiveTimeout = atoi(dataPointer)*1000;
+                    RemoteControl_setReceiveTimeout(RemoteControl_Medium_433Mhz, applicationSettings.irReceiveTimeout);
+                    printAcknowledgement();
+                    return;
+                }
+                else
+                {
+                    printParameterMissing();
+                    return;
+                }
+            }
+            else if (compareExtendedCommand("sendTimeout",dataPointer))
+            {
+
+                dataPointer = strtok(NULL," ");
+                if (dataPointer != NULL)
+                {
+                    applicationSettings.irSendTimeout = atoi(dataPointer)*1000;
+                    RemoteControl_setSendTimeout(RemoteControl_Medium_433Mhz, applicationSettings.irSendTimeout);
+                    printAcknowledgement();
+                    return;
+                }
+                else
+                {
+                    printParameterMissing();
+                    return;
+                }
+            }
+            else if (compareExtendedCommand("count",dataPointer))
+            {
+
+                dataPointer = strtok(NULL," ");
+                if (dataPointer != NULL)
+                {
+                    applicationSettings.irRepeatCount = atoi(dataPointer);
+                    RemoteControl_setRepeatCount(RemoteControl_Medium_433Mhz, applicationSettings.irRepeatCount);
+                    printAcknowledgement();
+                    return;
+                }
+                else
+                {
+                    printParameterMissing();
+                    return;
+                }
+            }
+            else
+            {
+                printUnknownCommand();
+                return;
+            }
+        }
+        else if (compareExtendedCommand("radio868",dataPointer))
+        {
+            // set ir
+            dataPointer = strtok(NULL," ");
+            if (dataPointer == NULL)
+            {
+                printUnknownCommand();
+                return;
+            }
+            else if (compareExtendedCommand("receiveTimeout",dataPointer))
+            {
+
+                dataPointer = strtok(NULL," ");
+                if (dataPointer != NULL)
+                {
+                    applicationSettings.irReceiveTimeout = atoi(dataPointer)*1000;
+                    RemoteControl_setReceiveTimeout(RemoteControl_Medium_868Mhz, applicationSettings.irReceiveTimeout);
+                    printAcknowledgement();
+                    return;
+                }
+                else
+                {
+                    printParameterMissing();
+                    return;
+                }
+            }
+            else if (compareExtendedCommand("sendTimeout",dataPointer))
+            {
+
+                dataPointer = strtok(NULL," ");
+                if (dataPointer != NULL)
+                {
+                    applicationSettings.irSendTimeout = atoi(dataPointer)*1000;
+                    RemoteControl_setSendTimeout(RemoteControl_Medium_868Mhz, applicationSettings.irSendTimeout);
+                    printAcknowledgement();
+                    return;
+                }
+                else
+                {
+                    printParameterMissing();
+                    return;
+                }
+            }
+            else if (compareExtendedCommand("count",dataPointer))
+            {
+
+                dataPointer = strtok(NULL," ");
+                if (dataPointer != NULL)
+                {
+                    applicationSettings.irRepeatCount = atoi(dataPointer);
+                    RemoteControl_setRepeatCount(RemoteControl_Medium_868Mhz, applicationSettings.irRepeatCount);
                     printAcknowledgement();
                     return;
                 }
@@ -840,21 +973,37 @@ void startState(ApplicationState state)
         
         printfData("Idle\r");
     }
-    else if (state == ApplicationStateCaptureCommand)
+    else if (state == ApplicationStateCaptureIrCommand)
     {
-        applicationState = ApplicationStateCaptureCommand;
+        applicationState = ApplicationStateCaptureIrCommand;
         
-        printfData("Capturing data\r");
-        Led_blink2(2);
-        startIrCapture();
+        printfData("Capturing IR data\r");
+        Led_blink2(Led2);
+        RemoteControl_startCapture(RemoteControl_Medium_Ir);
+    }
+    else if (state == ApplicationStateCaptureRadio433MhzCommand)
+    {
+        applicationState = ApplicationStateCaptureIrCommand;
+        
+        printfData("Capturing 433MHz data\r");
+        Led_blink2(Led2);
+        RemoteControl_startCapture(RemoteControl_Medium_433Mhz);
+    }
+    else if (state == ApplicationStateCaptureRadio868MhzCommand)
+    {
+        applicationState = ApplicationStateCaptureIrCommand;
+        
+        printfData("Capturing 868MHz data\r");
+        Led_blink2(Led2);
+        RemoteControl_startCapture(RemoteControl_Medium_868Mhz);
     }
     else if (state == ApplicationStateRunCommand)
     {
         applicationState = ApplicationStateRunCommand;
                 
         printfData("Running command\r");
-        Led_blink(2);
-        runIrCommand(currentCommand);
+        Led_blink(Led2);
+        RemoteControl_runCommand(currentCommand);
     }
     else if (state == ApplicationStateFlashFirmware)
     {
@@ -878,18 +1027,21 @@ void mainTask(void)
             processTaskUart0();     // serial task
             processTaskWiFly();     // wifly task
         }
-        else if (applicationState == ApplicationStateCaptureCommand)
+        else if ((applicationState == ApplicationStateCaptureIrCommand)
+              || (applicationState == ApplicationStateCaptureRadio433MhzCommand)
+              || (applicationState == ApplicationStateCaptureRadio868MhzCommand)
+        )
         {
-            currentCommand = getIrCommand();
+            currentCommand = RemoteControl_command();
             if (currentCommand != NULL)    // We finally received something
             {
-                outputCommand(currentCommand);
+                RemoteControl_outputCommand(currentCommand);
                 startState(ApplicationStateIdle);
             }
         }
         else if (applicationState == ApplicationStateRunCommand)
         {
-            if (!isCommandRunning())    // Command has finished
+            if (!RemoteControl_isCommandRunning())    // Command has finished
                 startState(ApplicationStateIdle);
         }
         else if (applicationState == ApplicationStateWiFlyTest)

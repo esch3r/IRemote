@@ -11,6 +11,11 @@
 #define TRUE    (1)
 #endif
 
+typedef enum {
+    true = 1,
+    false = 0
+} boolean;
+
 typedef S8                 int8;
 typedef U8                 uint8;
 typedef S16                int16;

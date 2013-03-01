@@ -1,6 +1,6 @@
 #include "pwm.h"
 
-int8 initializePWM(uint32 freq,float duty, uint8 ch)
+int8 Pwm_initialize(uint32 freq,float duty, uint8 ch)
 {
     PWM_ENABLE_POWER();
     PWM_SET_CORE_CLK();
@@ -30,20 +30,20 @@ int8 initializePWM(uint32 freq,float duty, uint8 ch)
     return 0;
 }
 
-inline void startPWM(uint8 ch)
+inline void Pwm_start(uint8 ch)
 {
     PWM1_ENABLE_OUTPUT(ch);
     return;
 }
 
-inline void stopPwm(uint8 ch)
+inline void Pwm_stop(uint8 ch)
 {
     PWM1_SET_0;                 //funtioniert nur für alle ausgänge auf einmal oder??
     PWM1_DISABLE_OUTPUT(ch);
     return;
 }
 
-inline void togglePwm(uint8 ch)
+inline void Pwm_toggle(uint8 ch)
 {
     PWM1_TOGGLE_OUTPUT(ch);
     return;

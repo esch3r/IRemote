@@ -6,7 +6,7 @@ uint8 ledCount = 0;
 
 void Led_initialize(uint8 port, uint8 pin, bool lowActive)
 {
-    setGpioDirection(port, pin, GpioDirectionOutput);
+    Gpio_setDirection(port, pin, GpioDirectionOutput);
     leds[ledCount].port = port;
     leds[ledCount].pin = pin;
     leds[ledCount].lowActive = lowActive;
@@ -16,27 +16,27 @@ void Led_initialize(uint8 port, uint8 pin, bool lowActive)
 void Led_set(uint8 id)
 {
     if (leds[id].lowActive == FALSE)
-        setGpio(leds[id].port, leds[id].pin);
+        Gpio_set(leds[id].port, leds[id].pin);
     else
-        clearGpio(leds[id].port, leds[id].pin);
+        Gpio_clear(leds[id].port, leds[id].pin);
 }
 
 void Led_clear(uint8 id)
 {
      if (leds[id].lowActive == FALSE)
-        clearGpio(leds[id].port, leds[id].pin);
+        Gpio_clear(leds[id].port, leds[id].pin);
     else
-        setGpio(leds[id].port, leds[id].pin);
+        Gpio_set(leds[id].port, leds[id].pin);
 }
 
 void Led_toggle(uint8 id)
 {
-    toggleGpio(leds[id].port, leds[id].pin);
+    Gpio_toggle(leds[id].port, leds[id].pin);
 }
 
 bool Led_read(uint8 id)
 {
-    return readGpio(leds[id].port, leds[id].pin);
+    return Gpio_read(leds[id].port, leds[id].pin);
 }
 
 void Led_blink(uint8 id)

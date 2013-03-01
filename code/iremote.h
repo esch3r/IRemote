@@ -22,11 +22,13 @@
 #include <pwm.h>
 #include <crc.h>
 #include <rfm12.h>
-#include "irControl.h"
+#include "remotecontrol.h"
 
 typedef enum {
     ApplicationStateIdle = 0,
-    ApplicationStateCaptureCommand = 1,
+    ApplicationStateCaptureIrCommand = 1,
+    ApplicationStateCaptureRadio433MhzCommand = 4,
+    ApplicationStateCaptureRadio868MhzCommand = 5,
     ApplicationStateRunCommand = 2,
     ApplicationStateFlashFirmware = 3,
     ApplicationStateWiFlyTest = 100

@@ -11,6 +11,8 @@
  */
 #pragma once
 
+#define BUTTON_BUFFER_SIZE 20
+
 #include <types.h>
 #include <timer.h>
 #include <gpio.h>
