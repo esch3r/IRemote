@@ -1,4 +1,5 @@
 #include "uart.h"
+#include <core_cm3.h>
 
 CircularBuffer uart0ReadBuffer;
 CircularBuffer uart0WriteBuffer;
@@ -31,6 +32,41 @@ void (* errorFunctionPointer0)(void);
 void (* errorFunctionPointer1)(void);
 void (* errorFunctionPointer2)(void);
 void (* errorFunctionPointer3)(void);
+
+int8 initializeUart0(uint32 baudrate);
+int8 initializeUart1(uint32 baudrate);
+int8 initializeUart2(uint32 baudrate);
+int8 initializeUart3(uint32 baudrate);
+
+int8 putcharUart0(char c);
+int8 putcharUart1(char c);
+int8 putcharUart2(char c);
+int8 putcharUart3(char c);
+
+int8 writeDataUart0(void *data, uint32 length);
+int8 writeDataUart1(void *data, uint32 length);
+int8 writeDataUart2(void *data, uint32 length);
+int8 writeDataUart3(void *data, uint32 length);
+
+int8 getcharUart0(char* c);
+int8 getcharUart1(char* c);
+int8 getcharUart2(char* c);
+int8 getcharUart3(char* c);
+
+int8 printfUart0(char* format, ...);
+int8 printfUart1(char* format, ...);
+int8 printfUart2(char* format, ...);
+int8 printfUart3(char* format, ...);
+
+void flushUart0(void);  
+void flushUart1(void);  
+void flushUart2(void);  
+void flushUart3(void);  
+
+void setBaudrateUart0(uint32 baudrate);
+void setBaudrateUart1(uint32 baudrate);
+void setBaudrateUart2(uint32 baudrate);
+void setBaudrateUart3(uint32 baudrate);
 
 int8 initializeUart0(uint32 baudrate)
 {
@@ -174,6 +210,30 @@ int8 initializeUart3(uint32 baudrate)
 #endif
     
     return 0;
+}
+
+int8 Uart_initialize(Uart uart, uint32 baudrate)
+{
+    if (uart == Uart0)
+    {
+        return initializeUart0(baudrate);
+    }
+    else if (uart == Uart1)
+    {
+        return initializeUart1(baudrate);
+    }
+    else if (uart == Uart2)
+    {
+        return initializeUart2(baudrate);
+    }
+    else if (uart == Uart3)
+    {
+        return initializeUart3(baudrate);
+    }
+    else
+    {
+        return -1;
+    }
 }
 
 #if (USE_UART_BUFFER == 1)
@@ -324,6 +384,30 @@ int8 putcharUart3(char c)
 #endif
 }
 
+int8 Uart_putchar(Uart uart, char c)
+{
+    if (uart == Uart0)
+    {
+        return putcharUart0(c);
+    }
+    else if (uart == Uart1)
+    {
+        return putcharUart1(c);
+    }
+    else if (uart == Uart2)
+    {
+        return putcharUart2(c);
+    }
+    else if (uart == Uart3)
+    {
+        return putcharUart3(c);
+    }
+    else
+    {
+        return -1;
+    }
+}
+
 int8 writeDataUart0(void *data, uint32 length)
 {
     uint32 i;
@@ -372,6 +456,30 @@ int8 writeDataUart3(void *data, uint32 length)
     return 0;
 }
 
+int8 Uart_writeData(Uart uart, void *data, uint32 length)
+{
+    if (uart == Uart0)
+    {
+        return writeDataUart0(data, length);
+    }
+    else if (uart == Uart1)
+    {
+        return writeDataUart1(data, length);
+    }
+    else if (uart == Uart2)
+    {
+        return writeDataUart2(data, length);
+    }
+    else if (uart == Uart3)
+    {
+        return writeDataUart3(data, length);
+    }
+    else
+    {
+        return -1;
+    }
+}
+
 int8 getcharUart0(char *c)
 {
 #if (USE_UART_BUFFER == 1)
@@ -414,6 +522,30 @@ int8 getcharUart3(char *c)
     *c = UART3_READ_CHAR();             // Read Receiver buffer register
     return 0;
 #endif
+}
+
+int8 Uart_getchar(Uart uart, char *c)
+{
+    if (uart == Uart0)
+    {
+        return getcharUart0(c);
+    }
+    else if (uart == Uart1)
+    {
+        return getcharUart1(c);
+    }
+    else if (uart == Uart2)
+    {
+        return getcharUart2(c);
+    }
+    else if (uart == Uart3)
+    {
+        return getcharUart3(c);
+    }
+    else
+    {
+        return -1;
+    }
 }
 
 int8 printfUart0(char *format, ...)
@@ -500,6 +632,27 @@ int8 printfUart3(char *format, ...)
     return 0;
 }
 
+int8 Uart_printf(Uart uart, char *format, ...)
+{
+    static char buffer[UART_PRINTF_BUFFER_SIZE];
+    
+    va_list arg_ptr;
+    uint16 i = 0;
+    
+    va_start(arg_ptr,format);
+    vsnprintf(buffer, UART_PRINTF_BUFFER_SIZE, format, arg_ptr);
+    va_end(arg_ptr);
+    
+    while (buffer[i] != 0)      // Loop through until reach string's zero terminator
+    {
+        if (Uart_putchar(uart, buffer[i]) == -1)
+            return -1;
+        i++;
+    }
+    
+    return 0;
+}
+
 void flushUart0(void)
 {
     char byteRead;
@@ -534,6 +687,26 @@ void flushUart3(void)
         ;
     while (Cb_get(&uart3WriteBuffer, (void*)&byteRead) == 0)
         ;
+}
+
+void Uart_flush(Uart uart)
+{
+    if (uart == Uart0)
+    {
+        flushUart0();
+    }
+    else if (uart == Uart1)
+    {
+        flushUart1();
+    }
+    else if (uart == Uart2)
+    {
+        flushUart2();
+    }
+    else if (uart == Uart3)
+    {
+        flushUart3();
+    }
 }
 
 void setBaudrateUart0(uint32 baudrate)
@@ -572,49 +745,67 @@ void setBaudrateUart3(uint32 baudrate)
     UART3_ENABLE_AND_RESET_FIFO();  // Enable and reset TX and RX FIFO
 }
 
+void Uart_setBaudrate(Uart uart, uint32 baudrate)
+{
+    if (uart == Uart0)
+    {
+        setBaudrateUart0(baudrate);
+    }
+    else if (uart == Uart1)
+    {
+        setBaudrateUart1(baudrate);
+    }
+    else if (uart == Uart2)
+    {
+        setBaudrateUart2(baudrate);
+    }
+    else if (uart == Uart3)
+    {
+        setBaudrateUart3(baudrate);
+    }
+}
+
 #if (USE_UART_TASK == 1)
-
-void setProcessFunctionUart0(void (* func)(char *))
+void Uart_setProcessFunction(Uart uart, void (* func)(char *))
 {
-    taskFunctionPointer0 = func;
+    if (uart == Uart0)
+    {
+        taskFunctionPointer0 = func;
+    }
+    else if (uart == Uart1)
+    {
+        taskFunctionPointer1 = func;
+    }
+    else if (uart == Uart2)
+    {
+        taskFunctionPointer2 = func;
+    }
+    else if (uart == Uart3)
+    {
+        taskFunctionPointer3 = func;
+    }
+}
+void Uart_setErrorFunction(Uart uart, void (* func)())
+{
+    if (uart == Uart0)
+    {
+        errorFunctionPointer0 = func;
+    }
+    else if (uart == Uart1)
+    {
+        errorFunctionPointer1 = func;
+    }
+    else if (uart == Uart2)
+    {
+        errorFunctionPointer2 = func;
+    }
+    else if (uart == Uart3)
+    {
+        errorFunctionPointer3 = func;
+    }
 }
 
-void setProcessFunctionUart1(void (* func)(char *))
-{
-    taskFunctionPointer1 = func;
-}
-
-void setProcessFunctionUart2(void (* func)(char *))
-{
-    taskFunctionPointer2 = func;
-}
-
-void setProcessFunctionUart3(void (* func)(char *))
-{
-    taskFunctionPointer3 = func;
-}
-
-void setErrorFunctionUart0(void (* func)())
-{
-    errorFunctionPointer0 = func;
-}
-
-void setErrorFunctionUart1(void (* func)())
-{
-    errorFunctionPointer1 = func;
-}
-
-void setErrorFunctionUart2(void (* func)())
-{
-    errorFunctionPointer2 = func;
-}
-
-void setErrorFunctionUart3(void (* func)())
-{
-    errorFunctionPointer3 = func;
-}
-
-void processTaskUart0()
+void Uart_processTask0()
 {
     static char receivedData;
     while (getcharUart0(&receivedData) == 0)
@@ -642,7 +833,7 @@ void processTaskUart0()
     }
 }
 
-void processTaskUart1()
+void Uart_processTask1()
 {
     static char receivedData;
     while (getcharUart1(&receivedData) == 0)
@@ -670,7 +861,7 @@ void processTaskUart1()
     }
 }
 
-void processTaskUart2()
+void Uart_processTask2()
 {
     static char receivedData;
     while (getcharUart2(&receivedData) == 0)
@@ -698,7 +889,7 @@ void processTaskUart2()
     }
 }
 
-void processTaskUart3()
+void Uart_processTask3()
 {
     static char receivedData;
     while (getcharUart3(&receivedData) == 0)
@@ -723,6 +914,26 @@ void processTaskUart3()
             (*taskFunctionPointer3)(taskBuffer3);
             taskBufferPos3 = 0;
         }
+    }
+}
+
+void Uart_processTask(Uart uart)
+{
+    if (uart == Uart0)
+    {
+        Uart_processTask0();
+    }
+    else if (uart == Uart1)
+    {
+        Uart_processTask1();
+    }
+    else if (uart == Uart2)
+    {
+        Uart_processTask2();
+    }
+    else if (uart == Uart3)
+    {
+        Uart_processTask3();
     }
 }
 #endif

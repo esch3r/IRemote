@@ -89,13 +89,13 @@ int8 initializeVariables(void )
 
 int8 initializeSerialConnection(void)
 {
-    if (initializeUart0(115200) == 0)
+    if (Uart_initialize(Uart0, 115200) == 0)
     {
-        flushUart0();                           // Trash all unusefull characters
+        Uart_flush(Uart0);                           // Trash all unusefull characters
         activeConnections |= SerialConnection;
         
-        setProcessFunctionUart0(&processCommand);
-        setErrorFunctionUart0(&errorCommand);
+        Uart_setProcessFunction(Uart0, &processCommand);
+        Uart_setErrorFunction(Uart0, &errorCommand);
     
         return 0;
     }
@@ -105,18 +105,18 @@ int8 initializeSerialConnection(void)
 
 int8 initializeNetworkConnection(void)
 {
-    if (initializeWiFly(115200) == 0)
+    if (WiFly_initialize(Uart1, 115200) == 0)
     {
-        if (actionWiFlyEnterCommandMode(FALSE) == 0)      // Configure the wlan module
+        if (WiFly_actionEnterCommandMode(FALSE) == 0)      // Configure the wlan module
         {
-            setWiFlySysPrintlvl(0);             // Turn off unessesary messages
-            setWiFlyWlanJoin(2);                // Auto join
-            setWiFlyDnsName("IRemoteBox");      // Sets the default hostname
-            setWiFlyDnsBackup("IRemote");       // Sets the backup hostname
-            actionWiFlyExitCommandMode();
+            WiFly_setSysPrintlvl(0);             // Turn off unessesary messages
+            WiFly_setWlanJoin(2);                // Auto join
+            WiFly_setDnsName("IRemoteBox");      // Sets the default hostname
+            WiFly_setDnsBackup("IRemote");       // Sets the backup hostname
+            WiFly_actionExitCommandMode();
             
-            setProcessFunctionWiFly(&processCommand);
-            setErrorFunctionWiFly(&errorWiFly);
+            WiFly_setProcessFunction(&processCommand);
+            WiFly_setErrorFunction(&errorWiFly);
             
             return 0;
         }
@@ -129,38 +129,38 @@ int8 initializeNetworkConnection(void)
 
 int8 startWlanInfrastructureMode(ApplicationSettings *settings)
 {
-    if (actionWiFlyEnterCommandMode(FALSE) == -1)
+    if (WiFly_actionEnterCommandMode(FALSE) == -1)
         return -1;
-    if (setWiflyInfrastructureParams() == -1)
+    if (WiFly_setInfrastructureParams() == -1)
         return -1;
-    if (setWiFlyWlanSsid(settings->wlanSsid) == -1)
+    if (WiFly_setWlanSsid(settings->wlanSsid) == -1)
         return -1;
-    if (setWiFlyWlanPhrase(settings->wlanPhrase) == -1)
+    if (WiFly_setWlanPhrase(settings->wlanPhrase) == -1)
         return -1;
-    if (setWiFlyWlanKey(settings->wlanKey) == -1)
+    if (WiFly_setWlanKey(settings->wlanKey) == -1)
         return -1;
-    if (setWiFlyDnsName(settings->wlanHostname) == -1)
+    if (WiFly_setDnsName(settings->wlanHostname) == -1)
         return -1;
-    if (setWiFlyWlanAuth(settings->wlanAuth) == -1)
+    if (WiFly_setWlanAuth(settings->wlanAuth) == -1)
         return -1;
-    if (setWiFlyIpDhcp(settings->wlanDhcp) == -1)
+    if (WiFly_setIpDhcp(settings->wlanDhcp) == -1)
         return -1;
-    if (setWiFlyIpAddress(settings->wlanIp) == -1)
+    if (WiFly_setIpAddress(settings->wlanIp) == -1)
         return -1;
-    if (setWiFlyIpNetmask(settings->wlanMask) == -1)
+    if (WiFly_setIpNetmask(settings->wlanMask) == -1)
         return -1;
-    if (setWiFlyIpGateway(settings->wlanGateway) == -1)
+    if (WiFly_setIpGateway(settings->wlanGateway) == -1)
         return -1;
-    if (fileIoWiFlySaveDefault() == -1)
+    if (WiFly_fileIoSaveDefault() == -1)
         return -1;
-    return actionWiFlyReboot();
+    return WiFly_actionReboot();
 }
 
 int8 startWlanAdhocMode(void)
 {
     char buffer[100];
     snprintf(buffer, 100, "IRemoteBox_%u", readSerialIap());
-    return createWiFlyAdhocNetwork(buffer);
+    return WiFly_createAdhocNetwork(buffer);
 }
 
 int8 printfData(char* format, ... )
@@ -178,7 +178,7 @@ int8 printfData(char* format, ... )
     {
         while (buffer[i] != 0)      // Loop through until reach string's zero terminator
         {
-            if (putcharWiFly(buffer[i]) == -1)
+            if (WiFly_putchar(buffer[i]) == -1)
                 return -1;
             i++;
         }
@@ -188,7 +188,7 @@ int8 printfData(char* format, ... )
     {
         while (buffer[i] != 0)      // Loop through until reach string's zero terminator
         {
-            if (putcharUart0(buffer[i]) == -1)
+            if (Uart_putchar(Uart0, buffer[i]) == -1)
                 return -1;
             i++;
         }
@@ -202,11 +202,11 @@ int8 putcharData(char c)
 {  
     if (activeConnections & NetworkConnection)
     {
-        return putcharWiFly(c);
+        return WiFly_putchar(c);
     }
     else if (activeConnections & SerialConnection)
     {
-        return putcharUart0(c);
+        return Uart_putchar(Uart0, c);
     }
     
     return -1;
@@ -216,11 +216,11 @@ int8 writeData(void *data, uint32 length)
 {   
     if (activeConnections & NetworkConnection)
     {
-        return writeDataWiFly(data, length);
+        return WiFly_writeData(data, length);
     }
     else if (activeConnections & SerialConnection)
     {
-        return writeDataUart0(data, length);
+        return Uart_writeData(Uart0, data, length);
     }
     
     return -1;
@@ -1024,8 +1024,8 @@ void mainTask(void)
 {
         if (applicationState == ApplicationStateIdle)
         {
-            processTaskUart0();     // serial task
-            processTaskWiFly();     // wifly task
+            Uart_processTask0();     // serial task
+            WiFly_processTask();     // wifly task
         }
         else if ((applicationState == ApplicationStateCaptureIrCommand)
               || (applicationState == ApplicationStateCaptureRadio433MhzCommand)
@@ -1047,16 +1047,16 @@ void mainTask(void)
         else if (applicationState == ApplicationStateWiFlyTest)
         {
             static char receivedData;
-            while (getcharUart0(&receivedData) == 0)
-                putcharWiFly(receivedData);
-            while (getcharWiFly(&receivedData) == 0)
-                putcharUart0(receivedData);
+            while (Uart_getchar(Uart0, &receivedData) == 0)
+                WiFly_putchar(receivedData);
+            while (WiFly_getchar(&receivedData) == 0)
+                Uart_putchar(Uart0, receivedData);
         }
 }
 
 void ledTask(void)
 {
-    if (isWiFlyConnected()) // keeps also track of the connectedness
+    if (WiFly_isConnected()) // keeps also track of the connectedness
     {
         activeConnections |= NetworkConnection;
     }
