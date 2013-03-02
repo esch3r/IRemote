@@ -25,19 +25,24 @@
 #include "remotecontrol.h"
 
 typedef enum {
-    ApplicationStateIdle = 0,
-    ApplicationStateCaptureIrCommand = 1,
-    ApplicationStateCaptureRadio433MhzCommand = 4,
-    ApplicationStateCaptureRadio868MhzCommand = 5,
-    ApplicationStateRunCommand = 2,
-    ApplicationStateFlashFirmware = 3,
-    ApplicationStateWiFlyTest = 100
+    ApplicationState_Idle = 0,
+    ApplicationState_CaptureIrCommand = 1,
+    ApplicationState_CaptureRadio433MhzCommand = 4,
+    ApplicationState_CaptureRadio868MhzCommand = 5,
+    ApplicationState_RunCommand = 2,
+    ApplicationState_FlashFirmware = 3,
+    ApplicationState_WiFlyTest = 100
 } ApplicationState;
 
 typedef enum {
-    AdhocNetworkMode = 0,
-    InfrastructureNetworkMode = 1
+    NetworkMode_Adhoc = 0,
+    NetworkMode_Infrastructure = 1
 } NetworkMode;
+
+typedef enum {
+        SerialConnection = 0x01,
+        NetworkConnection = 0x02
+    } ActiveConnection;
 
 typedef struct {
     uint8  firstStartIdentificator; // if this is not 40 then we have a first start
@@ -56,12 +61,6 @@ typedef struct {
     uint8  networkMode;
 } ApplicationSettings;
 
-typedef enum {
-        SerialConnection = 0x01,
-        NetworkConnection = 0x02
-    } ActiveConnection;
-    
-    
 int8 initializeHardware(void);
 int8 initializeVariables(void);
 int8 initializeSerialConnection(void);

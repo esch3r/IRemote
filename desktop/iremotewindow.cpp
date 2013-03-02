@@ -9,6 +9,9 @@ IRemoteWindow::IRemoteWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    initializeRemoteCommandTable();
+    initializeCommandTable();
+
     currentProfile = NULL;
     scenePixmap = NULL;
     signalMapper = NULL;
@@ -26,8 +29,8 @@ IRemoteWindow::IRemoteWindow(QWidget *parent) :
     ui->graphicsView->setBackgroundBrush(QColor(230, 200, 167));
 
     iremote = new IRemote();
-    connect(iremote, SIGNAL(irCommandReceived(IrCommand)),
-            this, SLOT(irCommandReceived(IrCommand)));
+    connect(iremote, SIGNAL(irCommandReceived(RemoteCommand)),
+            this, SLOT(irCommandReceived(RemoteCommand)));
     connect(iremote, SIGNAL(networkConnected()),
             this, SLOT(networkConnected()));
     connect(iremote, SIGNAL(networkDisconnected()),
@@ -61,7 +64,7 @@ IRemoteWindow::~IRemoteWindow()
 void IRemoteWindow::applicationStarted(QString message)
 {
     qDebug() << message;
-    IrCommand command = getIrCommand(message);
+    RemoteCommand command = getIrCommand(message);
     iremote->actionRun(command);
 }
 
@@ -98,13 +101,13 @@ void IRemoteWindow::loadSettings()
     {
         QByteArray bytes;
         QString name;
-        IrCommand command;
+        RemoteCommand command;
 
         settings.setArrayIndex(i);
         name = settings.value("name").toString();
         bytes = settings.value("command").toByteArray();
-        memcpy(&command, bytes.data(), sizeof(IrCommand));
-        addIrCommand(name, command);
+        memcpy(&command, bytes.data(), sizeof(RemoteCommand));
+        addRemoteCommand(name, command);
     }
     settings.endArray();
 
@@ -173,11 +176,11 @@ void IRemoteWindow::saveSettings()
 
     int i = 0;
     settings.beginWriteArray("irCommand");
-        QMapIterator<QString, IrCommand> iterator(irCommandMap);
+        QMapIterator<QString, RemoteCommand> iterator(irCommandMap);
          while (iterator.hasNext()) {
              QByteArray bytes;
              iterator.next();
-             bytes.append((char*)(&(iterator.value())), sizeof(IrCommand));
+             bytes.append((char*)(&(iterator.value())), sizeof(RemoteCommand));
 
              settings.setArrayIndex(i);
              settings.setValue("name", iterator.key());
@@ -232,12 +235,12 @@ void IRemoteWindow::buttonClicked(int id)
     }
 }
 
-void IRemoteWindow::irCommandReceived(IrCommand irCommand)
+void IRemoteWindow::irCommandReceived(RemoteCommand irCommand)
 {
     QString name = QInputDialog::getText(this, tr("New Command"), tr("Insert the name of the new command"));
     if (!name.isEmpty())
     {
-        addIrCommand(name, irCommand);
+        addRemoteCommand(name, irCommand);
         refreshProfiles();
     }
 }
@@ -266,7 +269,7 @@ void IRemoteWindow::loadProfile()
                                              currentProfile->commandList.at(i).buttonData.pos,
                                              i);
         currentProfile->commandList[i].button = button;
-        addTableRow(button->buttonName(), currentProfile->commandList.at(i).commandName);
+        addCommandTableRow(button->buttonName(), currentProfile->commandList.at(i).commandName);
     }
 
     if (!currentProfile->pictureFileName.isEmpty())
@@ -382,7 +385,7 @@ void IRemoteWindow::unloadPicture()
         scenePixmap->setPixmap(QPixmap());
 }
 
-void IRemoteWindow::addTableRow(QString buttonName, QString commandName)
+void IRemoteWindow::addCommandTableRow(QString buttonName, QString commandName)
 {
     QTableWidgetItem *newItem;
     QComboBox *box;
@@ -400,9 +403,9 @@ void IRemoteWindow::addTableRow(QString buttonName, QString commandName)
     // Column 1 combo box
     column = 1;
     box = new QComboBox(this);
-    for (int i = 0; i < ui->commandList->count(); i++)
+    for (int i = 0; i < ui->remoteCommandTable->rowCount(); i++)
     {
-        box->addItem(ui->commandList->item(i)->text());
+        box->addItem(ui->remoteCommandTable->item(i, 0)->text());
     }
     box->setCurrentIndex(box->findText(commandName));
     ui->tableWidget->setCellWidget(row, column, box);
@@ -415,27 +418,98 @@ void IRemoteWindow::addTableRow(QString buttonName, QString commandName)
 
 }
 
-void IRemoteWindow::addIrCommand(const QString name, IrCommand command)
+void IRemoteWindow::initializeCommandTable()
+{
+    QStringList labels;
+
+    labels << tr("Command") << tr("Button");
+    ui->tableWidget->setColumnCount(2);
+    ui->tableWidget->setHorizontalHeaderLabels(labels);
+    ui->tableWidget->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
+    ui->tableWidget->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+}
+
+void IRemoteWindow::addRemoteCommand(const QString name, RemoteCommand command)
 {
     irCommandMap.insert(name, command);
-    if (ui->commandList->findItems(name, Qt::MatchCaseSensitive).isEmpty())
+
+    if (ui->remoteCommandTable->findItems(name, Qt::MatchCaseSensitive).isEmpty())
     {
-        ui->commandList->addItem(name);
+        QTableWidgetItem *newItem;
+        QString mediumName;
+        int row;
+        int column;
+
+        row = ui->remoteCommandTable->rowCount();
+        ui->remoteCommandTable->setRowCount(row + 1);
+
+        // Column 0 Name
+        column = 0;
+        newItem = new QTableWidgetItem(name);
+        newItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+        ui->remoteCommandTable->setItem(row, column, newItem);
+
+        // Column 1 Medium
+        if (command.medium == RemoteMedium_Ir) {
+            mediumName = tr("IR");
+        }
+        else if (command.medium == RemoteMedium_433MHz) {
+            mediumName = tr("433MHz");
+        }
+        else if (command.medium == RemoteMedium_868MHz) {
+            mediumName = tr("868MHz");
+        }
+        column = 1;
+        newItem = new QTableWidgetItem(mediumName);
+        newItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+        ui->remoteCommandTable->setItem(row, column, newItem);
+
     }
 }
 
-void IRemoteWindow::removeIrCommand(const QString name)
+void IRemoteWindow::removeRemoteCommand(const QString name)
 {
     irCommandMap.remove(name);
-    foreach (QListWidgetItem* item, ui->commandList->findItems(name, Qt::MatchCaseSensitive))
+
+    for (int i = 0; i < ui->remoteCommandTable->rowCount(); i++)
     {
-        ui->commandList->takeItem(ui->commandList->row(item));
+        if (ui->remoteCommandTable->item(i, 0)->text() == name)
+        {
+            ui->remoteCommandTable->removeRow(i);
+            return;
+        }
     }
 }
 
-IrCommand IRemoteWindow::getIrCommand(const QString name)
+void IRemoteWindow::copyRemoteCommand(const QString name)
+{
+    RemoteCommand command = irCommandMap.value(name);
+
+    addRemoteCommand(name + "_copy", command);
+}
+
+void IRemoteWindow::renameRemoteCommand(const QString name, const QString newName)
+{
+    RemoteCommand command = irCommandMap.value(name);
+
+    removeRemoteCommand(name);
+    addRemoteCommand(newName, command);
+}
+
+RemoteCommand IRemoteWindow::getIrCommand(const QString name)
 {
     return irCommandMap.value(name);
+}
+
+void IRemoteWindow::initializeRemoteCommandTable()
+{
+    QStringList labels;
+
+    labels << tr("Name") << tr("Medium");
+    ui->remoteCommandTable->setColumnCount(2);
+    ui->remoteCommandTable->setHorizontalHeaderLabels(labels);
+    ui->remoteCommandTable->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
+    ui->remoteCommandTable->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
 }
 
 void IRemoteWindow::on_tableWidget_cellChanged(int row, int column)
@@ -559,15 +633,26 @@ void IRemoteWindow::networkDisconnected()
 
 void IRemoteWindow::on_captureButton_clicked()
 {
-    iremote->actionCapture();
+    iremote->actionCaptureIr();
+}
+
+void IRemoteWindow::on_capture433Button_clicked()
+{
+    iremote->actionCaptureRadio433MHz();
+}
+
+void IRemoteWindow::on_capture868Button_clicked()
+{
+    iremote->actionCaptureRadio868MHz();
 }
 
 void IRemoteWindow::on_runButton_clicked()
 {
-    if (ui->commandList->currentRow() < 0)
+    int row = ui->remoteCommandTable->currentRow();
+    if (row < 0)
         return;
 
-    IrCommand command = getIrCommand(ui->commandList->currentItem()->text());
+    RemoteCommand command = getIrCommand(ui->remoteCommandTable->item(row, 0)->text());
     iremote->actionRun(command);
 }
 
@@ -626,16 +711,6 @@ void IRemoteWindow::on_settingsSubmitButton_clicked()
         iremote->setWlanSubnetMask(ui->subnetMaskEdit->text());
         iremote->setWlanGateway(ui->gatewayEdit->text());
     }
-}
-
-void IRemoteWindow::on_commandList_doubleClicked(const QModelIndex &index)
-{
-    Q_UNUSED(index);
-
-    IrCommand command = getIrCommand(ui->commandList->currentItem()->text());
-    ShowCommandDialog *dialog = new ShowCommandDialog(this);
-    dialog->loadIrCommand(command);
-    dialog->show();
 }
 
 void IRemoteWindow::on_ipMethodCombo_currentIndexChanged(int index)
@@ -701,10 +776,37 @@ void IRemoteWindow::on_wlanInfrastructureButton_clicked()
 
 void IRemoteWindow::on_removeCommandButton_clicked()
 {
-    if (!ui->commandList->count() == 0)
+    int row = ui->remoteCommandTable->currentRow();
+    if (row != -1)
     {
-        removeIrCommand(ui->commandList->currentItem()->text());
+        removeRemoteCommand(ui->remoteCommandTable->item(row, 0)->text());
         refreshProfiles();
+    }
+}
+
+void IRemoteWindow::on_copyCommandButton_clicked()
+{
+    int row = ui->remoteCommandTable->currentRow();
+    if (row != -1)
+    {
+        copyRemoteCommand(ui->remoteCommandTable->item(row, 0)->text());
+        refreshProfiles();
+    }
+}
+
+void IRemoteWindow::on_renameCommandButton_clicked()
+{
+    int row = ui->remoteCommandTable->currentRow();
+    if (row != -1)
+    {
+        QString oldName = ui->remoteCommandTable->item(row, 0)->text();
+
+        QString name = QInputDialog::getText(this, tr("Rename Command"), tr("Insert the new name of the command"), QLineEdit::Normal, oldName);
+        if (!name.isEmpty())
+        {
+            renameRemoteCommand(oldName, name);
+            refreshProfiles();
+        }
     }
 }
 
@@ -731,4 +833,36 @@ void IRemoteWindow::on_setIrButton_clicked()
     iremote->setIrCount(ui->irCountSpin->value());
     iremote->setIrReceiveTimeout(ui->irReceiveTimeoutSpin->value());
     iremote->setIrSendTimeout(ui->irSendTimeoutSpin->value());
+}
+
+void IRemoteWindow::on_remoteCommandTable_doubleClicked(const QModelIndex &index)
+{
+    Q_UNUSED(index);
+
+    int row = ui->remoteCommandTable->currentRow();
+    QString commandName = ui->remoteCommandTable->item(row, 0)->text();
+
+    RemoteCommand command = getIrCommand(commandName);
+    ShowCommandDialog *dialog = new ShowCommandDialog(this);
+    dialog->setRemoteCommand(command);
+    dialog->exec();
+    addRemoteCommand(commandName, dialog->remoteCommand());
+}
+
+void IRemoteWindow::on_hideCommandTableButton_clicked()
+{
+    if (ui->tableWidget->isVisible())
+    {
+        ui->tableWidget->setVisible(false);
+        ui->profileWidget->setVisible(false);
+        ui->buttonWidget->setVisible(false);
+        ui->hideCommandTableButton->setIcon(QIcon::fromTheme("arrow-left"));
+    }
+    else
+    {
+        ui->tableWidget->setVisible(true);
+        ui->profileWidget->setVisible(true);
+        ui->buttonWidget->setVisible(true);
+        ui->hideCommandTableButton->setIcon(QIcon::fromTheme("arrow-right"));
+    }
 }

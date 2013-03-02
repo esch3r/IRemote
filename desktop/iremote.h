@@ -16,10 +16,19 @@ QT_USE_NAMESPACE_SERIALPORT
 #endif
 
 typedef struct {
-    quint16  data[IR_MAX_TRANSITIONS];
-    quint8   length;
+    quint8   version;
     quint16  id;
-} IrCommand;
+    quint8   length;
+    quint8   medium;
+    quint32  frequency;
+    quint16  data[IR_MAX_TRANSITIONS];
+} RemoteCommand;
+
+typedef enum {
+    RemoteMedium_Ir = 0,
+    RemoteMedium_433MHz = 1,
+    RemoteMedium_868MHz = 2
+} RemoteMedium;
 
 enum QueueCommandType {
     NormalQueueCommandType = 0,
@@ -99,9 +108,19 @@ public:
     void setIrReceiveTimeout(int ms);
     void setIrSendTimeout(int ms);
 
+    void setRadio433Count(int times);
+    void setRadio433ReceiveTimeout(int ms);
+    void setRadio433SendTimeout(int ms);
+
+    void setRadio868Count(int times);
+    void setRadio868ReceiveTimeout(int ms);
+    void setRadio868SendTimeout(int ms);
+
     void actionRun();
-    void actionRun(IrCommand irCommand);
-    void actionCapture();
+    void actionRun(RemoteCommand irCommand);
+    void actionCaptureIr();
+    void actionCaptureRadio433MHz();
+    void actionCaptureRadio868MHz();
     void startWlanAdhoc();
     void startWlanInfrastructure();
 
@@ -138,7 +157,7 @@ public:
     }
 
 signals:
-    void irCommandReceived(IrCommand irCommand);
+    void irCommandReceived(RemoteCommand irCommand);
     void networkConnected();
     void networkDisconnected();
 
@@ -253,6 +272,8 @@ private:
     void endQueue();
 
     void pauseKeepAlive(int msecs);
+
+    RemoteCommand repair433MhzCommand(const RemoteCommand &command);
     
     int m_responseTimeout;
     bool m_queueRunning;

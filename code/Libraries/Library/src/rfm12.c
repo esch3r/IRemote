@@ -7,10 +7,10 @@
 
 volatile Rfm12_Mode receiverSenderMode;
 volatile Ssp ssps[RFM12_MAX_COUNT];
-volatile GpioPair dataPairs[RFM12_MAX_COUNT];
+volatile Gpio_Pair dataPairs[RFM12_MAX_COUNT];
 volatile bool ookStatus[RFM12_MAX_COUNT];
 
-int8 Rfm12_initialize(Rfm12 id, Ssp ssp, GpioPair selPair, GpioPair dataPair)
+int8 Rfm12_initialize(Rfm12 id, Ssp ssp, Gpio_Pair selPair, Gpio_Pair dataPair)
 {
     //init ssp
     Ssp_initialize( ssp,
@@ -28,8 +28,8 @@ int8 Rfm12_initialize(Rfm12 id, Ssp ssp, GpioPair selPair, GpioPair dataPair)
     dataPairs[id] = dataPair;
     ssps[id] = ssp;
     
-    Gpio_setDirection(dataPair.port, dataPair.pin, GpioDirectionInput );   // nFS pin must be set
-    setPinMode(dataPair.port, dataPair.pin, PinModeNoPullUpDown);
+    Gpio_setDirection(dataPair.port, dataPair.pin, Gpio_Direction_Input );   // nFS pin must be set
+    Pin_setMode(dataPair.port, dataPair.pin, Pin_Mode_NoPullUpDown);
     
     receiverSenderMode = Rfm12_ModeNone;
     
@@ -154,7 +154,7 @@ void Rfm12_prepareOokReceiving(Rfm12 id, Rfm12_FrequencyBand frequencyBand, floa
     Rfm12_setReceiverControl(id,        Rfm12_DataPinVdi,
                                         Rfm12_ValidDataIndicatorResponseFast,
                                         Rfm12_ReceiverBasebandBandwidth400kHz,
-                                        Rfm12_LnaGain0dB,
+                                        Rfm12_LnaGain6dB,
                                         Rfm12_RssiDetectorThreshold97dB
                            );
     Rfm12_setDataFilter(id,             Rfm12_AutoLockDisabled,

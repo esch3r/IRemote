@@ -3,7 +3,7 @@
 void (* functionPointers0[GPIO0_INT_PIN_COUNT])(void);
 void (* functionPointers2[GPIO2_INT_PIN_COUNT])(void);
 
-inline void Gpio_setDirection(uint8 port, uint8 pin, enum GpioDirection direction)
+inline void Gpio_setDirection(uint8 port, uint8 pin, Gpio_Direction direction)
 {
     switch (port)
     {
@@ -105,26 +105,26 @@ inline void Gpio_toggle(uint8 port, uint8 pin)
     return;
 }
 
-void Gpio_enableInterrupt(uint8 port, uint8 pin, enum GpioInterruptType type, void (* func)(void))
+void Gpio_enableInterrupt(uint8 port, uint8 pin, Gpio_Interrupt type, void (* func)(void))
 {
     switch (port)
     {
-        case 0: if ((type == GpioInterruptRisingEdge) || (type == GpioInterruptFallingAndRisingEdge))
+        case 0: if ((type == Gpio_Interrupt_RisingEdge) || (type == Gpio_Interrupt_FallingAndRisingEdge))
                 {
                    GPIO0_ENABLE_IRQ_RISING_EDGE(pin);
                 }
-                if ((type == GpioInterruptFallingEdge) || (type == GpioInterruptFallingAndRisingEdge))
+                if ((type == Gpio_Interrupt_FallingEdge) || (type == Gpio_Interrupt_FallingAndRisingEdge))
                 {
                     GPIO0_ENABLE_IRQ_FALLING_EDGE(pin);
                 }
                 GPIO0_CLEAR_IRQ(pin);
                 functionPointers0[pin] = func;
                 break;
-        case 2: if ((type == GpioInterruptRisingEdge) || (type == GpioInterruptFallingAndRisingEdge))
+        case 2: if ((type == Gpio_Interrupt_RisingEdge) || (type == Gpio_Interrupt_FallingAndRisingEdge))
                 {
                     GPIO2_ENABLE_IRQ_RISING_EDGE(pin);
                 }
-                if ((type == GpioInterruptFallingEdge) || (type == GpioInterruptFallingAndRisingEdge))
+                if ((type == Gpio_Interrupt_FallingEdge) || (type == Gpio_Interrupt_FallingAndRisingEdge))
                 {
                     GPIO2_ENABLE_IRQ_FALLING_EDGE(pin);
                 }

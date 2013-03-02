@@ -52,11 +52,10 @@
  * Returns:		The reflection of the original data.
  *
  *********************************************************************/
-static unsigned long
-reflect(unsigned long data, unsigned char nBits)
+uint32 reflect(uint32 data, uint8 nBits)
 {
-	unsigned long  reflection = 0x00000000;
-	unsigned char  bit;
+	uint32  reflection = 0x00000000;
+	uint8  bit;
 
 	/*
 	 * Reflect the data about the center bit.
@@ -90,8 +89,7 @@ reflect(unsigned long data, unsigned char nBits)
  * Returns:		The CRC of the message.
  *
  *********************************************************************/
-crc
-crcSlow(char* message, uint32 nBytes)
+crc Crc_slow(char* message, uint32 nBytes)
 {
     crc            remainder = INITIAL_REMAINDER;
 	uint32         byte;
@@ -152,7 +150,7 @@ crc  crcTable[256];
  *
  *********************************************************************/
 void
-crcInit(void)
+Crc_initialize(void)
 {
     crc			   remainder;
 	uint32		   dividend;
@@ -208,7 +206,7 @@ crcInit(void)
  *
  *********************************************************************/
 crc
-crcFast(char* message, uint32 nBytes)
+Crc_fast(char* message, uint32 nBytes)
 {
     crc	           remainder = INITIAL_REMAINDER;
     uint8          data;

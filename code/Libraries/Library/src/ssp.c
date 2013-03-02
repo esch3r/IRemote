@@ -5,8 +5,8 @@ volatile Ssp_Loopback ssp0_loopbackMode;
 volatile Ssp_Mode ssp1_masterSlave;
 volatile Ssp_Loopback ssp1_loopbackMode;
 
-volatile GpioPair ssp0_selPins[SSP_MAX_SEL_PINS];
-volatile GpioPair ssp1_selPins[SSP_MAX_SEL_PINS];
+volatile Gpio_Pair ssp0_selPins[SSP_MAX_SEL_PINS];
+volatile Gpio_Pair ssp1_selPins[SSP_MAX_SEL_PINS];
 
 volatile uint32 ssp0_interruptOverRunStat = 0;
 volatile uint32 ssp0_interruptRxTimeoutStat = 0;
@@ -316,8 +316,8 @@ void Ssp_initializeSel(Ssp ssp, uint8 id, uint8 port, uint8 pin)
         ssp0_selPins[id].pin = pin;
         ssp0_selPins[id].port = port;
         
-        Gpio_setDirection(port, pin, GpioDirectionOutput);
-        setPinMode(port, pin, PinModePullUp);
+        Gpio_setDirection(port, pin, Gpio_Direction_Output);
+        Pin_setMode(port, pin, Pin_Mode_PullUp);
         Gpio_set(port, pin);
     }
     else if (ssp == Ssp1)
@@ -325,8 +325,8 @@ void Ssp_initializeSel(Ssp ssp, uint8 id, uint8 port, uint8 pin)
         ssp1_selPins[id].pin = pin;
         ssp1_selPins[id].port = port;
         
-        Gpio_setDirection(port, pin, GpioDirectionOutput);
-        setPinMode(port, pin, PinModePullUp);
+        Gpio_setDirection(port, pin, Gpio_Direction_Output);
+        Pin_setMode(port, pin, Pin_Mode_PullUp);
         Gpio_set(port, pin);
     }
 }

@@ -309,7 +309,7 @@ typedef enum {
 
 /** Here is the place for the status bits */
 
-int8 Rfm12_initialize(Rfm12 id, Ssp ssp, GpioPair selPair, GpioPair dataPair);
+int8 Rfm12_initialize(Rfm12 id, Ssp ssp, Gpio_Pair selPair, Gpio_Pair dataPair);
 
 void Rfm12_prepareOokSending(Rfm12 id, Rfm12_FrequencyBand frequencyBand, float frequency, uint32 dataRate);
 void Rfm12_prepareOokReceiving(Rfm12 id, Rfm12_FrequencyBand frequencyBand, float frequency, uint32 dataRate);

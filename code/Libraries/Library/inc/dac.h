@@ -14,15 +14,15 @@
 #include <dacDriver.h>
 
 /** Initializes the DAC */
-void initializeDac();
+void Dac_initialize();
 /** Sets the DAC to a specific value 
  *  @param value Value the DAC should be set to, must be between 0 and DAC_STEPS-1
  */
-void setDacValue(uint16 value);
+void Dac_setValue(uint16 value);
 /** Sets the DAC to specific value given in Volts
  *  @param mV Value in millivolts, must be between VREFN and VREFP
  */
-void setDacVolt(uint16 mV);
+void Dac_setVolt(uint16 mV);
 
 /**
  * @}

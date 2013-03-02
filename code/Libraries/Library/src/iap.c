@@ -40,7 +40,7 @@ typedef void (*iapEntry_t)(uint32 [], uint32 []);
 
 static iapEntry_t iapEntry = (iapEntry_t)0x1fff1ff1;
 
-int32 readIdIap(void)
+int32 Iap_readId(void)
 {
     uint32 cmd[5];
     uint32 res[5];
@@ -51,7 +51,7 @@ int32 readIdIap(void)
     return ((int32)res[1]);
 }
 
-int32 readVersionIap(void)
+int32 Iap_readVersion(void)
 {
     uint32 cmd[5];
     uint32 res[5];
@@ -62,7 +62,7 @@ int32 readVersionIap(void)
     return ((int32)res[1]);
 }
 
-int32 readSerialIap(void)
+int32 Iap_readSerial(void)
 {
     uint32 cmd[5];
     uint32 res[5];
@@ -73,7 +73,7 @@ int32 readSerialIap(void)
     return ((int32)res[1]);
 }
 
-int32 checkBlankIap(uint32 sector)
+int32 Iap_checkBlank(uint32 sector)
 {
     uint32 cmd[5];
     uint32 res[5];
@@ -106,7 +106,7 @@ static int32 prepareIap(uint32 sector)
     return ((int32)result[0]);
 }
 
-int32 eraseIap(uint32 sector)
+int32 Iap_erase(uint32 sector)
 {
     uint32 command[5];
     uint32 result[5];
@@ -126,7 +126,7 @@ int32 eraseIap(uint32 sector)
     }
 #endif
     
-    while (checkBlankIap(sector))
+    while (Iap_checkBlank(sector))
     {
         ;
     }
@@ -134,6 +134,7 @@ int32 eraseIap(uint32 sector)
     return ((int32)result[0]);
 }
 
+#ifdef DEBUG_IAP
 static int32 compIap(uint32 sourceAddress, uint32 destinationAddress, uint32 size)
 {
     uint32 command[5];
@@ -145,19 +146,19 @@ static int32 compIap(uint32 sourceAddress, uint32 destinationAddress, uint32 siz
     command[3] = size;
     iapEntry(command,result);
     
-#ifdef DEBUG_IAP
+
     if (result[0] != IapStatusCommandSuccess)
     {
         printfUart0("compIap(0x%x,0x%x,0x%x) result: %d,pos[0x%x]\n",
             sourceAddress, destinationAddress, size, result[0], result[1]
         );
     }
-#endif
     
     return ((int32)result[0]);
 }
+#endif
 
-int32 writeIap(uint32 sector, uint32 offset, const void *buffer, uint32 size)
+int32 Iap_write(uint32 sector, uint32 offset, const void *buffer, uint32 size)
 {
     uint32 command[5];
     uint32 result[5];
@@ -200,26 +201,26 @@ int32 writeIap(uint32 sector, uint32 offset, const void *buffer, uint32 size)
         }
 #endif
         
-        if (result[0] != IapStatusCommandSuccess)
+        if (result[0] != Iap_Status_CommandSuccess)
             return (int32)result[0];
     }
     
     return ((int32)result[0]);
 }
 
-void *getIapPointer(uint32 sector, uint32 offset)
+void *Iap_getPointer(uint32 sector, uint32 offset)
 {
     uint32 sourceAddress = flashSectorAddress[sector] + offset;
     return (void *)sourceAddress;
 }
 
-int32 readIap(uint32 sector, uint32 offset, void *buffer, uint32 size)
+int32 Iap_read(uint32 sector, uint32 offset, void *buffer, uint32 size)
 {
-    memcpy(buffer, getIapPointer(sector,offset), size);
+    memcpy(buffer, Iap_getPointer(sector,offset), size);
     return 0;
 }
 
-int32 copyIap(uint32 destinationSector, uint32 sourceSector, uint32 offset, uint32 size)
+int32 Iap_copy(uint32 destinationSector, uint32 sourceSector, uint32 offset, uint32 size)
 {
     uint32 i;
     char buffer[256];
@@ -230,20 +231,20 @@ int32 copyIap(uint32 destinationSector, uint32 sourceSector, uint32 offset, uint
         s = sizeof(buffer);
         if (i + s > size)
             s = size-i;
-        readIap(sourceSector, offset+i, buffer, s);
+        Iap_read(sourceSector, offset+i, buffer, s);
         prepareIap(destinationSector);
-        writeIap(destinationSector, offset+i, buffer, s);
+        Iap_write(destinationSector, offset+i, buffer, s);
     }
     
     return 0;
 }
 
-int32 compareIap(uint32 sector, uint32 offset, const void *buffer, uint32 size)
+int32 Iap_compare(uint32 sector, uint32 offset, const void *buffer, uint32 size)
 {
-    return memcmp(buffer, getIapPointer(sector, offset), size);
+    return memcmp(buffer, Iap_getPointer(sector, offset), size);
 }
 
-void flashFirmware(const void* data, uint32 size)
+void Iap_flashFirmware(const void* data, uint32 size)
 {
     uint8 i;
     
@@ -251,41 +252,41 @@ void flashFirmware(const void* data, uint32 size)
     
     for (i = 0; i < 27; i++)    // erase sector 0 to 26 before programming
     {
-        eraseIap(i);
+        Iap_erase(i);
     }
     
-    writeIap(0, 0, data, size);
+    Iap_write(0, 0, data, size);
     
     __enable_irq();
 }
 
-int8 saveSettings(void* data, uint32 size)
+int8 Iap_saveApplicationSettings(void* data, uint32 size)
 {
     int8 result;
     
     __disable_irq();
     
-    result = eraseIap(27);
+    result = Iap_erase(27);
     if (result == -1)
     {
         __enable_irq();
         return -1;
     }
     
-    result = writeIap(27,0,data,size);
+    result = Iap_write(27,0,data,size);
     
     __enable_irq();
     
     return result;
 }
 
-int8 loadSettings(void* data, uint32 size)
+int8 Iap_loadApplicationSettings(void* data, uint32 size)
 {
     int8 result;
     
     __disable_irq();
     
-    result = readIap(27,0,data,size);
+    result = Iap_read(27,0,data,size);
     
     __enable_irq();
     

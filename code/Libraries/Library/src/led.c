@@ -4,9 +4,9 @@ LedConfig leds[MAXLEDS];
 
 uint8 ledCount = 0;
 
-void Led_initialize(uint8 port, uint8 pin, bool lowActive)
+void Led_initialize(uint8 port, uint8 pin, Led_LowActive lowActive)
 {
-    Gpio_setDirection(port, pin, GpioDirectionOutput);
+    Gpio_setDirection(port, pin, Gpio_Direction_Output);
     leds[ledCount].port = port;
     leds[ledCount].pin = pin;
     leds[ledCount].lowActive = lowActive;

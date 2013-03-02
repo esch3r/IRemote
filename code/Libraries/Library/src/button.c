@@ -45,11 +45,11 @@ uint8 Button_initialize(uint32 khz, uint32 sampleInterval, uint32 timeoutInterva
 
 void Button_initializeButton(uint8 id, uint8 port, uint8 pin,ButtonType type)
 {
-    Gpio_setDirection(port, pin, GpioDirectionInput );    //direction 0=input
+    Gpio_setDirection(port, pin, Gpio_Direction_Input );    //direction 0=input
     if(type == ButtonTypeLowActive)
-      setPinMode(port, pin, PinModePullUp);
+      Pin_setMode(port, pin, Pin_Mode_PullUp);
     if(type == ButtonTypeHighActive)
-       setPinMode(port, pin, PinModePullDown);
+       Pin_setMode(port, pin, Pin_Mode_PullDown);
     
     buttons[buttonCount].id     = id;
     buttons[buttonCount].port   = port;

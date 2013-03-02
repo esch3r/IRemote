@@ -5,7 +5,7 @@ volatile uint8 adcPin           = 0;
 volatile uint16 adcValue        = 0;
 volatile uint8 adcIntDone       = 0;
 
-int8 initializeAdc(uint32 clk,uint8 pin, uint8 burstMode)
+int8 Adc_initialize(uint32 clk, Adc_Pin pin, Adc_BurstMode burstMode)
 {
     ADC_ENABLE_POWER();           // Power on the ADC
     ADC_SET_CORE_CLK();           // Set the ADC core clock
@@ -46,21 +46,27 @@ int8 initializeAdc(uint32 clk,uint8 pin, uint8 burstMode)
     ADC_ENABLE();               // Enable the ADC
     
     adcBurstEnabled = burstMode;
-    if (burstMode == 1)
+    if (burstMode == Adc_BurstMode_Enabled)
+    {
         ADC_SET_BURSTMODE();
+    }
 
     ADC_ENABLE_IRQ();               // Enable ADC interrupt
  
-    if (burstMode == 1)
+    if (burstMode == Adc_BurstMode_Enabled)
+    {
         ADC_SET_ALL_IRQS_BURST();   // Enable all interrupts
+    }
     else 
+    {
         ADC_SET_ALL_IRQS();         // Enable all interrupts
+    }
     
    
     return 0;
 }
 
-int8 deinitializeAdc()
+int8 Adc_deinitialize(void)
 { 
     ADC_DISABLE();          // Disable the ADC
     ADC_DISABLE_POWER();    // Power off the ADC
@@ -69,7 +75,7 @@ int8 deinitializeAdc()
     return 0;
 }
 
-int8 readAdc(uint16 *value)
+int8 Adc_read(uint16 *value)
 {
     if (adcBurstEnabled == 0)
     {

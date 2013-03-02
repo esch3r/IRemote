@@ -19,6 +19,11 @@
 #include <timer.h>
 #include <gpio.h>
 
+typedef enum {
+    Led_LowActive_Yes = 1u,
+    Led_LowActive_No = 0u
+} Led_LowActive;
+
 typedef struct {
     uint8 port;
     uint8 pin;
@@ -26,19 +31,19 @@ typedef struct {
 } LedConfig;
 
 typedef enum {
-    Led0 = 0U,
-    Led1 = 1U,
-    Led2 = 2U,
-    Led3 = 3U,
-    Led4 = 4U,
-    Led5 = 5U,
-    Led6 = 6U,
-    Led7 = 7U,
-    Led8 = 8U,
-    Led9 = 9U
+    Led0 = 0u,
+    Led1 = 1u,
+    Led2 = 2u,
+    Led3 = 3u,
+    Led4 = 4u,
+    Led5 = 5u,
+    Led6 = 6u,
+    Led7 = 7u,
+    Led8 = 8u,
+    Led9 = 9u
 } Led;
 
-void Led_initialize(uint8 port, uint8 pin, bool lowActive);
+void Led_initialize(uint8 port, uint8 pin, Led_LowActive lowActive);
 
 /** Initializes the Leds. Per default red and green Leds will be enabled. */
 uint8 initializeLeds(void);

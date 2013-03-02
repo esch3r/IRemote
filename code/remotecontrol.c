@@ -6,8 +6,6 @@ volatile uint8   frameReceived = 0;
 volatile uint8   firstCapture = 1;
 volatile uint8   currentPosition = 0;
 volatile uint8   commandRunning = 0;
-CircularBuffer   commandBuffer;
-volatile uint16  commandBufferData[REMOTE_COMMAND_MAX_TRANSITIONS];
 
 volatile uint8   repeatCount;
 volatile uint8   currentRepeatCount = 0;
@@ -29,26 +27,21 @@ volatile uint8  radio868MhzRepeatCount = 5;
 
 RemoteCommand *tmpCommand = NULL;
 
-
-int8 saveFrame(void);
 void captureFunction(void);
 void runFunction(void);
 
 int8 RemoteControl_initialize(void)
-{
-    if (Cb_initialize(&commandBuffer, REMOTE_COMMAND_MAX_TRANSITIONS, sizeof(uint16), (void*)(&commandBufferData)) == -1)
-        return -1;
-    
-    Gpio_setDirection(1, 18, GpioDirectionOutput);  // PWM
-    setPinMode(1,18, PinModePullDown);
+{   
+    Gpio_setDirection(1, 18, Gpio_Direction_Output);  // PWM
+    Pin_setMode(1,18, Pin_Mode_PullDown);
     
     if (Pwm_initialize(38000, 0.5, IrPwm) == -1)
         return -1;
         
-    Gpio_setDirection(IrCapturePort, IrCapturePin, GpioDirectionInput); // TSOP input pin
+    Gpio_setDirection(IrCapturePort, IrCapturePin, Gpio_Direction_Input); // TSOP input pin
     
-    GpioPair selPair;
-    GpioPair dataPair;
+    Gpio_Pair selPair;
+    Gpio_Pair dataPair;
     
     // Initialize 433MHz module
     selPair.port = 0;
@@ -56,7 +49,7 @@ int8 RemoteControl_initialize(void)
     dataPair.port = 2;
     dataPair.pin = 2;
     Rfm12_initialize(Rfm12_0, Ssp1, selPair, dataPair);
-    //Rfm12_prepareOokReceiving(Rfm12_0, Rfm12_FrequencyBand433Mhz, 433.92, 4200);
+    //Rfm12_prepareOokSending(Rfm12_0, Rfm12_FrequencyBand433Mhz, 433.92, 4200);
     
     // Initialize 868MHz module
     selPair.port = 0;
@@ -113,7 +106,7 @@ void RemoteControl_startCapture(RemoteControl_Medium medium)
         
         Gpio_enableInterrupt(IrCapturePort, 
                              IrCapturePin, 
-                             GpioInterruptFallingAndRisingEdge, 
+                             Gpio_Interrupt_FallingAndRisingEdge, 
                              &captureFunction);
     }
     else if (medium == RemoteControl_Medium_433Mhz)
@@ -124,7 +117,7 @@ void RemoteControl_startCapture(RemoteControl_Medium medium)
         Timer_delayMs(100);
         Gpio_enableInterrupt(Radio433MhzCapturePort, 
                              Radio433MhzCapturePin, 
-                             GpioInterruptFallingAndRisingEdge, 
+                             Gpio_Interrupt_FallingAndRisingEdge, 
                              &captureFunction);
     }
     else if (medium == RemoteControl_Medium_868Mhz)
@@ -134,7 +127,7 @@ void RemoteControl_startCapture(RemoteControl_Medium medium)
         Rfm12_prepareOokReceiving(Rfm12_1, Rfm12_FrequencyBand868Mhz, 868, 4200);
         Gpio_enableInterrupt(Radio868MhzCapturePort, 
                              Radio868MhzCapturePin, 
-                             GpioInterruptFallingAndRisingEdge, 
+                             Gpio_Interrupt_FallingAndRisingEdge, 
                              &captureFunction);
     }
     
@@ -175,17 +168,7 @@ void captureFunction(void)
     {
         if (timeDiff >= receiveTimeout)     // Detected a timeout => frameReceived
         {
-           /* if ((saveFrame() == -1) || (frameReceived != 1))
-            {
-                firstCapture = 1;
-            }
-            else
-            {
-                RemoteControl_stopCapture();
-                return;
-            }*/
-           
-           if (currentPosition > 0)
+           if ((currentPosition > 1) && ((currentPosition % 2) == 1))
            {
                tmpCommand->length = currentPosition;
                tmpCommand->medium = currentMedium;
@@ -207,7 +190,6 @@ void captureFunction(void)
             {
                 currentPosition = 0;
             }
-            //Cb_put(&commandBuffer, (void*)(&timeDiff));
         }
     }
     else
@@ -218,31 +200,6 @@ void captureFunction(void)
     Timer_reset(Timer3);                      // Reset the timer
     
     Led_toggle(Led2);   // visual feedback
-}
-
-int8 saveFrame(void)
-{
-    uint16 item;
-    uint8 i = 0;
-        
-    while (Cb_get(&commandBuffer,&item) == 0)
-    {
-        if (item == 0)  //remove the 0 from starting
-            continue;
-        tmpCommand->data[i] = item;
-        i++;
-    }
-    
-    if (i > 0)
-    {
-        tmpCommand->length = i;
-        tmpCommand->medium = currentMedium;
-        
-        frameReceived = 1;
-        return 0;
-    }
-    
-    return -1;
 }
 
 void RemoteControl_runCommand(RemoteCommand* command)
@@ -311,12 +268,27 @@ void RemoteControl_stopCommand(void )
 
 void runFunction(void )
 {
+    uint16 timeout = tmpCommand->data[currentPosition];
+    
     if (currentMedium == RemoteControl_Medium_Ir)
     {
         Pwm_toggle(IrPwm);
     }
     else if (currentMedium == RemoteControl_Medium_433Mhz)
     {
+        static uint8 outputEnabled = 1u;
+        
+        if (outputEnabled == true)
+        {
+            timeout += 150u;
+            outputEnabled = false;
+        }
+        else
+        {
+            timeout -= 150u;
+            outputEnabled = true;
+        }
+        
         Rfm12_ookToggle(Rfm12_0);
     }
     else if (currentMedium == RemoteControl_Medium_868Mhz)
@@ -328,7 +300,7 @@ void runFunction(void )
     
     if (currentPosition < tmpCommand->length)
     {
-        Timer_setIntervalUs(Timer3, tmpCommand->data[currentPosition]);
+        Timer_setIntervalUs(Timer3, timeout);
 
         currentPosition++;
     }

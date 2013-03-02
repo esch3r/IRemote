@@ -3,18 +3,18 @@
 ActiveConnection activeConnections = 0;
 
 RemoteCommand *currentCommand;
-ApplicationState applicationState = ApplicationStateIdle;
+ApplicationState applicationState = ApplicationState_Idle;
 ApplicationSettings applicationSettings;
 
 int8 initializeHardware(void)
 {
-    crcInit();                    // init crc function for firmware flashing
+    Crc_initialize();                    // init crc function for firmware flashing
     Timeout_initialize(Timer1);    // initialize Timer1 for general timeout functions
         
-    Led_initialize(1,29, TRUE);     // led 0 - onboard
-    Led_initialize(0,0, FALSE);     // led 1 - green
-    Led_initialize(0,1, FALSE);     // led 2 - yellow
-    Led_initialize(0,10, FALSE);    // led 3 - red
+    Led_initialize(1,29, Led_LowActive_Yes);     // led 0 - onboard
+    Led_initialize(0,0, Led_LowActive_No);     // led 1 - green
+    Led_initialize(0,1, Led_LowActive_No);     // led 2 - yellow
+    Led_initialize(0,10, Led_LowActive_No);    // led 3 - red
     Led_clearAll();
     
     Button_initialize(1000, 1E4, 1E5);  //100kHz timer, 10ms timeout
@@ -39,7 +39,7 @@ int8 initializeHardware(void)
      
     // Welcome message
     printfData("Welcome to IRemote!\r");    // Send a welcome message
-    printfData("Id: %i, Version: %i, Serial: %i\r",readIdIap(),readVersionIap(),readSerialIap());
+    printfData("Id: %i, Version: %i, Serial: %i\r",Iap_readId(),Iap_readVersion(),Iap_readSerial());
    
     Timer_delayMs(500);
     
@@ -55,7 +55,7 @@ int8 initializeVariables(void )
     currentCommand = RemoteCommand_create();
     
     //load settings....
-    loadSettings(&applicationSettings, sizeof(ApplicationSettings));
+    Iap_loadApplicationSettings(&applicationSettings, sizeof(ApplicationSettings));
     
     if (applicationSettings.firstStartIdentificator != 40)
     {
@@ -71,12 +71,12 @@ int8 initializeVariables(void )
         strcpy(applicationSettings.wlanIp, "192.168.1.2");
         strcpy(applicationSettings.wlanMask, "255.255.255.0");
         strcpy(applicationSettings.wlanHostname, "192.168.1.1");
-        applicationSettings.networkMode = AdhocNetworkMode;
+        applicationSettings.networkMode = NetworkMode_Adhoc;
         
         applicationSettings.firstStartIdentificator = 40;   // remove the first start indicator
     
         startWlanAdhocMode();   // Start the adhoc mode
-        saveSettings(&applicationSettings, sizeof(ApplicationSettings));
+        Iap_saveApplicationSettings(&applicationSettings, sizeof(ApplicationSettings));
     }
     
     
@@ -159,7 +159,7 @@ int8 startWlanInfrastructureMode(ApplicationSettings *settings)
 int8 startWlanAdhocMode(void)
 {
     char buffer[100];
-    snprintf(buffer, 100, "IRemoteBox_%u", readSerialIap());
+    snprintf(buffer, 100, "IRemoteBox_%u", Iap_readSerial());
     return WiFly_createAdhocNetwork(buffer);
 }
 
@@ -302,7 +302,7 @@ void processCommand(char *buffer)
                 ((char*)currentCommand)[i/2] = (char)hex2int(dataPointer+i,2);
             }
         }
-        startState(ApplicationStateRunCommand);
+        startState(ApplicationState_RunCommand);
     }
     else if (compareBaseCommand("capture", dataPointer))
     {
@@ -314,15 +314,15 @@ void processCommand(char *buffer)
         }
         else if (compareExtendedCommand("ir",dataPointer))
         {
-            startState(ApplicationStateCaptureIrCommand);
+            startState(ApplicationState_CaptureIrCommand);
         }
         else if (compareExtendedCommand("radio433", dataPointer))
         {
-            startState(ApplicationStateCaptureRadio433MhzCommand);
+            startState(ApplicationState_CaptureRadio433MhzCommand);
         }
         else if (compareExtendedCommand("radio868", dataPointer))
         {
-            startState(ApplicationStateCaptureRadio868MhzCommand);
+            startState(ApplicationState_CaptureRadio868MhzCommand);
         }
         else
         {
@@ -332,7 +332,7 @@ void processCommand(char *buffer)
     }
     else if (compareBaseCommand("stop", dataPointer))
     {
-        startState(ApplicationStateIdle);
+        startState(ApplicationState_Idle);
     }
     else if (compareBaseCommand("flash", dataPointer))
     {
@@ -355,7 +355,7 @@ void processCommand(char *buffer)
             if (dataPointer != NULL)
             {
                 receivedChecksum = (uint16)hex2int(dataPointer,4);;
-                calculatedChecksum = crcFast(buffer, 100);
+                calculatedChecksum = Crc_fast(buffer, 100);
                 if (receivedChecksum == calculatedChecksum)
                     printAcknowledgement();
                 else
@@ -896,7 +896,7 @@ void processCommand(char *buffer)
         }
         else if (compareExtendedCommand("flash", dataPointer))
         {
-            startState(ApplicationStateFlashFirmware);
+            startState(ApplicationState_FlashFirmware);
             printAcknowledgement();
             
             return;
@@ -919,7 +919,7 @@ void processCommand(char *buffer)
         else if (compareExtendedCommand("config",dataPointer))
         {
             // save config
-            if (saveSettings(&applicationSettings, sizeof(ApplicationSettings)) == 0)
+            if (Iap_saveApplicationSettings(&applicationSettings, sizeof(ApplicationSettings)) == 0)
             {
                 printAcknowledgement();
             }
@@ -944,7 +944,7 @@ void processCommand(char *buffer)
         }
         else if (compareExtendedCommand("wifly",dataPointer))
         {
-            startState(ApplicationStateWiFlyTest);
+            startState(ApplicationState_WiFlyTest);
         }
         else
         {
@@ -963,56 +963,56 @@ void startState(ApplicationState state)
     if (applicationState == state)              // If we are already in this state => ignore
         return;
     
-    if ((state != ApplicationStateIdle) 
-        && (applicationState != ApplicationStateIdle))  // only changes beetween idle and non idle are possible
+    if ((state != ApplicationState_Idle) 
+        && (applicationState != ApplicationState_Idle))  // only changes beetween idle and non idle are possible
         return;
     
-    if (state == ApplicationStateIdle)
+    if (state == ApplicationState_Idle)
     {
-        applicationState = ApplicationStateIdle;
+        applicationState = ApplicationState_Idle;
         
         printfData("Idle\r");
     }
-    else if (state == ApplicationStateCaptureIrCommand)
+    else if (state == ApplicationState_CaptureIrCommand)
     {
-        applicationState = ApplicationStateCaptureIrCommand;
+        applicationState = ApplicationState_CaptureIrCommand;
         
         printfData("Capturing IR data\r");
         Led_blink2(Led2);
         RemoteControl_startCapture(RemoteControl_Medium_Ir);
     }
-    else if (state == ApplicationStateCaptureRadio433MhzCommand)
+    else if (state == ApplicationState_CaptureRadio433MhzCommand)
     {
-        applicationState = ApplicationStateCaptureIrCommand;
+        applicationState = ApplicationState_CaptureIrCommand;
         
         printfData("Capturing 433MHz data\r");
         Led_blink2(Led2);
         RemoteControl_startCapture(RemoteControl_Medium_433Mhz);
     }
-    else if (state == ApplicationStateCaptureRadio868MhzCommand)
+    else if (state == ApplicationState_CaptureRadio868MhzCommand)
     {
-        applicationState = ApplicationStateCaptureIrCommand;
+        applicationState = ApplicationState_CaptureIrCommand;
         
         printfData("Capturing 868MHz data\r");
         Led_blink2(Led2);
         RemoteControl_startCapture(RemoteControl_Medium_868Mhz);
     }
-    else if (state == ApplicationStateRunCommand)
+    else if (state == ApplicationState_RunCommand)
     {
-        applicationState = ApplicationStateRunCommand;
+        applicationState = ApplicationState_RunCommand;
                 
         printfData("Running command\r");
         Led_blink(Led2);
         RemoteControl_runCommand(currentCommand);
     }
-    else if (state == ApplicationStateFlashFirmware)
+    else if (state == ApplicationState_FlashFirmware)
     {
         Led_setAll();
         
     }
-    else if (state == ApplicationStateWiFlyTest)
+    else if (state == ApplicationState_WiFlyTest)
     {
-        applicationState = ApplicationStateWiFlyTest;
+        applicationState = ApplicationState_WiFlyTest;
         
         printfData("Going into WiFly Test state, all uart in and outputs will redirected.\n");
     }
@@ -1022,29 +1022,29 @@ void startState(ApplicationState state)
 
 void mainTask(void)
 {
-        if (applicationState == ApplicationStateIdle)
+        if (applicationState == ApplicationState_Idle)
         {
             Uart_processTask0();     // serial task
             WiFly_processTask();     // wifly task
         }
-        else if ((applicationState == ApplicationStateCaptureIrCommand)
-              || (applicationState == ApplicationStateCaptureRadio433MhzCommand)
-              || (applicationState == ApplicationStateCaptureRadio868MhzCommand)
+        else if ((applicationState == ApplicationState_CaptureIrCommand)
+              || (applicationState == ApplicationState_CaptureRadio433MhzCommand)
+              || (applicationState == ApplicationState_CaptureRadio868MhzCommand)
         )
         {
             currentCommand = RemoteControl_command();
             if (currentCommand != NULL)    // We finally received something
             {
                 RemoteControl_outputCommand(currentCommand);
-                startState(ApplicationStateIdle);
+                startState(ApplicationState_Idle);
             }
         }
-        else if (applicationState == ApplicationStateRunCommand)
+        else if (applicationState == ApplicationState_RunCommand)
         {
             if (!RemoteControl_isCommandRunning())    // Command has finished
-                startState(ApplicationStateIdle);
+                startState(ApplicationState_Idle);
         }
-        else if (applicationState == ApplicationStateWiFlyTest)
+        else if (applicationState == ApplicationState_WiFlyTest)
         {
             static char receivedData;
             while (Uart_getchar(Uart0, &receivedData) == 0)
@@ -1071,11 +1071,11 @@ void ledTask(void)
     }
     else
     {
-        if (applicationSettings.networkMode == AdhocNetworkMode)
+        if (applicationSettings.networkMode == NetworkMode_Adhoc)
         {
             Led_toggle(1);   // Green LED
         }
-        else if (applicationSettings.networkMode == InfrastructureNetworkMode)
+        else if (applicationSettings.networkMode == NetworkMode_Infrastructure)
         {
             if (Led_read(1))
             {
@@ -1102,17 +1102,17 @@ void buttonTask(void )
         printfData("pressed %u, %u\r", buttonValue.id, buttonValue.count);
         if ((buttonValue.id == 0) && (buttonValue.count == 1))
         {
-            if (applicationSettings.networkMode == AdhocNetworkMode)
+            if (applicationSettings.networkMode == NetworkMode_Adhoc)
             {
                 startWlanInfrastructureMode(&applicationSettings);
-                applicationSettings.networkMode = InfrastructureNetworkMode;
-                saveSettings(&applicationSettings, sizeof(ApplicationSettings));
+                applicationSettings.networkMode = NetworkMode_Infrastructure;
+                Iap_saveApplicationSettings(&applicationSettings, sizeof(ApplicationSettings));
             }
-            else if (applicationSettings.networkMode == InfrastructureNetworkMode)
+            else if (applicationSettings.networkMode == NetworkMode_Infrastructure)
             {
                 startWlanAdhocMode();
-                applicationSettings.networkMode = AdhocNetworkMode;
-                saveSettings(&applicationSettings, sizeof(ApplicationSettings));
+                applicationSettings.networkMode = NetworkMode_Adhoc;
+                Iap_saveApplicationSettings(&applicationSettings, sizeof(ApplicationSettings));
             }
         }
     }

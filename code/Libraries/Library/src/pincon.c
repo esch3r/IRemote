@@ -1,18 +1,18 @@
 #include "pincon.h"
 
-void setPinFunction(uint8 port, uint8 pin, enum PinFunction function)
+void Pin_setFunction(uint8 port, uint8 pin, Pin_Function function)
 {
     uint8 functionBits;
     
     switch (function)
     {
-        case PinPrimaryFunction: functionBits = PINCON_PRIMARY_FUNCTION;
+        case Pin_Function_Primary: functionBits = PINCON_PRIMARY_FUNCTION;
              break;
-        case PinFirstAlternateFunction: functionBits = PINCON_FIRST_ALTERNATE_FUNCTION;
+        case Pin_Function_FirstAlternate: functionBits = PINCON_FIRST_ALTERNATE_FUNCTION;
              break;
-        case PinSecondAlternateFunction: functionBits = PINCON_SECOND_ALTERNATE_FUNCTION;
+        case Pin_Function_SecondAlternate: functionBits = PINCON_SECOND_ALTERNATE_FUNCTION;
              break;
-        case PinThirdAlternateFunction: functionBits = PINCON_THIRD_ALTERNATE_FUNCTION;
+        case Pin_Function_ThirdAlternate: functionBits = PINCON_THIRD_ALTERNATE_FUNCTION;
              break;
         default: break;
     }
@@ -37,19 +37,19 @@ void setPinFunction(uint8 port, uint8 pin, enum PinFunction function)
     return;
 }
 
-void setPinMode(uint8 port, uint8 pin, enum PinMode mode)
+void Pin_setMode(uint8 port, uint8 pin, PinMode mode)
 {
     uint8 functionBits;
     
     switch (mode)
     {
-        case PinModePullUp: functionBits = PINCON_MODE_PULL_UP;
+        case Pin_Mode_PullUp: functionBits = PINCON_MODE_PULL_UP;
              break;
-        case PinModeRepeater: functionBits = PINCON_MODE_REPEATER;
+        case Pin_Mode_Repeater: functionBits = PINCON_MODE_REPEATER;
              break;
-        case PinModeNoPullUpDown: functionBits = PINCON_MODE_NO_PULL_UP_DOWN;
+        case Pin_Mode_NoPullUpDown: functionBits = PINCON_MODE_NO_PULL_UP_DOWN;
              break;
-        case PinModePullDown: functionBits = PINCON_MODE_PULL_DOWN;
+        case Pin_Mode_PullDown: functionBits = PINCON_MODE_PULL_DOWN;
              break;
         default: break;
     }
@@ -74,7 +74,7 @@ void setPinMode(uint8 port, uint8 pin, enum PinMode mode)
     return;
 }
 
-void setPinOpenDrainMode(uint8 port, uint8 pin, enum PinOpenDrainMode mode)
+void Pin_setOpenDrainMode(uint8 port, uint8 pin, Pin_OpenDrain mode)
 {
     switch (port)
     {

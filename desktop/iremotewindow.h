@@ -45,7 +45,7 @@ public slots:
     
 private slots:
     void buttonClicked(int id);
-    void irCommandReceived(IrCommand irCommand);
+    void irCommandReceived(RemoteCommand irCommand);
 
     void serialPortConnected();
     void serialPortDisconnected();
@@ -81,8 +81,6 @@ private slots:
 
     void on_settingsSubmitButton_clicked();
 
-    void on_commandList_doubleClicked(const QModelIndex &index);
-
     void on_ipMethodCombo_currentIndexChanged(int index);
 
     void on_profileAddButton_clicked();
@@ -105,6 +103,18 @@ private slots:
 
     void on_setIrButton_clicked();
 
+    void on_capture433Button_clicked();
+
+    void on_copyCommandButton_clicked();
+
+    void on_renameCommandButton_clicked();
+
+    void on_capture868Button_clicked();
+
+    void on_remoteCommandTable_doubleClicked(const QModelIndex &index);
+
+    void on_hideCommandTableButton_clicked();
+
 private:
     Ui::IRemoteWindow *ui;
 
@@ -116,7 +126,7 @@ private:
 
     Profile *currentProfile;
 
-    QMap<QString,IrCommand>    irCommandMap;
+    QMap<QString,RemoteCommand>    irCommandMap;
 
     QSignalMapper *signalMapper;
     QSignalMapper *commandComboMapper;
@@ -128,11 +138,15 @@ private:
     void removeCommand(int id);
     void loadPicture(QString fileName);
     void unloadPicture();
-    void addTableRow(QString buttonName, QString commandName);
+    void addCommandTableRow(QString buttonName, QString commandName);
+    void initializeCommandTable();
 
-    void addIrCommand(const QString name, IrCommand command);
-    void removeIrCommand(const QString name);
-    IrCommand getIrCommand(const QString name);
+    void addRemoteCommand(const QString name, RemoteCommand command);
+    void removeRemoteCommand(const QString name);
+    void copyRemoteCommand(const QString name);
+    void renameRemoteCommand(const QString name, const QString newName);
+    RemoteCommand getIrCommand(const QString name);
+    void initializeRemoteCommandTable();
 
     void loadSettings();
     void saveSettings();

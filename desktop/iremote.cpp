@@ -276,6 +276,10 @@ void IRemote::setIrSendTimeout(int ms)
     startQueue();
 }
 
+void IRemote::setRadio433Count(int times)
+{
+}
+
 void IRemote::actionRun()
 {
     QueueCommand command;
@@ -288,7 +292,7 @@ void IRemote::actionRun()
     startQueue();
 }
 
-void IRemote::actionRun(IrCommand irCommand)
+void IRemote::actionRun(RemoteCommand irCommand)
 {
     QByteArray data;
 
@@ -306,11 +310,39 @@ void IRemote::actionRun(IrCommand irCommand)
     startQueue();
 }
 
-void IRemote::actionCapture()
+void IRemote::actionCaptureIr()
 {
     QueueCommand command;
-    command.command = "capture\r";
-    command.response = "Capturing data";
+    command.command = "capture ir\r";
+    command.response = "Capturing IR data";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+
+    pauseKeepAlive(m_responseTimeout*20);   // let there be enough time to capture signals
+}
+
+void IRemote::actionCaptureRadio433MHz()
+{
+    QueueCommand command;
+    command.command = "capture radio433\r";
+    command.response = "Capturing 433MHz data";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+
+    pauseKeepAlive(m_responseTimeout*20);   // let there be enough time to capture signals
+}
+
+void IRemote::actionCaptureRadio868MHz()
+{
+    QueueCommand command;
+    command.command = "capture radio868\r";
+    command.response = "Capturing 868MHz data";
     command.timeout = m_responseTimeout;
     command.type = NormalQueueCommandType;
 
@@ -544,9 +576,13 @@ void IRemote::receivedCommand(QByteArray command)
             {
                 resultingCommand.append(command.mid(i,2).toUInt(&ok, 16));
             }
-            IrCommand irCommand;
-            memcpy(&irCommand,resultingCommand.data(), sizeof(IrCommand));
-            irCommandReceived(irCommand);
+            RemoteCommand remoteCommand;
+            memcpy(&remoteCommand,resultingCommand.data(), sizeof(RemoteCommand));
+            if (remoteCommand.medium == RemoteMedium_433MHz)
+            {
+                remoteCommand = repair433MhzCommand(remoteCommand); // try to repair 433MHz commands
+            }
+            irCommandReceived(remoteCommand);
         }
     }
     else
@@ -658,4 +694,44 @@ void IRemote::pauseKeepAlive(int msecs)
 {
     keepAliveTimer->stop();
     QTimer::singleShot(msecs, this, SLOT(keepAliveTimerTick()));
+}
+
+RemoteCommand IRemote::repair433MhzCommand(const RemoteCommand &command)
+{
+    RemoteCommand newCommand = command;
+    bool state = 0;
+    int j = 0;
+
+    for (int i = 0; i < command.length; i++)
+    {
+        quint16 data = command.data[i];
+        if (state == 0)
+        {
+            if (data < 1200)
+            {
+                newCommand.data[j] = 300;
+                j++;
+            }
+            else
+            {
+                newCommand.data[j] = 900;
+                j++;
+                newCommand.data[j] = 300;
+                j++;
+                newCommand.data[j] = 300;
+                j++;
+            }
+        }
+        else if (state == 1)
+        {
+            newCommand.data[j] = 900;
+            j++;
+        }
+
+        state = !state;
+    }
+
+    newCommand.length = j;
+
+    return newCommand;
 }

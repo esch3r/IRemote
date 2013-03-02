@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>757</width>
+    <width>810</width>
     <height>759</height>
    </rect>
   </property>
@@ -18,71 +18,14 @@
     <item row="2" column="2">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
         <string>Interface</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_10">
-        <item row="0" column="0" rowspan="2">
-         <widget class="QGraphicsView" name="graphicsView"/>
-        </item>
-        <item row="0" column="1">
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <property name="sizeConstraint">
-           <enum>QLayout::SetDefaultConstraint</enum>
-          </property>
-          <item>
-           <widget class="QLabel" name="label">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Profile:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="profileCombo">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="profileAddButton">
-            <property name="text">
-             <string>...</string>
-            </property>
-            <property name="icon">
-             <iconset theme="list-add">
-              <normaloff/>
-             </iconset>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="profileRemoveButton">
-            <property name="text">
-             <string>...</string>
-            </property>
-            <property name="icon">
-             <iconset theme="list-remove">
-              <normaloff/>
-             </iconset>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="1" column="1">
+        <item row="1" column="2">
          <widget class="QTableWidget" name="tableWidget">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
@@ -90,51 +33,7 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <column>
-           <property name="text">
-            <string>Button</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Command</string>
-           </property>
-          </column>
          </widget>
-        </item>
-        <item row="2" column="1">
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <widget class="QPushButton" name="addButton">
-            <property name="text">
-             <string>&amp;Add</string>
-            </property>
-            <property name="shortcut">
-             <string>Ctrl+A</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="removeButton">
-            <property name="text">
-             <string>&amp;Remove</string>
-            </property>
-            <property name="shortcut">
-             <string>Ctrl+R</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="imageButton">
-            <property name="text">
-             <string>Load Image...</string>
-            </property>
-            <property name="shortcut">
-             <string>Ctrl+L</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
         </item>
         <item row="2" column="0">
          <widget class="QCheckBox" name="editableCheck">
@@ -147,6 +46,111 @@
           <property name="checked">
            <bool>false</bool>
           </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QToolButton" name="hideCommandTableButton">
+          <property name="text">
+           <string>&gt;</string>
+          </property>
+          <property name="icon">
+           <iconset theme="arrow-right"/>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0" rowspan="2" colspan="2">
+         <widget class="QGraphicsView" name="graphicsView"/>
+        </item>
+        <item row="2" column="2">
+         <widget class="QWidget" name="buttonWidget" native="true">
+          <layout class="QHBoxLayout" name="buttonLayout">
+           <item>
+            <widget class="QPushButton" name="addButton">
+             <property name="text">
+              <string>&amp;Add</string>
+             </property>
+             <property name="shortcut">
+              <string>Ctrl+A</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="removeButton">
+             <property name="text">
+              <string>&amp;Remove</string>
+             </property>
+             <property name="shortcut">
+              <string>Ctrl+R</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="imageButton">
+             <property name="text">
+              <string>Load Image...</string>
+             </property>
+             <property name="shortcut">
+              <string>Ctrl+L</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QWidget" name="profileWidget" native="true">
+          <layout class="QHBoxLayout" name="profileLayout">
+           <property name="sizeConstraint">
+            <enum>QLayout::SetDefaultConstraint</enum>
+           </property>
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Profile:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="profileCombo">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="profileAddButton">
+             <property name="text">
+              <string>...</string>
+             </property>
+             <property name="icon">
+              <iconset theme="list-add">
+               <normaloff/>
+              </iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="profileRemoveButton">
+             <property name="text">
+              <string>...</string>
+             </property>
+             <property name="icon">
+              <iconset theme="list-remove">
+               <normaloff/>
+              </iconset>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
        </layout>
@@ -229,31 +233,27 @@
            <string>Commands</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_5">
-           <item row="2" column="0">
-            <widget class="QPushButton" name="runButton">
+           <item row="5" column="3" colspan="2">
+            <widget class="QPushButton" name="renameCommandButton">
              <property name="text">
-              <string>Run</string>
+              <string>Rename</string>
+             </property>
+             <property name="icon">
+              <iconset theme="edit-rename"/>
              </property>
             </widget>
            </item>
-           <item row="2" column="1" colspan="2">
-            <widget class="QPushButton" name="captureButton">
+           <item row="5" column="1" colspan="2">
+            <widget class="QPushButton" name="capture868Button">
              <property name="text">
-              <string>Capture</string>
+              <string>Capture 868MHz</string>
+             </property>
+             <property name="icon">
+              <iconset theme="media-record"/>
              </property>
             </widget>
            </item>
-           <item row="0" column="0" colspan="5">
-            <widget class="QListWidget" name="commandList">
-             <property name="editTriggers">
-              <set>QAbstractItemView::SelectedClicked</set>
-             </property>
-             <property name="sortingEnabled">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="3" colspan="2">
+           <item row="3" column="3" colspan="2">
             <widget class="QPushButton" name="removeCommandButton">
              <property name="text">
               <string>Remove</string>
@@ -262,6 +262,56 @@
               <iconset theme="list-remove">
                <normaloff/>
               </iconset>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QPushButton" name="runButton">
+             <property name="text">
+              <string>Run</string>
+             </property>
+             <property name="icon">
+              <iconset theme="media-playback-start"/>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1" colspan="2">
+            <widget class="QPushButton" name="capture433Button">
+             <property name="text">
+              <string>Capture 433MHz</string>
+             </property>
+             <property name="icon">
+              <iconset theme="media-record"/>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="3" colspan="2">
+            <widget class="QPushButton" name="copyCommandButton">
+             <property name="text">
+              <string>Copy</string>
+             </property>
+             <property name="icon">
+              <iconset theme="edit-copy"/>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0" colspan="5">
+            <widget class="QTableWidget" name="remoteCommandTable">
+             <property name="selectionMode">
+              <enum>QAbstractItemView::SingleSelection</enum>
+             </property>
+             <property name="selectionBehavior">
+              <enum>QAbstractItemView::SelectRows</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1" colspan="2">
+            <widget class="QPushButton" name="captureButton">
+             <property name="text">
+              <string>Capture IR</string>
+             </property>
+             <property name="icon">
+              <iconset theme="media-record"/>
              </property>
             </widget>
            </item>
@@ -364,9 +414,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>0</y>
-             <width>415</width>
-             <height>586</height>
+             <y>-270</y>
+             <width>372</width>
+             <height>856</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout">
@@ -379,6 +429,297 @@
                <string>Settings</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_6">
+               <item row="7" column="1">
+                <widget class="QPushButton" name="settingsSubmitButton">
+                 <property name="text">
+                  <string>Submit</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="0">
+                <spacer name="verticalSpacer">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item row="2" column="0" colspan="2">
+                <widget class="QGroupBox" name="groupBox_6">
+                 <property name="title">
+                  <string>IPv4 Settings</string>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayout_11">
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_9">
+                    <property name="text">
+                     <string>Method:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="label_10">
+                    <property name="text">
+                     <string>IP-Address:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QComboBox" name="ipMethodCombo">
+                    <property name="currentIndex">
+                     <number>0</number>
+                    </property>
+                    <item>
+                     <property name="text">
+                      <string>Automatic (DHCP)</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>Manual</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>Auto-IP (Adhoc)</string>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QLineEdit" name="subnetMaskEdit">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
+                    <property name="text">
+                     <string>255.255.0.0</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QLineEdit" name="ipAddressEdit">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
+                    <property name="text">
+                     <string>169.254.1.1</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="1">
+                   <widget class="QLineEdit" name="gatewayEdit">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_11">
+                    <property name="text">
+                     <string>Subnet-Mask:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0">
+                   <widget class="QLabel" name="label_12">
+                    <property name="text">
+                     <string>Gateway:</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item row="4" column="0" colspan="2">
+                <widget class="QGroupBox" name="groupBox">
+                 <property name="title">
+                  <string>433MHz</string>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayout_2">
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_19">
+                    <property name="text">
+                     <string>Repeat Count:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QSpinBox" name="radio433CountSpin">
+                    <property name="suffix">
+                     <string> x </string>
+                    </property>
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
+                    <property name="value">
+                     <number>5</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="label_17">
+                    <property name="text">
+                     <string>Receive Timeout:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QSpinBox" name="radio433ReceiveTimeoutSpin">
+                    <property name="suffix">
+                     <string> ms</string>
+                    </property>
+                    <property name="minimum">
+                     <number>5</number>
+                    </property>
+                    <property name="maximum">
+                     <number>500</number>
+                    </property>
+                    <property name="value">
+                     <number>5</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_18">
+                    <property name="text">
+                     <string>Send Timeout:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QSpinBox" name="radio433SendTimeoutSpin">
+                    <property name="suffix">
+                     <string> ms</string>
+                    </property>
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
+                    <property name="maximum">
+                     <number>1000</number>
+                    </property>
+                    <property name="value">
+                     <number>10</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0">
+                   <widget class="QPushButton" name="getRadio433Button">
+                    <property name="text">
+                     <string>Get</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="1">
+                   <widget class="QPushButton" name="setRadio433Button">
+                    <property name="text">
+                     <string>Set</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item row="3" column="0" colspan="2">
+                <widget class="QGroupBox" name="groupBox_7">
+                 <property name="title">
+                  <string>IR</string>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayout_8">
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_7">
+                    <property name="text">
+                     <string>Repeat Count:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QSpinBox" name="irCountSpin">
+                    <property name="suffix">
+                     <string> x </string>
+                    </property>
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
+                    <property name="value">
+                     <number>5</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="label_13">
+                    <property name="text">
+                     <string>Receive Timeout:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QSpinBox" name="irReceiveTimeoutSpin">
+                    <property name="suffix">
+                     <string> ms</string>
+                    </property>
+                    <property name="minimum">
+                     <number>5</number>
+                    </property>
+                    <property name="maximum">
+                     <number>500</number>
+                    </property>
+                    <property name="value">
+                     <number>50</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_16">
+                    <property name="text">
+                     <string>Send Timeout:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QSpinBox" name="irSendTimeoutSpin">
+                    <property name="suffix">
+                     <string> ms</string>
+                    </property>
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
+                    <property name="maximum">
+                     <number>1000</number>
+                    </property>
+                    <property name="value">
+                     <number>100</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="1">
+                   <widget class="QPushButton" name="setIrButton">
+                    <property name="text">
+                     <string>Set</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0">
+                   <widget class="QPushButton" name="getIrButton">
+                    <property name="text">
+                     <string>Get</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item row="7" column="0">
+                <widget class="QPushButton" name="settingsReadButton">
+                 <property name="text">
+                  <string>Read</string>
+                 </property>
+                </widget>
+               </item>
                <item row="0" column="0" colspan="2">
                 <widget class="QGroupBox" name="wlanGroupBox">
                  <property name="title">
@@ -502,21 +843,21 @@
                  </layout>
                 </widget>
                </item>
-               <item row="3" column="0" colspan="2">
-                <widget class="QGroupBox" name="groupBox_7">
+               <item row="6" column="0" colspan="2">
+                <widget class="QGroupBox" name="groupBox_8">
                  <property name="title">
-                  <string>IR</string>
+                  <string>868MHz</string>
                  </property>
-                 <layout class="QGridLayout" name="gridLayout_8">
+                 <layout class="QGridLayout" name="gridLayout_13">
                   <item row="0" column="0">
-                   <widget class="QLabel" name="label_7">
+                   <widget class="QLabel" name="label_22">
                     <property name="text">
                      <string>Repeat Count:</string>
                     </property>
                    </widget>
                   </item>
                   <item row="0" column="1">
-                   <widget class="QSpinBox" name="irCountSpin">
+                   <widget class="QSpinBox" name="radio868CountSpin">
                     <property name="suffix">
                      <string> x </string>
                     </property>
@@ -529,14 +870,14 @@
                    </widget>
                   </item>
                   <item row="1" column="0">
-                   <widget class="QLabel" name="label_13">
+                   <widget class="QLabel" name="label_20">
                     <property name="text">
                      <string>Receive Timeout:</string>
                     </property>
                    </widget>
                   </item>
                   <item row="1" column="1">
-                   <widget class="QSpinBox" name="irReceiveTimeoutSpin">
+                   <widget class="QSpinBox" name="radio868ReceiveTimeoutSpin">
                     <property name="suffix">
                      <string> ms</string>
                     </property>
@@ -547,19 +888,19 @@
                      <number>500</number>
                     </property>
                     <property name="value">
-                     <number>50</number>
+                     <number>5</number>
                     </property>
                    </widget>
                   </item>
                   <item row="2" column="0">
-                   <widget class="QLabel" name="label_16">
+                   <widget class="QLabel" name="label_21">
                     <property name="text">
                      <string>Send Timeout:</string>
                     </property>
                    </widget>
                   </item>
                   <item row="2" column="1">
-                   <widget class="QSpinBox" name="irSendTimeoutSpin">
+                   <widget class="QSpinBox" name="radio868SendTimeoutSpin">
                     <property name="suffix">
                      <string> ms</string>
                     </property>
@@ -570,134 +911,21 @@
                      <number>1000</number>
                     </property>
                     <property name="value">
-                     <number>100</number>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="1">
-                   <widget class="QPushButton" name="setIrButton">
-                    <property name="text">
-                     <string>Set</string>
+                     <number>10</number>
                     </property>
                    </widget>
                   </item>
                   <item row="3" column="0">
-                   <widget class="QPushButton" name="getIrButton">
+                   <widget class="QPushButton" name="getRadio868Button">
                     <property name="text">
                      <string>Get</string>
                     </property>
                    </widget>
                   </item>
-                 </layout>
-                </widget>
-               </item>
-               <item row="5" column="0">
-                <widget class="QPushButton" name="settingsReadButton">
-                 <property name="text">
-                  <string>Read</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="1">
-                <widget class="QPushButton" name="settingsSubmitButton">
-                 <property name="text">
-                  <string>Submit</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="0">
-                <spacer name="verticalSpacer">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item row="2" column="0" colspan="2">
-                <widget class="QGroupBox" name="groupBox_6">
-                 <property name="title">
-                  <string>IPv4 Settings</string>
-                 </property>
-                 <layout class="QGridLayout" name="gridLayout_11">
-                  <item row="0" column="0">
-                   <widget class="QLabel" name="label_9">
-                    <property name="text">
-                     <string>Method:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="0">
-                   <widget class="QLabel" name="label_10">
-                    <property name="text">
-                     <string>IP-Address:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="1">
-                   <widget class="QComboBox" name="ipMethodCombo">
-                    <property name="currentIndex">
-                     <number>0</number>
-                    </property>
-                    <item>
-                     <property name="text">
-                      <string>Automatic (DHCP)</string>
-                     </property>
-                    </item>
-                    <item>
-                     <property name="text">
-                      <string>Manual</string>
-                     </property>
-                    </item>
-                    <item>
-                     <property name="text">
-                      <string>Auto-IP (Adhoc)</string>
-                     </property>
-                    </item>
-                   </widget>
-                  </item>
-                  <item row="2" column="1">
-                   <widget class="QLineEdit" name="subnetMaskEdit">
-                    <property name="enabled">
-                     <bool>false</bool>
-                    </property>
-                    <property name="text">
-                     <string>255.255.0.0</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="1">
-                   <widget class="QLineEdit" name="ipAddressEdit">
-                    <property name="enabled">
-                     <bool>false</bool>
-                    </property>
-                    <property name="text">
-                     <string>169.254.1.1</string>
-                    </property>
-                   </widget>
-                  </item>
                   <item row="3" column="1">
-                   <widget class="QLineEdit" name="gatewayEdit">
-                    <property name="enabled">
-                     <bool>false</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="0">
-                   <widget class="QLabel" name="label_11">
+                   <widget class="QPushButton" name="setRadio868Button">
                     <property name="text">
-                     <string>Subnet-Mask:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="0">
-                   <widget class="QLabel" name="label_12">
-                    <property name="text">
-                     <string>Gateway:</string>
+                     <string>Set</string>
                     </property>
                    </widget>
                   </item>

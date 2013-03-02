@@ -34,9 +34,9 @@ int8 WiFly_setAdhocBeacon(uint32 ms);
 waiting for probe responses before declaring, “ADHOC is lost” and
 disabling the network interface. Default is 60. */
 int8 WiFly_setAdhocProbe(uint32 num);
+
 /**  Sets the address to which the UDP hello/heartbeat message is sent. The
 default address is 255.255.255.255 */
-
 int8 WiFly_setBroadcastAddress(char* address);
 /**  Sets the interval at which the hello/heartbeat UDP message is sent.
 Interval is specified in seconds. The value is a mask that is compared to a

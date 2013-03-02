@@ -74,10 +74,20 @@ typedef uint16  crc;
 
 #endif
 
+/** Initializes the fast CRC function.*/
+void  Crc_initialize(void);
 
-void  crcInit(void);
-crc   crcSlow(char* message, uint32 nBytes);
-crc   crcFast(char* message, uint32 nBytes);
+/** Creates a CRC checksum.
+ *  @param message A pointer to the data to verify.
+ *  @param nBytes  The number of bytes to verify.
+ */
+crc   Crc_slow(char* message, uint32 nBytes);
+
+/** Creates a CRC checksum, uses a table which needs to be initialized.
+ *  @param message A pointer to the data to verify.
+ *  @param nBytes  The number of bytes to verify.
+ */
+crc   Crc_fast(char* message, uint32 nBytes);
 
 /**
  * @}

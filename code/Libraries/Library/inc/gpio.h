@@ -18,24 +18,28 @@
 #include <gpioDriver.h>
 #include <types.h>
 
-enum GpioDirection { GpioDirectionInput = 0, 
-                     GpioDirectionOutput = 1};
+typedef enum { 
+    Gpio_Direction_Input = 0u, 
+    Gpio_Direction_Output = 1u
+} Gpio_Direction;
                      
-enum GpioInterruptType { GpioInterruptRisingEdge = 0,
-                         GpioInterruptFallingEdge = 1,
-                         GpioInterruptFallingAndRisingEdge = 2};
+typedef enum { 
+    Gpio_Interrupt_RisingEdge = 0u,
+    Gpio_Interrupt_FallingEdge = 1u,
+    Gpio_Interrupt_FallingAndRisingEdge = 2u
+} Gpio_Interrupt;
                          
 typedef struct {
     uint8 port;
     uint8 pin;
-} GpioPair;
+} Gpio_Pair;
                       
 /** Set the direction of the GPIO pin
  *  @param port Port of the pin.
  *  @param pin Pin number.
  *  @param direction Input or output.
  */
-inline void Gpio_setDirection(uint8 port, uint8 pin, enum GpioDirection direction);
+inline void Gpio_setDirection(uint8 port, uint8 pin, Gpio_Direction direction);
 /** Reads data from the  GPIO pin
  *  @param port Port of the pin.
  *  @param pin Pin number.
@@ -69,7 +73,7 @@ inline void Gpio_toggle(uint8 port, uint8 pin);
  *  @param type Rising edge, falling edge or both.
  *  @param func Function that should be triggered if an interrupt happens.
  */
-void Gpio_enableInterrupt(uint8 port, uint8 pin, enum GpioInterruptType type, void (* func)(void));
+void Gpio_enableInterrupt(uint8 port, uint8 pin, Gpio_Interrupt type, void (* func)(void));
 /** Disable interrupts on the GPIO pin
  *  @param port Port of the pin.
  *  @param pin Pin number.

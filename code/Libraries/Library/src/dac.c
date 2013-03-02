@@ -1,6 +1,6 @@
 #include "dac.h"
 
-void initializeDac()
+void Dac_initialize()
 {
     DAC_SET_CLK();  // Set the clock the dac counter runs with
     DAC_SET_PIN();  // Set PIN to AOUT
@@ -10,14 +10,14 @@ void initializeDac()
     return;
 }
 
-void setDacValue(uint16 value)
+void Dac_setValue(uint16 value)
 {
     DAC_SET_VALUE(value);    // Set DAC value
     return;
 }
 
-void setDacVolt(uint16 mV)
+void Dac_setVolt(uint16 mV)
 {
-    setDacValue((uint16)((mV-VREFN)/(VREFP-VREFN))*DAC_STEPS);
+    Dac_setValue((uint16)((mV-VREFN)/(VREFP-VREFN))*DAC_STEPS);
     return;
 }
