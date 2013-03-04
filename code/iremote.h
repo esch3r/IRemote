@@ -36,7 +36,8 @@ typedef enum {
 
 typedef enum {
     NetworkMode_Adhoc = 0,
-    NetworkMode_Infrastructure = 1
+    NetworkMode_Infrastructure = 1,
+    NetworkMode_None = 2
 } NetworkMode;
 
 typedef enum {
@@ -45,10 +46,16 @@ typedef enum {
     } ActiveConnection;
 
 typedef struct {
-    uint8  firstStartIdentificator; // if this is not 40 then we have a first start
+    uint8  firstStartIdentificator; // if this is not 42 then we have a first start
     uint32 irReceiveTimeout;
     uint32 irSendTimeout;
     uint32 irRepeatCount;
+    uint32 radio433ReceiveTimeout;
+    uint32 radio433SendTimeout;
+    uint32 radio433RepeatCount;
+    uint32 radio868ReceiveTimeout;
+    uint32 radio868SendTimeout;
+    uint32 radio868RepeatCount;
     char   wlanSsid[100];
     char   wlanPhrase[100];
     char   wlanKey[100];
@@ -60,6 +67,13 @@ typedef struct {
     char   wlanGateway[20];
     uint8  networkMode;
 } ApplicationSettings;
+
+typedef enum {
+    LedOnBoard = Led0,
+    LedGreen = Led1,
+    LedYellow = Led2,
+    LedRed = Led3
+} ApplicationLed;
 
 int8 initializeHardware(void);
 int8 initializeVariables(void);

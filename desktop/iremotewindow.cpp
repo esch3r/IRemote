@@ -65,7 +65,7 @@ void IRemoteWindow::applicationStarted(QString message)
 {
     qDebug() << message;
     RemoteCommand command = getIrCommand(message);
-    iremote->actionRun(command);
+    iremote->run(command);
 }
 
 void IRemoteWindow::loadSettings()
@@ -231,7 +231,7 @@ void IRemoteWindow::buttonClicked(int id)
 
     if (irCommandMap.find(commandName) != irCommandMap.end())
     {
-        iremote->actionRun(irCommandMap.value(commandName));
+        iremote->run(irCommandMap.value(commandName));
     }
 }
 
@@ -366,10 +366,14 @@ void IRemoteWindow::loadPicture(QString fileName)
 {
     QPixmap pixmap;
     pixmap.load(fileName);
-    pixmap = pixmap.scaled(scene->width(),
-                           scene->height(),
-                           Qt::KeepAspectRatio,
-                           Qt::SmoothTransformation);
+
+    if (!pixmap.isNull())
+    {
+        pixmap = pixmap.scaled(scene->width(),
+                               scene->height(),
+                               Qt::KeepAspectRatio,
+                               Qt::SmoothTransformation);
+    }
 
     if (scenePixmap == NULL)
         scenePixmap = scene->addPixmap(pixmap);
@@ -623,6 +627,10 @@ void IRemoteWindow::networkConnected()
 {
     ui->networkStatusFrame->setStyleSheet("background-color: green;");
     ui->networkConnectButton->setText(tr("Disconnect"));
+
+    on_getIrButton_clicked();
+    on_getRadio433Button_clicked();
+    on_getRadio868Button_clicked();
 }
 
 void IRemoteWindow::networkDisconnected()
@@ -633,17 +641,17 @@ void IRemoteWindow::networkDisconnected()
 
 void IRemoteWindow::on_captureButton_clicked()
 {
-    iremote->actionCaptureIr();
+    iremote->captureIr();
 }
 
 void IRemoteWindow::on_capture433Button_clicked()
 {
-    iremote->actionCaptureRadio433MHz();
+    iremote->captureRadio433MHz();
 }
 
 void IRemoteWindow::on_capture868Button_clicked()
 {
-    iremote->actionCaptureRadio868MHz();
+    iremote->captureRadio868MHz();
 }
 
 void IRemoteWindow::on_runButton_clicked()
@@ -653,7 +661,7 @@ void IRemoteWindow::on_runButton_clicked()
         return;
 
     RemoteCommand command = getIrCommand(ui->remoteCommandTable->item(row, 0)->text());
-    iremote->actionRun(command);
+    iremote->run(command);
 }
 
 void IRemoteWindow::on_settingsSubmitButton_clicked()
@@ -711,6 +719,8 @@ void IRemoteWindow::on_settingsSubmitButton_clicked()
         iremote->setWlanSubnetMask(ui->subnetMaskEdit->text());
         iremote->setWlanGateway(ui->gatewayEdit->text());
     }
+
+    iremote->saveConfig();
 }
 
 void IRemoteWindow::on_ipMethodCombo_currentIndexChanged(int index)
@@ -833,6 +843,23 @@ void IRemoteWindow::on_setIrButton_clicked()
     iremote->setIrCount(ui->irCountSpin->value());
     iremote->setIrReceiveTimeout(ui->irReceiveTimeoutSpin->value());
     iremote->setIrSendTimeout(ui->irSendTimeoutSpin->value());
+    iremote->saveConfig();
+}
+
+void IRemoteWindow::on_setRadio433Button_clicked()
+{
+    iremote->setRadio433Count(ui->irCountSpin->value());
+    iremote->setRadio433ReceiveTimeout(ui->irReceiveTimeoutSpin->value());
+    iremote->setRadio433SendTimeout(ui->irSendTimeoutSpin->value());
+    iremote->saveConfig();
+}
+
+void IRemoteWindow::on_setRadio868Button_clicked()
+{
+    iremote->setRadio868Count(ui->irCountSpin->value());
+    iremote->setRadio868ReceiveTimeout(ui->irReceiveTimeoutSpin->value());
+    iremote->setRadio868SendTimeout(ui->irSendTimeoutSpin->value());
+    iremote->saveConfig();
 }
 
 void IRemoteWindow::on_remoteCommandTable_doubleClicked(const QModelIndex &index)
@@ -865,4 +892,30 @@ void IRemoteWindow::on_hideCommandTableButton_clicked()
         ui->buttonWidget->setVisible(true);
         ui->hideCommandTableButton->setIcon(QIcon::fromTheme("arrow-right"));
     }
+}
+
+void IRemoteWindow::on_settingsReadButton_clicked()
+{
+    ui->wlanSsidEdit->setText(iremote->getWlanSsid());
+}
+
+void IRemoteWindow::on_getIrButton_clicked()
+{
+    ui->irCountSpin->setValue(iremote->getIrCount());
+    ui->irReceiveTimeoutSpin->setValue(iremote->getIrReceiveTimeout());
+    ui->irSendTimeoutSpin->setValue(iremote->getIrSendTimeout());
+}
+
+void IRemoteWindow::on_getRadio433Button_clicked()
+{
+    ui->radio433CountSpin->setValue(iremote->getRadio433Count());
+    ui->radio433ReceiveTimeoutSpin->setValue(iremote->getRadio433ReceiveTimeout());
+    ui->radio433SendTimeoutSpin->setValue(iremote->getRadio433SendTimeout());
+}
+
+void IRemoteWindow::on_getRadio868Button_clicked()
+{
+    ui->radio868CountSpin->setValue(iremote->getRadio868Count());
+    ui->radio868ReceiveTimeoutSpin->setValue(iremote->getRadio433ReceiveTimeout());
+    ui->radio868SendTimeoutSpin->setValue(iremote->getRadio868SendTimeout());
 }

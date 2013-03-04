@@ -394,7 +394,7 @@ applied upon power up and removed upon power down or sleep.*/
 int8 WiFly_setQPower(uint8 value);
 
 /** Display all adhoc settings.*/
-void WiFly_getAdhoc();
+char* WiFly_getAdhoc();
 /** Will display the broadcast UPD address, port and interval */
 void WiFly_getBroadcast();
 /** Display comm. settings.*/

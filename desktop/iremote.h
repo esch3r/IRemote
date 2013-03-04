@@ -116,13 +116,38 @@ public:
     void setRadio868ReceiveTimeout(int ms);
     void setRadio868SendTimeout(int ms);
 
-    void actionRun();
-    void actionRun(RemoteCommand irCommand);
-    void actionCaptureIr();
-    void actionCaptureRadio433MHz();
-    void actionCaptureRadio868MHz();
+    QString getWlanSsid();
+    QString getWlanPhrase();
+    QString getWlanKey();
+    QString getWlanHostname();
+    WlanAuthType getWlanAuth();
+    IpDhcpMethod getWlanDhcpMethod();
+    QString getWlanIpAddress();
+    QString getWlanSubnetMask();
+    QString getWlanGateway();
+
+    int getIrCount();
+    int getIrReceiveTimeout();
+    int getIrSendTimeout();
+
+    int getRadio433Count();
+    int getRadio433ReceiveTimeout();
+    int getRadio433SendTimeout();
+
+    int getRadio868Count();
+    int getRadio868ReceiveTimeout();
+    int getRadio868SendTimeout();
+
+    void run();
+    void run(RemoteCommand irCommand);
+    void captureIr();
+    void captureRadio433MHz();
+    void captureRadio868MHz();
     void startWlanAdhoc();
     void startWlanInfrastructure();
+    void saveConfig();
+
+    void sendKeepAlive();
 
     void flashFirmware(QString filename);
     
@@ -244,6 +269,7 @@ private:
 #endif
     QTcpSocket *tcpSocket;
     QByteArray dataBuffer;
+    QString receivedData;
     bool waitingForRespose;
 
     bool wantsConnection;   // this variable indicates wheter a user wants a connection or not, necessary for autoconnect
@@ -270,6 +296,7 @@ private:
     void startQueue();
     void doQueue();
     void endQueue();
+    void waitForQueue();
 
     void pauseKeepAlive(int msecs);
 

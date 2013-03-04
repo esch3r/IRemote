@@ -57,23 +57,29 @@ int8 initializeVariables(void )
     //load settings....
     Iap_loadApplicationSettings(&applicationSettings, sizeof(ApplicationSettings));
     
-    if (applicationSettings.firstStartIdentificator != 40)
+    if (applicationSettings.firstStartIdentificator != 42)
     {
         applicationSettings.irReceiveTimeout = 25000;
         applicationSettings.irSendTimeout = 50000;
         applicationSettings.irRepeatCount = 2;
+        applicationSettings.radio433ReceiveTimeout = 9000;
+        applicationSettings.radio433SendTimeout = 10000;
+        applicationSettings.radio433RepeatCount = 10;
+        applicationSettings.radio868ReceiveTimeout = 9000;
+        applicationSettings.radio868SendTimeout = 10000;
+        applicationSettings.radio868RepeatCount = 10;
         strcpy(applicationSettings.wlanSsid, "");
         strcpy(applicationSettings.wlanPhrase, "");
         strcpy(applicationSettings.wlanKey, "");
-        strcpy(applicationSettings.wlanHostname, "");
+        strcpy(applicationSettings.wlanHostname, "IRemoteBox");
         applicationSettings.wlanAuth = 0;
-        applicationSettings.wlanDhcp = 0;
-        strcpy(applicationSettings.wlanIp, "192.168.1.2");
-        strcpy(applicationSettings.wlanMask, "255.255.255.0");
-        strcpy(applicationSettings.wlanHostname, "192.168.1.1");
+        applicationSettings.wlanDhcp = 1;
+        strcpy(applicationSettings.wlanIp, "169.254.1.1");
+        strcpy(applicationSettings.wlanMask, "255.255.0.0");
+        strcpy(applicationSettings.wlanGateway, "169.254.1.2");
         applicationSettings.networkMode = NetworkMode_Adhoc;
         
-        applicationSettings.firstStartIdentificator = 40;   // remove the first start indicator
+        applicationSettings.firstStartIdentificator = 42;   // remove the first start indicator
     
         startWlanAdhocMode();   // Start the adhoc mode
         Iap_saveApplicationSettings(&applicationSettings, sizeof(ApplicationSettings));
@@ -83,6 +89,12 @@ int8 initializeVariables(void )
     RemoteControl_setReceiveTimeout(RemoteControl_Medium_Ir, applicationSettings.irReceiveTimeout);
     RemoteControl_setSendTimeout(RemoteControl_Medium_Ir, applicationSettings.irSendTimeout);
     RemoteControl_setRepeatCount(RemoteControl_Medium_Ir, applicationSettings.irRepeatCount);
+    RemoteControl_setReceiveTimeout(RemoteControl_Medium_433Mhz, applicationSettings.radio433ReceiveTimeout);
+    RemoteControl_setSendTimeout(RemoteControl_Medium_433Mhz, applicationSettings.radio433SendTimeout);
+    RemoteControl_setRepeatCount(RemoteControl_Medium_433Mhz, applicationSettings.radio433RepeatCount);
+    RemoteControl_setReceiveTimeout(RemoteControl_Medium_868Mhz, applicationSettings.radio868ReceiveTimeout);
+    RemoteControl_setSendTimeout(RemoteControl_Medium_868Mhz, applicationSettings.radio868SendTimeout);
+    RemoteControl_setRepeatCount(RemoteControl_Medium_868Mhz, applicationSettings.radio868RepeatCount);
     
     return 0;
 }
@@ -129,6 +141,8 @@ int8 initializeNetworkConnection(void)
 
 int8 startWlanInfrastructureMode(ApplicationSettings *settings)
 {
+    applicationSettings.networkMode = NetworkMode_Infrastructure;
+    
     if (WiFly_actionEnterCommandMode(FALSE) == -1)
         return -1;
     if (WiFly_setInfrastructureParams() == -1)
@@ -139,9 +153,11 @@ int8 startWlanInfrastructureMode(ApplicationSettings *settings)
         return -1;
     if (WiFly_setWlanKey(settings->wlanKey) == -1)
         return -1;
-    if (WiFly_setDnsName(settings->wlanHostname) == -1)
-        return -1;
     if (WiFly_setWlanAuth(settings->wlanAuth) == -1)
+        return -1;
+    if (WiFly_setWlanJoin(1) == -1)  // Turn on Auto Join mode
+        return -1;
+    if (WiFly_setDnsName(settings->wlanHostname) == -1)
         return -1;
     if (WiFly_setIpDhcp(settings->wlanDhcp) == -1)
         return -1;
@@ -153,14 +169,38 @@ int8 startWlanInfrastructureMode(ApplicationSettings *settings)
         return -1;
     if (WiFly_fileIoSaveDefault() == -1)
         return -1;
-    return WiFly_actionReboot();
+    
+    if (WiFly_actionReboot() == -1)
+    {
+        applicationSettings.networkMode = NetworkMode_None;
+        return -1;
+    }
+    else
+    {
+        applicationSettings.networkMode = NetworkMode_Infrastructure;
+        Iap_saveApplicationSettings(&applicationSettings, sizeof(ApplicationSettings));
+        return 0;
+    }
 }
 
 int8 startWlanAdhocMode(void)
 {
+    applicationSettings.networkMode = NetworkMode_Adhoc;
+    
     char buffer[100];
     snprintf(buffer, 100, "IRemoteBox_%u", Iap_readSerial());
-    return WiFly_createAdhocNetwork(buffer);
+    
+    if (WiFly_createAdhocNetwork(buffer) == -1)
+    {
+        applicationSettings.networkMode = NetworkMode_None;
+        return -1;
+    }
+    else
+    {
+        applicationSettings.networkMode = NetworkMode_Adhoc;
+        Iap_saveApplicationSettings(&applicationSettings, sizeof(ApplicationSettings));
+        return 0;
+    }
 }
 
 int8 printfData(char* format, ... )
@@ -279,10 +319,11 @@ bool compareExtendedCommand(char *original, char *received)
 void processCommand(char *buffer)
 {
     char *dataPointer;
+    char *savePointer;
     
-    Led_set(2);  // set the yellow led to indicate incoming data status
+    Led_set(LedYellow);  // set the yellow led to indicate incoming data status
     
-    dataPointer = strtok(buffer," ");
+    dataPointer = strtok_r(buffer, " ", &savePointer);
     
     if (compareBaseCommand("alive", dataPointer))
     {
@@ -292,7 +333,7 @@ void processCommand(char *buffer)
     else if (compareBaseCommand("run", dataPointer))
     {
         // We have a run command
-        dataPointer = strtok(NULL," ");
+        dataPointer = strtok_r(NULL, " ", &savePointer);
         if (dataPointer != NULL)
         {
             uint16 commandSize = strlen(dataPointer);
@@ -306,7 +347,7 @@ void processCommand(char *buffer)
     }
     else if (compareBaseCommand("capture", dataPointer))
     {
-        dataPointer = strtok(NULL," ");
+        dataPointer = strtok_r(NULL, " ", &savePointer);
         if (dataPointer == NULL)
         {
             printUnknownCommand();
@@ -341,7 +382,7 @@ void processCommand(char *buffer)
         uint16 receivedChecksum;
         uint16 calculatedChecksum;
         
-        dataPointer = strtok(NULL," ");
+        dataPointer = strtok_r(NULL, " ", &savePointer);
         if (dataPointer != NULL)
         {
             uint16 commandSize = strlen(dataPointer);
@@ -351,7 +392,7 @@ void processCommand(char *buffer)
                 buffer[i/2] = (char)hex2int(dataPointer+i,2);
             }
             
-            dataPointer = strtok(NULL," ");
+            dataPointer = strtok_r(NULL, " ", &savePointer);
             if (dataPointer != NULL)
             {
                 receivedChecksum = (uint16)hex2int(dataPointer,4);;
@@ -367,7 +408,7 @@ void processCommand(char *buffer)
     else if (compareBaseCommand("set", dataPointer))
     {
         // starting a set command
-        dataPointer = strtok(NULL," ");
+        dataPointer = strtok_r(NULL, " ", &savePointer);
         if (dataPointer == NULL)
         {
             printUnknownCommand();
@@ -376,7 +417,7 @@ void processCommand(char *buffer)
         else if (compareExtendedCommand("wlan",dataPointer))
         {
             // set wlan
-            dataPointer = strtok(NULL," ");
+            dataPointer = strtok_r(NULL, " ", &savePointer);
             if (dataPointer == NULL)
             {
                 printUnknownCommand();
@@ -385,7 +426,7 @@ void processCommand(char *buffer)
             else if (compareExtendedCommand("ssid",dataPointer))
             {
                 // set ssid
-                dataPointer = strtok(NULL," ");
+                dataPointer = strtok_r(NULL, " ", &savePointer);
                 if (dataPointer != NULL)
                 {
                     strncpy(applicationSettings.wlanSsid, dataPointer, 100);
@@ -401,7 +442,7 @@ void processCommand(char *buffer)
             else if (compareExtendedCommand("phrase",dataPointer))
             {
                 // set ssid
-                dataPointer = strtok(NULL," ");
+                dataPointer = strtok_r(NULL, " ", &savePointer);
                 if (dataPointer != NULL)
                 {
                     strncpy(applicationSettings.wlanPhrase, dataPointer, 100);
@@ -417,7 +458,7 @@ void processCommand(char *buffer)
             else if (compareExtendedCommand("key",dataPointer))
             {
                 // set ssid
-                dataPointer = strtok(NULL," ");
+                dataPointer = strtok_r(NULL, " ", &savePointer);
                 if (dataPointer != NULL)
                 {
                     strncpy(applicationSettings.wlanKey, dataPointer, 100);
@@ -433,7 +474,7 @@ void processCommand(char *buffer)
             else if (compareExtendedCommand("hostname",dataPointer))
             {
                 // set hostname
-                dataPointer = strtok(NULL," ");
+                dataPointer = strtok_r(NULL, " ", &savePointer);
                 if (dataPointer != NULL)
                 {
                     strncpy(applicationSettings.wlanHostname, dataPointer, 100);
@@ -449,7 +490,7 @@ void processCommand(char *buffer)
             else if (compareExtendedCommand("auth",dataPointer))
             {
                 // set auth
-                dataPointer = strtok(NULL," ");
+                dataPointer = strtok_r(NULL, " ", &savePointer);
                 if (dataPointer != NULL)
                 {
                     applicationSettings.wlanAuth = atoi(dataPointer);
@@ -465,7 +506,7 @@ void processCommand(char *buffer)
             else if (compareExtendedCommand("dhcp",dataPointer))
             {
                 // set auth
-                dataPointer = strtok(NULL," ");
+                dataPointer = strtok_r(NULL, " ", &savePointer);
                 if (dataPointer != NULL)
                 {
                     applicationSettings.wlanDhcp = atoi(dataPointer);
@@ -481,7 +522,7 @@ void processCommand(char *buffer)
             else if (compareExtendedCommand("ip",dataPointer))
             {
                 // set auth
-                dataPointer = strtok(NULL," ");
+                dataPointer = strtok_r(NULL, " ", &savePointer);
                 if (dataPointer != NULL)
                 {
                     strncpy(applicationSettings.wlanIp, dataPointer, 20);
@@ -497,7 +538,7 @@ void processCommand(char *buffer)
             else if (compareExtendedCommand("mask",dataPointer))
             {
                 // set auth
-                dataPointer = strtok(NULL," ");
+                dataPointer = strtok_r(NULL, " ", &savePointer);
                 if (dataPointer != NULL)
                 {
                     strncpy(applicationSettings.wlanMask, dataPointer, 20);
@@ -513,7 +554,7 @@ void processCommand(char *buffer)
             else if (compareExtendedCommand("gateway",dataPointer))
             {
                 // set auth
-                dataPointer = strtok(NULL," ");
+                dataPointer = strtok_r(NULL, " ", &savePointer);
                 if (dataPointer != NULL)
                 {
                     strncpy(applicationSettings.wlanGateway, dataPointer, 20);
@@ -535,7 +576,7 @@ void processCommand(char *buffer)
         else if (compareExtendedCommand("ir",dataPointer))
         {
             // set ir
-            dataPointer = strtok(NULL," ");
+            dataPointer = strtok_r(NULL, " ", &savePointer);
             if (dataPointer == NULL)
             {
                 printUnknownCommand();
@@ -544,7 +585,7 @@ void processCommand(char *buffer)
             else if (compareExtendedCommand("receiveTimeout",dataPointer))
             {
 
-                dataPointer = strtok(NULL," ");
+                dataPointer = strtok_r(NULL, " ", &savePointer);
                 if (dataPointer != NULL)
                 {
                     applicationSettings.irReceiveTimeout = atoi(dataPointer)*1000;
@@ -561,7 +602,7 @@ void processCommand(char *buffer)
             else if (compareExtendedCommand("sendTimeout",dataPointer))
             {
 
-                dataPointer = strtok(NULL," ");
+                dataPointer = strtok_r(NULL, " ", &savePointer);
                 if (dataPointer != NULL)
                 {
                     applicationSettings.irSendTimeout = atoi(dataPointer)*1000;
@@ -578,7 +619,7 @@ void processCommand(char *buffer)
             else if (compareExtendedCommand("count",dataPointer))
             {
 
-                dataPointer = strtok(NULL," ");
+                dataPointer = strtok_r(NULL, " ", &savePointer);
                 if (dataPointer != NULL)
                 {
                     applicationSettings.irRepeatCount = atoi(dataPointer);
@@ -598,10 +639,10 @@ void processCommand(char *buffer)
                 return;
             }
         }
-        else if (compareExtendedCommand("radio433",dataPointer))
+        else if (compareExtendedCommand("433",dataPointer))
         {
             // set ir
-            dataPointer = strtok(NULL," ");
+            dataPointer = strtok_r(NULL, " ", &savePointer);
             if (dataPointer == NULL)
             {
                 printUnknownCommand();
@@ -610,11 +651,11 @@ void processCommand(char *buffer)
             else if (compareExtendedCommand("receiveTimeout",dataPointer))
             {
 
-                dataPointer = strtok(NULL," ");
+                dataPointer = strtok_r(NULL, " ", &savePointer);
                 if (dataPointer != NULL)
                 {
-                    applicationSettings.irReceiveTimeout = atoi(dataPointer)*1000;
-                    RemoteControl_setReceiveTimeout(RemoteControl_Medium_433Mhz, applicationSettings.irReceiveTimeout);
+                    applicationSettings.radio433ReceiveTimeout = atoi(dataPointer)*1000;
+                    RemoteControl_setReceiveTimeout(RemoteControl_Medium_433Mhz, applicationSettings.radio433ReceiveTimeout);
                     printAcknowledgement();
                     return;
                 }
@@ -627,11 +668,11 @@ void processCommand(char *buffer)
             else if (compareExtendedCommand("sendTimeout",dataPointer))
             {
 
-                dataPointer = strtok(NULL," ");
+                dataPointer = strtok_r(NULL, " ", &savePointer);
                 if (dataPointer != NULL)
                 {
-                    applicationSettings.irSendTimeout = atoi(dataPointer)*1000;
-                    RemoteControl_setSendTimeout(RemoteControl_Medium_433Mhz, applicationSettings.irSendTimeout);
+                    applicationSettings.radio433SendTimeout = atoi(dataPointer)*1000;
+                    RemoteControl_setSendTimeout(RemoteControl_Medium_433Mhz, applicationSettings.radio433SendTimeout);
                     printAcknowledgement();
                     return;
                 }
@@ -644,11 +685,11 @@ void processCommand(char *buffer)
             else if (compareExtendedCommand("count",dataPointer))
             {
 
-                dataPointer = strtok(NULL," ");
+                dataPointer = strtok_r(NULL, " ", &savePointer);
                 if (dataPointer != NULL)
                 {
-                    applicationSettings.irRepeatCount = atoi(dataPointer);
-                    RemoteControl_setRepeatCount(RemoteControl_Medium_433Mhz, applicationSettings.irRepeatCount);
+                    applicationSettings.radio433RepeatCount = atoi(dataPointer);
+                    RemoteControl_setRepeatCount(RemoteControl_Medium_433Mhz, applicationSettings.radio433RepeatCount);
                     printAcknowledgement();
                     return;
                 }
@@ -664,10 +705,10 @@ void processCommand(char *buffer)
                 return;
             }
         }
-        else if (compareExtendedCommand("radio868",dataPointer))
+        else if (compareExtendedCommand("868",dataPointer))
         {
             // set ir
-            dataPointer = strtok(NULL," ");
+            dataPointer = strtok_r(NULL, " ", &savePointer);
             if (dataPointer == NULL)
             {
                 printUnknownCommand();
@@ -676,11 +717,11 @@ void processCommand(char *buffer)
             else if (compareExtendedCommand("receiveTimeout",dataPointer))
             {
 
-                dataPointer = strtok(NULL," ");
+                dataPointer = strtok_r(NULL, " ", &savePointer);
                 if (dataPointer != NULL)
                 {
-                    applicationSettings.irReceiveTimeout = atoi(dataPointer)*1000;
-                    RemoteControl_setReceiveTimeout(RemoteControl_Medium_868Mhz, applicationSettings.irReceiveTimeout);
+                    applicationSettings.radio868ReceiveTimeout = atoi(dataPointer)*1000;
+                    RemoteControl_setReceiveTimeout(RemoteControl_Medium_868Mhz, applicationSettings.radio868ReceiveTimeout);
                     printAcknowledgement();
                     return;
                 }
@@ -693,11 +734,11 @@ void processCommand(char *buffer)
             else if (compareExtendedCommand("sendTimeout",dataPointer))
             {
 
-                dataPointer = strtok(NULL," ");
+                dataPointer = strtok_r(NULL, " ", &savePointer);
                 if (dataPointer != NULL)
                 {
-                    applicationSettings.irSendTimeout = atoi(dataPointer)*1000;
-                    RemoteControl_setSendTimeout(RemoteControl_Medium_868Mhz, applicationSettings.irSendTimeout);
+                    applicationSettings.radio868SendTimeout = atoi(dataPointer)*1000;
+                    RemoteControl_setSendTimeout(RemoteControl_Medium_868Mhz, applicationSettings.radio868SendTimeout);
                     printAcknowledgement();
                     return;
                 }
@@ -710,11 +751,11 @@ void processCommand(char *buffer)
             else if (compareExtendedCommand("count",dataPointer))
             {
 
-                dataPointer = strtok(NULL," ");
+                dataPointer = strtok_r(NULL, " ", &savePointer);
                 if (dataPointer != NULL)
                 {
-                    applicationSettings.irRepeatCount = atoi(dataPointer);
-                    RemoteControl_setRepeatCount(RemoteControl_Medium_868Mhz, applicationSettings.irRepeatCount);
+                    applicationSettings.radio868RepeatCount = atoi(dataPointer);
+                    RemoteControl_setRepeatCount(RemoteControl_Medium_868Mhz, applicationSettings.radio868RepeatCount);
                     printAcknowledgement();
                     return;
                 }
@@ -738,7 +779,7 @@ void processCommand(char *buffer)
     }
     else if (compareBaseCommand("get", dataPointer))            // starting a get command
     {
-        dataPointer = strtok(NULL," ");
+        dataPointer = strtok_r(NULL, " ", &savePointer);
         if (dataPointer == NULL)
         {
             printUnknownCommand();
@@ -747,7 +788,7 @@ void processCommand(char *buffer)
         else if (compareExtendedCommand("wlan",dataPointer))
         {
             // get wlan
-            dataPointer = strtok(NULL," ");
+            dataPointer = strtok_r(NULL, " ", &savePointer);
             if (dataPointer == NULL)
             {
                 printUnknownCommand();
@@ -816,7 +857,7 @@ void processCommand(char *buffer)
         else if (compareExtendedCommand("ir",dataPointer))
         {
             // set ir
-            dataPointer = strtok(NULL," ");
+            dataPointer = strtok_r(NULL, " ", &savePointer);
             if (dataPointer == NULL)
             {
                 printUnknownCommand();
@@ -846,6 +887,72 @@ void processCommand(char *buffer)
                 return;
             }
         }
+        else if (compareExtendedCommand("433",dataPointer))
+        {
+            // set ir
+            dataPointer = strtok_r(NULL, " ", &savePointer);
+            if (dataPointer == NULL)
+            {
+                printUnknownCommand();
+                return;
+            }
+            else if (compareExtendedCommand("receiveTimeout",dataPointer))
+            {
+                printfData("%u\r", applicationSettings.radio433ReceiveTimeout/1000);
+                printAcknowledgement();
+                return;
+            }
+            else if (compareExtendedCommand("sendTimeout",dataPointer))
+            {
+                printfData("%u\r", applicationSettings.radio433SendTimeout/1000);
+                printAcknowledgement();
+                return;
+            }
+            else if (compareExtendedCommand("count",dataPointer))
+            {
+                printfData("%u\r", applicationSettings.radio868RepeatCount);
+                printAcknowledgement();
+                return;
+            }
+            else
+            {
+                printUnknownCommand();
+                return;
+            }
+        }
+        else if (compareExtendedCommand("868",dataPointer))
+        {
+            // set ir
+            dataPointer = strtok_r(NULL, " ", &savePointer);
+            if (dataPointer == NULL)
+            {
+                printUnknownCommand();
+                return;
+            }
+            else if (compareExtendedCommand("receiveTimeout",dataPointer))
+            {
+                printfData("%u\r", applicationSettings.radio868ReceiveTimeout/1000);
+                printAcknowledgement();
+                return;
+            }
+            else if (compareExtendedCommand("sendTimeout",dataPointer))
+            {
+                printfData("%u\r", applicationSettings.radio868SendTimeout/1000);
+                printAcknowledgement();
+                return;
+            }
+            else if (compareExtendedCommand("count",dataPointer))
+            {
+                printfData("%u\r", applicationSettings.radio868RepeatCount);
+                printAcknowledgement();
+                return;
+            }
+            else
+            {
+                printUnknownCommand();
+                return;
+            }
+        }
         else
         {
             printUnknownCommand();
@@ -855,7 +962,7 @@ void processCommand(char *buffer)
     else if (compareBaseCommand("start", dataPointer))
     {
         // starting a start command
-        dataPointer = strtok(NULL," ");
+        dataPointer = strtok_r(NULL, " ", &savePointer);
         if (dataPointer == NULL)
         {
             printUnknownCommand();
@@ -864,7 +971,7 @@ void processCommand(char *buffer)
         else if (compareExtendedCommand("wlan",dataPointer))
         {
             // set wlan
-            dataPointer = strtok(NULL," ");
+            dataPointer = strtok_r(NULL, " ", &savePointer);
             if (dataPointer == NULL)
             {
                 printUnknownCommand();
@@ -910,7 +1017,7 @@ void processCommand(char *buffer)
     else if (compareBaseCommand("save", dataPointer))
     {
         // starting a save command
-        dataPointer = strtok(NULL," ");
+        dataPointer = strtok_r(NULL, " ", &savePointer);
         if (dataPointer == NULL)
         {
             printUnknownCommand();
@@ -936,7 +1043,7 @@ void processCommand(char *buffer)
     }
     else if (compareBaseCommand("test", dataPointer))
     {
-        dataPointer = strtok(NULL," ");
+        dataPointer = strtok_r(NULL, " ", &savePointer);
         if (dataPointer == NULL)
         {
             printUnknownCommand();
@@ -945,6 +1052,10 @@ void processCommand(char *buffer)
         else if (compareExtendedCommand("wifly",dataPointer))
         {
             startState(ApplicationState_WiFlyTest);
+        }
+        else if (compareExtendedCommand("response",dataPointer))
+        {
+            printfData(WiFly_getAdhoc());
         }
         else
         {
@@ -1067,31 +1178,50 @@ void ledTask(void)
     
     if ((activeConnections & NetworkConnection))
     {
-        Led_set(1);  // Green LED
+        Led_set(LedGreen);  // Green LED
     }
     else
     {
         if (applicationSettings.networkMode == NetworkMode_Adhoc)
         {
-            Led_toggle(1);   // Green LED
+            Led_toggle(LedGreen);   // Green LED
+            Led_clear(LedRed);
         }
         else if (applicationSettings.networkMode == NetworkMode_Infrastructure)
         {
-            if (Led_read(1))
+            if (Led_read(LedGreen))
             {
-                Led_clear(1);
-                Led_set(3);
+                Led_clear(LedGreen);
+                Led_set(LedRed);
             }
             else
             {
-                Led_clear(3);
-                Led_set(1);
+                Led_clear(LedRed);
+                Led_set(LedGreen);
             }
             
         }
+        else if (applicationSettings.networkMode == NetworkMode_None)
+        {
+            if (Led_read(LedGreen))
+            {
+                Led_clear(LedGreen);
+                Led_set(LedYellow);
+            }
+            else if (Led_read(LedYellow))
+            {
+                Led_clear(LedYellow);
+                Led_set(LedRed);
+            }
+            else
+            {
+                Led_clear(LedRed);
+                Led_set(LedGreen);
+            }
+        }
     }
     
-    Led_clear(2);    // clear the yellow led in case it is still running
+    Led_clear(LedYellow);    // clear the yellow led in case it is still running
 }
 
 void buttonTask(void )
@@ -1105,14 +1235,14 @@ void buttonTask(void )
             if (applicationSettings.networkMode == NetworkMode_Adhoc)
             {
                 startWlanInfrastructureMode(&applicationSettings);
-                applicationSettings.networkMode = NetworkMode_Infrastructure;
-                Iap_saveApplicationSettings(&applicationSettings, sizeof(ApplicationSettings));
             }
             else if (applicationSettings.networkMode == NetworkMode_Infrastructure)
             {
                 startWlanAdhocMode();
-                applicationSettings.networkMode = NetworkMode_Adhoc;
-                Iap_saveApplicationSettings(&applicationSettings, sizeof(ApplicationSettings));
+            }
+            else
+            {
+                startWlanAdhocMode();
             }
         }
     }

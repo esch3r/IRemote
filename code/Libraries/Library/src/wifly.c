@@ -526,9 +526,16 @@ int8 WiFly_setQPower(uint8 value)
     return setCommand(commandBuffer);
 }
 
-void WiFly_getAdhoc()
+char* WiFly_getAdhoc()
 {
-    Uart_printf(wiflyUart, "get a\r");
+    char tmpResponse[WIFLY_RESPONSE_BUFFER_SIZE];
+    
+    WiFly_actionEnterCommandMode(false);
+    setCommand("get a\r");
+    strncpy(tmpResponse, responseBuffer, WIFLY_RESPONSE_BUFFER_SIZE);
+    WiFly_actionExitCommandMode();
+    strncpy(responseBuffer, tmpResponse, WIFLY_RESPONSE_BUFFER_SIZE);
+    return &responseBuffer;
 }
 
 void WiFly_getBroadcast()

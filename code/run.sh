@@ -10,7 +10,7 @@ openocd -f DbgCfg/LPC1758_OOCD_CMARM.cfg &
 
 sleep 1
 #run telnet
-{ echo "halt"; echo "flash erase_sector 0 0 26"; echo "flash write_image firmware.bin 0"; sleep 12; echo "shutdown"; } | telnet localhost 4444
+{ echo "halt"; echo "flash erase_sector 0 0 26"; echo "flash write_image firmware.bin 0"; sleep 12; echo "shutdown"; } | telnet 127.0.0.1 4444
 #sleep 1
 
 #kill openocd session again

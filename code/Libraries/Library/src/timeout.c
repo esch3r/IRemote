@@ -3,7 +3,7 @@
 #define TIMEOUT_TIMER_KHZ       1
 #define TIMEOUT_TIMER_INTERVAL  ~(uint32)0
 
-uint8 timerId;
+volatile uint8 globalTimerId;
 
 int8 Timeout_initialize(Timer timerId)
 {
@@ -51,6 +51,7 @@ int8 Timeout_initialize(Timer timerId)
     if (timerId == -1)
         return -1;
     
+    globalTimerId = timerId;
     Timer_start(timerId);
     
     return 0;
@@ -58,10 +59,10 @@ int8 Timeout_initialize(Timer timerId)
 
 uint32 Timeout_msecs(void)
 {
-    return Timer_counterValue(timerId);
+    return Timer_counterValue(globalTimerId);
 }
 
 void Timeout_reset(void)
 {
-    Timer_reset(timerId);
+    Timer_reset(globalTimerId);
 }

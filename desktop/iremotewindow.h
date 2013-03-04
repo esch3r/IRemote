@@ -115,6 +115,18 @@ private slots:
 
     void on_hideCommandTableButton_clicked();
 
+    void on_setRadio433Button_clicked();
+
+    void on_setRadio868Button_clicked();
+
+    void on_settingsReadButton_clicked();
+
+    void on_getIrButton_clicked();
+
+    void on_getRadio433Button_clicked();
+
+    void on_getRadio868Button_clicked();
+
 private:
     Ui::IRemoteWindow *ui;
 

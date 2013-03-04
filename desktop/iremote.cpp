@@ -278,9 +278,347 @@ void IRemote::setIrSendTimeout(int ms)
 
 void IRemote::setRadio433Count(int times)
 {
+    QueueCommand command;
+    command.command = QString("set 4 c %1\r").arg(times).toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
 }
 
-void IRemote::actionRun()
+void IRemote::setRadio433ReceiveTimeout(int ms)
+{
+    QueueCommand command;
+    command.command = QString("set 4 r %1\r").arg(ms).toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+}
+
+void IRemote::setRadio433SendTimeout(int ms)
+{
+    QueueCommand command;
+    command.command = QString("set 4 s %1\r").arg(ms).toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+}
+
+void IRemote::setRadio868Count(int times)
+{
+    QueueCommand command;
+    command.command = QString("set 8 c %1\r").arg(times).toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+}
+
+void IRemote::setRadio868ReceiveTimeout(int ms)
+{
+    QueueCommand command;
+    command.command = QString("set 8 r %1\r").arg(ms).toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+}
+
+void IRemote::setRadio868SendTimeout(int ms)
+{
+    QueueCommand command;
+    command.command = QString("set 8 s %1\r").arg(ms).toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+}
+
+QString IRemote::getWlanSsid()
+{
+    QueueCommand command;
+    command.command = QString("get w s\r").toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+    waitForQueue();
+
+    return receivedData;
+}
+
+QString IRemote::getWlanPhrase()
+{
+    QueueCommand command;
+    command.command = QString("get w p\r").toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+    waitForQueue();
+
+    return receivedData;
+}
+
+QString IRemote::getWlanKey()
+{
+    QueueCommand command;
+    command.command = QString("get w k\r").toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+    waitForQueue();
+
+    return receivedData;
+}
+
+QString IRemote::getWlanHostname()
+{
+    QueueCommand command;
+    command.command = QString("get w h\r").toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+    waitForQueue();
+
+    return receivedData;
+}
+
+IRemote::WlanAuthType IRemote::getWlanAuth()
+{
+    QueueCommand command;
+    command.command = QString("get w a\r").toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+    waitForQueue();
+
+    return static_cast<WlanAuthType>(receivedData.toInt());
+}
+
+IRemote::IpDhcpMethod IRemote::getWlanDhcpMethod()
+{
+    QueueCommand command;
+    command.command = QString("get w d\r").toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+    waitForQueue();
+
+    return static_cast<IpDhcpMethod>(receivedData.toInt());
+}
+
+QString IRemote::getWlanIpAddress()
+{
+    QueueCommand command;
+    command.command = QString("get w i\r").toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+    waitForQueue();
+
+    return receivedData;
+}
+
+QString IRemote::getWlanSubnetMask()
+{
+    QueueCommand command;
+    command.command = QString("get w m\r").toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+    waitForQueue();
+
+    return receivedData;
+}
+
+QString IRemote::getWlanGateway()
+{
+    QueueCommand command;
+    command.command = QString("get w g\r").toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+    waitForQueue();
+
+    return receivedData;
+}
+
+int IRemote::getIrCount()
+{
+    QueueCommand command;
+    command.command = QString("get i c\r").toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+    waitForQueue();
+
+    return receivedData.toInt();
+}
+
+int IRemote::getIrReceiveTimeout()
+{
+    QueueCommand command;
+    command.command = QString("get i r\r").toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+    waitForQueue();
+
+    return receivedData.toInt();
+}
+
+int IRemote::getIrSendTimeout()
+{
+    QueueCommand command;
+    command.command = QString("get i s\r").toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+    waitForQueue();
+
+    return receivedData.toInt();
+}
+
+int IRemote::getRadio433Count()
+{
+    QueueCommand command;
+    command.command = QString("get 4 c\r").toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+    waitForQueue();
+
+    return receivedData.toInt();
+}
+
+int IRemote::getRadio433ReceiveTimeout()
+{
+    QueueCommand command;
+    command.command = QString("get 4 r\r").toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+    waitForQueue();
+
+    return receivedData.toInt();
+}
+
+int IRemote::getRadio433SendTimeout()
+{
+    QueueCommand command;
+    command.command = QString("get 4 s\r").toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+    waitForQueue();
+
+    return receivedData.toInt();
+}
+
+int IRemote::getRadio868Count()
+{
+    QueueCommand command;
+    command.command = QString("get 8 c\r").toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+    waitForQueue();
+
+    return receivedData.toInt();
+}
+
+int IRemote::getRadio868ReceiveTimeout()
+{
+    QueueCommand command;
+    command.command = QString("get 8 r\r").toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+    waitForQueue();
+
+    return receivedData.toInt();
+}
+
+int IRemote::getRadio868SendTimeout()
+{
+    QueueCommand command;
+    command.command = QString("get 8 s\r").toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+    waitForQueue();
+
+    return receivedData.toInt();
+}
+
+void IRemote::run()
 {
     QueueCommand command;
     command.command = "run\r";
@@ -292,7 +630,7 @@ void IRemote::actionRun()
     startQueue();
 }
 
-void IRemote::actionRun(RemoteCommand irCommand)
+void IRemote::run(RemoteCommand irCommand)
 {
     QByteArray data;
 
@@ -310,7 +648,7 @@ void IRemote::actionRun(RemoteCommand irCommand)
     startQueue();
 }
 
-void IRemote::actionCaptureIr()
+void IRemote::captureIr()
 {
     QueueCommand command;
     command.command = "capture ir\r";
@@ -324,7 +662,7 @@ void IRemote::actionCaptureIr()
     pauseKeepAlive(m_responseTimeout*20);   // let there be enough time to capture signals
 }
 
-void IRemote::actionCaptureRadio433MHz()
+void IRemote::captureRadio433MHz()
 {
     QueueCommand command;
     command.command = "capture radio433\r";
@@ -338,7 +676,7 @@ void IRemote::actionCaptureRadio433MHz()
     pauseKeepAlive(m_responseTimeout*20);   // let there be enough time to capture signals
 }
 
-void IRemote::actionCaptureRadio868MHz()
+void IRemote::captureRadio868MHz()
 {
     QueueCommand command;
     command.command = "capture radio868\r";
@@ -371,6 +709,30 @@ void IRemote::startWlanInfrastructure()
     command.response = "ACK";
     command.timeout = m_responseTimeout;
     command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+}
+
+void IRemote::saveConfig()
+{
+    QueueCommand command;
+    command.command = "save c\r";
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+}
+
+void IRemote::sendKeepAlive()
+{
+    QueueCommand command;
+    command.command = "alive\r";
+    command.response = "yes";
+    command.timeout = m_responseTimeout;
+    command.type = KeepAliveQueueCommandType;
 
     commandQueue.enqueue(command);
     startQueue();
@@ -455,6 +817,8 @@ void IRemote::incomingByte(char byte)
         responseTimer->stop();
         responseTimer->start();
 
+        dataBuffer.append(byte);    // save the received data
+
         if (byte != responseString.at(responseOffset))
         {
             responseOffset = 0;
@@ -469,6 +833,12 @@ void IRemote::incomingByte(char byte)
             responseOffset++;
         else    // matched
         {
+            // clear the data buffer
+            dataBuffer.chop(responseString.length()); // remove the response message from the data
+            dataBuffer.append('\0');
+            receivedData = QString(dataBuffer);
+            dataBuffer.clear();
+
             responseTimer->stop();
             waitingForRespose = false;
             responseReceived(currentCommand.type);
@@ -492,7 +862,9 @@ void IRemote::incomingByte(char byte)
 void IRemote::tcpSocketConnected()
 {
     activeConnections |= NetworkConnection;
+
     emit networkConnected();
+    sendKeepAlive();
 
     qDebug() << "IRemote: connected to network device";
 }
@@ -532,14 +904,7 @@ void IRemote::keepAliveTimerTick()
     }
     else
     {
-        QueueCommand command;
-        command.command = "alive\r";
-        command.response = "yes";
-        command.timeout = m_responseTimeout;
-        command.type = KeepAliveQueueCommandType;
-
-        commandQueue.enqueue(command);
-        startQueue();
+        sendKeepAlive();
     }
 }
 
@@ -661,6 +1026,8 @@ void IRemote::startQueue()
     if (isQueueRunning())
         return;
 
+    dataBuffer.clear();     // if there is something in the buffer, just clear it
+
     doQueue();
 
     queueStarted();
@@ -688,6 +1055,12 @@ void IRemote::doQueue()
 void IRemote::endQueue()
 {
     setQueueRunning(false);
+}
+
+void IRemote::waitForQueue()
+{
+    while (m_queueRunning)
+        qApp->processEvents();
 }
 
 void IRemote::pauseKeepAlive(int msecs)
