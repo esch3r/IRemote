@@ -1055,7 +1055,10 @@ void processCommand(char *buffer)
         }
         else if (compareExtendedCommand("response",dataPointer))
         {
-            printfData(WiFly_getAdhoc());
+            WiFly_actionEnterCommandMode(false);
+            WiFly_getAdhoc();
+            printfData(WiFly_getResponse());
+            WiFly_actionExitCommandMode();
         }
         else
         {

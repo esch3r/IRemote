@@ -631,6 +631,7 @@ void IRemoteWindow::networkConnected()
     on_getIrButton_clicked();
     on_getRadio433Button_clicked();
     on_getRadio868Button_clicked();
+    on_settingsReadButton_clicked();
 }
 
 void IRemoteWindow::networkDisconnected()
@@ -897,6 +898,54 @@ void IRemoteWindow::on_hideCommandTableButton_clicked()
 void IRemoteWindow::on_settingsReadButton_clicked()
 {
     ui->wlanSsidEdit->setText(iremote->getWlanSsid());
+    ui->wlanHostnameEdit->setText(iremote->getWlanHostname());
+    ui->subnetMaskEdit->setText(iremote->getWlanSubnetMask());
+    ui->gatewayEdit->setText(iremote->getWlanGateway());
+    ui->ipAddressEdit->setText(iremote->getWlanIpAddress());
+
+    IRemote::WlanAuthType auth = iremote->getWlanAuth();
+
+    switch (auth)
+    {
+    case IRemote::OpenAuthType: ui->wlanSecurityCombo->setCurrentIndex(0);
+        break;
+    case IRemote::WEP128AuthType: ui->wlanSecurityCombo->setCurrentIndex(1);
+        break;
+    case IRemote::WPA1AuthType: ui->wlanSecurityCombo->setCurrentIndex(2);
+        break;
+    case IRemote::MixedWPA1AndWPA2PSKAuthType: ui->wlanSecurityCombo->setCurrentIndex(3);
+        break;
+    case IRemote::WPA2PSKAuthType: ui->wlanSecurityCombo->setCurrentIndex(4);
+        break;
+    case IRemote::AdhocAuthType: ui->wlanSecurityCombo->setCurrentIndex(5);
+        break;
+    case IRemote::WPE64AuthType: ui->wlanSecurityCombo->setCurrentIndex(6);
+        break;
+    }
+
+    if ((auth == IRemote::WEP128AuthType) ||
+        (auth == IRemote::WPE64AuthType))
+    {
+        ui->wlanPassphraseEdit->setText(iremote->getWlanKey());
+    }
+    else if ((auth == IRemote::WPA1AuthType) ||
+             (auth == IRemote::MixedWPA1AndWPA2PSKAuthType) ||
+             (auth == IRemote::WPA2PSKAuthType))
+    {
+        ui->wlanPassphraseEdit->setText(iremote->getWlanPhrase());
+    }
+
+    IRemote::IpDhcpMethod dhcpMethod = iremote->getWlanDhcpMethod();
+
+    switch (dhcpMethod)
+    {
+    case IRemote::DhcpOnMethod: ui->ipMethodCombo->setCurrentIndex(0);
+        break;
+    case IRemote::DhcpOffMethod: ui->ipMethodCombo->setCurrentIndex(1);
+        break;
+    case IRemote::AutoIpMethod: ui->ipMethodCombo->setCurrentIndex(2);
+        break;
+    }
 }
 
 void IRemoteWindow::on_getIrButton_clicked()

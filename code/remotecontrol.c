@@ -154,8 +154,7 @@ void RemoteControl_stopCapture(void)
         Rfm12_ookClear(Rfm12_1);    // workaround
         Gpio_disableInterrupt(Radio868MhzCapturePort, Radio868MhzCapturePin);
     }
-    
-    Led_blink2(Led3);
+    Led_clear(Led2);
 }
 
 void captureFunction(void)

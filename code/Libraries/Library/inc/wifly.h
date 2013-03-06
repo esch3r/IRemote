@@ -394,60 +394,60 @@ applied upon power up and removed upon power down or sleep.*/
 int8 WiFly_setQPower(uint8 value);
 
 /** Display all adhoc settings.*/
-char* WiFly_getAdhoc();
+int8 WiFly_getAdhoc();
 /** Will display the broadcast UPD address, port and interval */
-void WiFly_getBroadcast();
+int8 WiFly_getBroadcast();
 /** Display comm. settings.*/
-void WiFly_getCom();
+int8 WiFly_getCom();
 /** Display DNS settings.*/
-void WiFly_getDns();
+int8 WiFly_getDns();
 /** Displays all configuration settings, useful for debug.*/
-void WiFly_getEverything();
+int8 WiFly_getEverything();
 /** Display FTP settings.*/
-void WiFly_getFtp();
+int8 WiFly_getFtp();
 /** Display IP address and port number settings. Optional parameter just returns the
 current IP address value.*/
-void WiFly_getIp(uint8 a);
+int8 WiFly_getIp(bool a);
 /** Display the device MAC address.*/
-void WiFly_getMac();
+int8 WiFly_getMac();
 /** Display the option settings like device ID */
-void WiFly_getOption();
+int8 WiFly_getOption();
 /** Display system settings, sleep, wake timers, etc.*/
-void WiFly_getSys();
+int8 WiFly_getSys();
 /** Display the time server UDP address and port number.*/
-void WiFly_getTime();
+int8 WiFly_getTime();
 /** Display the ssid, chan, and other wlan settings.*/
-void WiFly_getWlan();
+int8 WiFly_getWlan();
 /** Display the UART settings.*/
-void WiFly_getUart();
+int8 WiFly_getUart();
 /** Return the software release version */
-void WiFly_getVer();
+int8 WiFly_getVer();
 
 /** Displays current battery voltage, (only valid for Roving battery powered product like the
 RN-370 and temperature sensors and the ISENSOR-CB) */
-void WiFly_showBattery();
+int8 WiFly_showBattery();
 /** Displays connection status in this HEX format: 8XYZ */
-void WiFly_showConnection();
+int8 WiFly_showConnection();
 /** Displays GPIO pin levels status in this HEX format: 8ABC
 Example: show i returns 8103 indicates GPIO 0, 1 and 8 are HIGH.*/
-void WiFly_showIo();
+int8 WiFly_showIo();
 /** Displays current network status, association, authentication, etc. Optional parameter
 displays only the MAC address of the AP currently associated.*/
-void WiFly_showNet(uint8 n);
+int8 WiFly_showNet(uint8 n);
 /** Displays current last received signal strength.*/
-void WiFly_showRssi();
+int8 WiFly_showRssi();
 /** Displays current statistics, packet rx/tx counters, etc.*/
-void WiFly_showStats();
+int8 WiFly_showStats();
 /** Displays number of seconds since last powerup or reboot*/
-void WiFly_showTime();
+int8 WiFly_showTime();
 /** Display the value of the an analog interface pin from 0 to 7. The value returned will be in
 the format 8xxxxx where xxxxx is voltage in microvolts sampled on the channel you
 request with the 8 in front as a start marker.*/
-void WiFly_showQ(uint8 num);
+int8 WiFly_showQ(uint8 num);
 /** Displays multiple analog interface values at once. The channels displayed are
 controlled by a bit mask, which is proceeded by a 0x1xx where xx mask is the bit mask of
 the channels.*/
-void WiFly_showQ0x1(uint8 mask);
+int8 WiFly_showQ0x1(uint8 mask);
 
 /** Enter command mode. X characters are PASSED until this exact sequence
 is seen. If any bytes are seen before these chars, or after these chars, in a
@@ -512,7 +512,7 @@ For example, “scan 30” reduces the total scan time down to about 1
 second. This command also works in Adhoc mode. If the optional P
 parameter is entered, the module will perform a passive scan, and list all
 APs that are seen in passive mode.*/
-void WiFly_actionScan(uint32 time, uint8 passive);
+void WiFly_actionScan(uint32 time, bool passive);
 /** Puts the module to sleep mode. The module can come out of sleep mode
 by either sending characters over the uart or by using the wake timer.*/
 void WiFly_actionSleep();
