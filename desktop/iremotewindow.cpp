@@ -325,6 +325,152 @@ void IRemoteWindow::refreshProfiles()
     }
 }
 
+void IRemoteWindow::getConfig()
+{
+    iremote->getIrCount();  // Remove the HELLO message
+
+    // Get IR Config
+    ui->irCountSpin->setValue(iremote->getIrCount());
+    ui->irReceiveTimeoutSpin->setValue(iremote->getIrReceiveTimeout());
+    ui->irSendTimeoutSpin->setValue(iremote->getIrSendTimeout());
+
+    // Get 433MHz Config
+    ui->radio433CountSpin->setValue(iremote->getRadio433Count());
+    ui->radio433ReceiveTimeoutSpin->setValue(iremote->getRadio433ReceiveTimeout());
+    ui->radio433SendTimeoutSpin->setValue(iremote->getRadio433SendTimeout());
+
+    // Get 868MHz Config
+    ui->radio868CountSpin->setValue(iremote->getRadio868Count());
+    ui->radio868ReceiveTimeoutSpin->setValue(iremote->getRadio433ReceiveTimeout());
+    ui->radio868SendTimeoutSpin->setValue(iremote->getRadio868SendTimeout());
+
+    // Get WLAN Config
+    ui->wlanSsidEdit->setText(iremote->getWlanSsid());
+    ui->wlanHostnameEdit->setText(iremote->getWlanHostname());
+    ui->subnetMaskEdit->setText(iremote->getWlanSubnetMask());
+    ui->gatewayEdit->setText(iremote->getWlanGateway());
+    ui->ipAddressEdit->setText(iremote->getWlanIpAddress());
+
+    IRemote::WlanAuthType auth = iremote->getWlanAuth();
+
+    switch (auth)
+    {
+    case IRemote::OpenAuthType: ui->wlanSecurityCombo->setCurrentIndex(0);
+        break;
+    case IRemote::WEP128AuthType: ui->wlanSecurityCombo->setCurrentIndex(1);
+        break;
+    case IRemote::WPA1AuthType: ui->wlanSecurityCombo->setCurrentIndex(2);
+        break;
+    case IRemote::MixedWPA1AndWPA2PSKAuthType: ui->wlanSecurityCombo->setCurrentIndex(3);
+        break;
+    case IRemote::WPA2PSKAuthType: ui->wlanSecurityCombo->setCurrentIndex(4);
+        break;
+    case IRemote::AdhocAuthType: ui->wlanSecurityCombo->setCurrentIndex(5);
+        break;
+    case IRemote::WPE64AuthType: ui->wlanSecurityCombo->setCurrentIndex(6);
+        break;
+    }
+
+    if ((auth == IRemote::WEP128AuthType) ||
+        (auth == IRemote::WPE64AuthType))
+    {
+        ui->wlanPassphraseEdit->setText(iremote->getWlanKey());
+    }
+    else if ((auth == IRemote::WPA1AuthType) ||
+             (auth == IRemote::MixedWPA1AndWPA2PSKAuthType) ||
+             (auth == IRemote::WPA2PSKAuthType))
+    {
+        ui->wlanPassphraseEdit->setText(iremote->getWlanPhrase());
+    }
+
+    IRemote::IpDhcpMethod dhcpMethod = iremote->getWlanDhcpMethod();
+
+    switch (dhcpMethod)
+    {
+    case IRemote::DhcpOnMethod: ui->ipMethodCombo->setCurrentIndex(0);
+        break;
+    case IRemote::DhcpOffMethod: ui->ipMethodCombo->setCurrentIndex(1);
+        break;
+    case IRemote::AutoIpMethod: ui->ipMethodCombo->setCurrentIndex(2);
+        break;
+    }
+}
+
+void IRemoteWindow::setConfig()
+{
+    // Set IR Config
+    iremote->setIrCount(ui->irCountSpin->value());
+    iremote->setIrReceiveTimeout(ui->irReceiveTimeoutSpin->value());
+    iremote->setIrSendTimeout(ui->irSendTimeoutSpin->value());
+
+    // Set 433MHz Config
+    iremote->setRadio433Count(ui->radio433CountSpin->value());
+    iremote->setRadio433ReceiveTimeout(ui->radio433ReceiveTimeoutSpin->value());
+    iremote->setRadio433SendTimeout(ui->radio433SendTimeoutSpin->value());
+
+    // Set 868MHz Config
+    iremote->setRadio868Count(ui->radio868CountSpin->value());
+    iremote->setRadio868ReceiveTimeout(ui->radio868ReceiveTimeoutSpin->value());
+    iremote->setRadio868SendTimeout(ui->radio868SendTimeoutSpin->value());
+
+    // Set WLAN Config
+    IRemote::WlanAuthType authType = IRemote::OpenAuthType;
+
+    switch (ui->wlanSecurityCombo->currentIndex())
+    {
+    case 0: authType = IRemote::OpenAuthType;
+        break;
+    case 1: authType = IRemote::WEP128AuthType;
+        break;
+    case 2: authType = IRemote::WPA1AuthType;
+        break;
+    case 3: authType = IRemote::MixedWPA1AndWPA2PSKAuthType;
+        break;
+    case 4: authType = IRemote::WPA2PSKAuthType;
+        break;
+    case 5: authType = IRemote::AdhocAuthType;
+        break;
+    case 6: authType = IRemote::WPE64AuthType;
+        break;
+    }
+    iremote->setWlanSsid(ui->wlanSsidEdit->text());
+    iremote->setWlanAuth(authType);
+    iremote->setWlanHostname(ui->wlanHostnameEdit->text());
+    if ((authType == IRemote::WEP128AuthType) ||
+            (authType == IRemote::WPE64AuthType))
+    {
+        iremote->setWlanKey(ui->wlanPassphraseEdit->text());
+    }
+    else if ((authType == IRemote::WPA1AuthType) ||
+             (authType == IRemote::MixedWPA1AndWPA2PSKAuthType) ||
+             (authType == IRemote::WPA2PSKAuthType))
+    {
+        iremote->setWlanPhrase(ui->wlanPassphraseEdit->text());
+    }
+
+    IRemote::IpDhcpMethod dhcpMethod = IRemote::DhcpOnMethod;
+
+    switch (ui->ipMethodCombo->currentIndex())
+    {
+    case 0: dhcpMethod = IRemote::DhcpOnMethod;
+        break;
+    case 1: dhcpMethod = IRemote::DhcpOffMethod;
+        break;
+    case 2: dhcpMethod = IRemote::AutoIpMethod;
+        break;
+    }
+    iremote->setWlanDhcpMethod(dhcpMethod);
+
+    if (dhcpMethod == IRemote::DhcpOffMethod)
+    {
+        iremote->setWlanIpAddress(ui->ipAddressEdit->text());
+        iremote->setWlanSubnetMask(ui->subnetMaskEdit->text());
+        iremote->setWlanGateway(ui->gatewayEdit->text());
+    }
+
+    iremote->saveConfig();
+}
+
 GraphicButton *IRemoteWindow::createButton(QString name, QRectF rect, QPointF pos, int id)
 {
     GraphicButton *item = new GraphicButton;
@@ -509,11 +655,12 @@ void IRemoteWindow::initializeRemoteCommandTable()
 {
     QStringList labels;
 
-    labels << tr("Name") << tr("Medium");
-    ui->remoteCommandTable->setColumnCount(2);
+    labels << tr("Name") << tr("Medium") << tr("Comment");
+    ui->remoteCommandTable->setColumnCount(3);
     ui->remoteCommandTable->setHorizontalHeaderLabels(labels);
     ui->remoteCommandTable->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
     ui->remoteCommandTable->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+    ui->remoteCommandTable->horizontalHeader()->setResizeMode(2, QHeaderView::Stretch);
 }
 
 void IRemoteWindow::on_tableWidget_cellChanged(int row, int column)
@@ -628,10 +775,7 @@ void IRemoteWindow::networkConnected()
     ui->networkStatusFrame->setStyleSheet("background-color: green;");
     ui->networkConnectButton->setText(tr("Disconnect"));
 
-    on_getIrButton_clicked();
-    on_getRadio433Button_clicked();
-    on_getRadio868Button_clicked();
-    on_settingsReadButton_clicked();
+    getConfig();
 }
 
 void IRemoteWindow::networkDisconnected()
@@ -665,72 +809,20 @@ void IRemoteWindow::on_runButton_clicked()
     iremote->run(command);
 }
 
-void IRemoteWindow::on_settingsSubmitButton_clicked()
-{
-    IRemote::WlanAuthType authType = IRemote::OpenAuthType;
-
-    switch (ui->wlanSecurityCombo->currentIndex())
-    {
-    case 0: authType = IRemote::OpenAuthType;
-        break;
-    case 1: authType = IRemote::WEP128AuthType;
-        break;
-    case 2: authType = IRemote::WPA1AuthType;
-        break;
-    case 3: authType = IRemote::MixedWPA1AndWPA2PSKAuthType;
-        break;
-    case 4: authType = IRemote::WPA2PSKAuthType;
-        break;
-    case 5: authType = IRemote::AdhocAuthType;
-        break;
-    case 6: authType = IRemote::WPE64AuthType;
-        break;
-    }
-    iremote->setWlanSsid(ui->wlanSsidEdit->text());
-    iremote->setWlanAuth(authType);
-    iremote->setWlanHostname(ui->wlanHostnameEdit->text());
-    if ((authType == IRemote::WEP128AuthType) ||
-            (authType == IRemote::WPE64AuthType))
-    {
-        iremote->setWlanKey(ui->wlanPassphraseEdit->text());
-    }
-    else if ((authType == IRemote::WPA1AuthType) ||
-             (authType == IRemote::MixedWPA1AndWPA2PSKAuthType) ||
-             (authType == IRemote::WPA2PSKAuthType))
-    {
-        iremote->setWlanPhrase(ui->wlanPassphraseEdit->text());
-    }
-
-    IRemote::IpDhcpMethod dhcpMethod = IRemote::DhcpOnMethod;
-
-    switch (ui->ipMethodCombo->currentIndex())
-    {
-    case 0: dhcpMethod = IRemote::DhcpOnMethod;
-        break;
-    case 1: dhcpMethod = IRemote::DhcpOffMethod;
-        break;
-    case 2: dhcpMethod = IRemote::AutoIpMethod;
-        break;
-    }
-    iremote->setWlanDhcpMethod(dhcpMethod);
-
-    if (dhcpMethod == IRemote::DhcpOffMethod)
-    {
-        iremote->setWlanIpAddress(ui->ipAddressEdit->text());
-        iremote->setWlanSubnetMask(ui->subnetMaskEdit->text());
-        iremote->setWlanGateway(ui->gatewayEdit->text());
-    }
-
-    iremote->saveConfig();
-}
-
 void IRemoteWindow::on_ipMethodCombo_currentIndexChanged(int index)
 {
     bool enabled = !((index == 0) || (index == 2));    //DHCP or Auto-Ip
 
     ui->ipAddressEdit->setEnabled(enabled);
+    ui->ipAddressLabel->setEnabled(enabled);
     ui->subnetMaskEdit->setEnabled(enabled);
+    ui->subnetMaskLabel->setEnabled(enabled);
     ui->gatewayEdit->setEnabled(enabled);
+    ui->gatewayLabel->setEnabled(enabled);
+    ui->primaryDnsEdit->setEnabled(enabled);
+    ui->primaryDnsLabel->setEnabled(enabled);
+    ui->secondaryDnsEdit->setEnabled(enabled);
+    ui->secondaryDnsLabel->setEnabled(enabled);
 }
 
 void IRemoteWindow::on_profileAddButton_clicked()
@@ -839,30 +931,6 @@ void IRemoteWindow::on_flashButton_clicked()
     iremote->flashFirmware(ui->flashfileNameEdit->text());
 }
 
-void IRemoteWindow::on_setIrButton_clicked()
-{
-    iremote->setIrCount(ui->irCountSpin->value());
-    iremote->setIrReceiveTimeout(ui->irReceiveTimeoutSpin->value());
-    iremote->setIrSendTimeout(ui->irSendTimeoutSpin->value());
-    iremote->saveConfig();
-}
-
-void IRemoteWindow::on_setRadio433Button_clicked()
-{
-    iremote->setRadio433Count(ui->irCountSpin->value());
-    iremote->setRadio433ReceiveTimeout(ui->irReceiveTimeoutSpin->value());
-    iremote->setRadio433SendTimeout(ui->irSendTimeoutSpin->value());
-    iremote->saveConfig();
-}
-
-void IRemoteWindow::on_setRadio868Button_clicked()
-{
-    iremote->setRadio868Count(ui->irCountSpin->value());
-    iremote->setRadio868ReceiveTimeout(ui->irReceiveTimeoutSpin->value());
-    iremote->setRadio868SendTimeout(ui->irSendTimeoutSpin->value());
-    iremote->saveConfig();
-}
-
 void IRemoteWindow::on_remoteCommandTable_doubleClicked(const QModelIndex &index)
 {
     Q_UNUSED(index);
@@ -895,76 +963,7 @@ void IRemoteWindow::on_hideCommandTableButton_clicked()
     }
 }
 
-void IRemoteWindow::on_settingsReadButton_clicked()
+void IRemoteWindow::on_saveSettingsButton_clicked()
 {
-    ui->wlanSsidEdit->setText(iremote->getWlanSsid());
-    ui->wlanHostnameEdit->setText(iremote->getWlanHostname());
-    ui->subnetMaskEdit->setText(iremote->getWlanSubnetMask());
-    ui->gatewayEdit->setText(iremote->getWlanGateway());
-    ui->ipAddressEdit->setText(iremote->getWlanIpAddress());
-
-    IRemote::WlanAuthType auth = iremote->getWlanAuth();
-
-    switch (auth)
-    {
-    case IRemote::OpenAuthType: ui->wlanSecurityCombo->setCurrentIndex(0);
-        break;
-    case IRemote::WEP128AuthType: ui->wlanSecurityCombo->setCurrentIndex(1);
-        break;
-    case IRemote::WPA1AuthType: ui->wlanSecurityCombo->setCurrentIndex(2);
-        break;
-    case IRemote::MixedWPA1AndWPA2PSKAuthType: ui->wlanSecurityCombo->setCurrentIndex(3);
-        break;
-    case IRemote::WPA2PSKAuthType: ui->wlanSecurityCombo->setCurrentIndex(4);
-        break;
-    case IRemote::AdhocAuthType: ui->wlanSecurityCombo->setCurrentIndex(5);
-        break;
-    case IRemote::WPE64AuthType: ui->wlanSecurityCombo->setCurrentIndex(6);
-        break;
-    }
-
-    if ((auth == IRemote::WEP128AuthType) ||
-        (auth == IRemote::WPE64AuthType))
-    {
-        ui->wlanPassphraseEdit->setText(iremote->getWlanKey());
-    }
-    else if ((auth == IRemote::WPA1AuthType) ||
-             (auth == IRemote::MixedWPA1AndWPA2PSKAuthType) ||
-             (auth == IRemote::WPA2PSKAuthType))
-    {
-        ui->wlanPassphraseEdit->setText(iremote->getWlanPhrase());
-    }
-
-    IRemote::IpDhcpMethod dhcpMethod = iremote->getWlanDhcpMethod();
-
-    switch (dhcpMethod)
-    {
-    case IRemote::DhcpOnMethod: ui->ipMethodCombo->setCurrentIndex(0);
-        break;
-    case IRemote::DhcpOffMethod: ui->ipMethodCombo->setCurrentIndex(1);
-        break;
-    case IRemote::AutoIpMethod: ui->ipMethodCombo->setCurrentIndex(2);
-        break;
-    }
-}
-
-void IRemoteWindow::on_getIrButton_clicked()
-{
-    ui->irCountSpin->setValue(iremote->getIrCount());
-    ui->irReceiveTimeoutSpin->setValue(iremote->getIrReceiveTimeout());
-    ui->irSendTimeoutSpin->setValue(iremote->getIrSendTimeout());
-}
-
-void IRemoteWindow::on_getRadio433Button_clicked()
-{
-    ui->radio433CountSpin->setValue(iremote->getRadio433Count());
-    ui->radio433ReceiveTimeoutSpin->setValue(iremote->getRadio433ReceiveTimeout());
-    ui->radio433SendTimeoutSpin->setValue(iremote->getRadio433SendTimeout());
-}
-
-void IRemoteWindow::on_getRadio868Button_clicked()
-{
-    ui->radio868CountSpin->setValue(iremote->getRadio868Count());
-    ui->radio868ReceiveTimeoutSpin->setValue(iremote->getRadio433ReceiveTimeout());
-    ui->radio868SendTimeoutSpin->setValue(iremote->getRadio868SendTimeout());
+    setConfig();
 }

@@ -2,14 +2,8 @@
 
 uint32 commandId = 0u;
 
-RemoteCommand *RemoteCommand_create(void)
+void RemoteCommand_initialize(RemoteCommand *command)
 {
-    RemoteCommand *command;
-    
-    command = (RemoteCommand *)calloc(sizeof(RemoteCommand),1);
-    if (command == NULL)
-        return NULL;
-    
     command->version = 0u;
     command->id = commandId;
     command->medium = 0u;
@@ -17,13 +11,6 @@ RemoteCommand *RemoteCommand_create(void)
     command->length = 0u;
     
     commandId++;
-    
-    return command;
-}
-
-void RemoteCommand_free(RemoteCommand *command)
-{
-    free(command);
 }
 
 bool RemoteCommand_compare(RemoteCommand *command1, RemoteCommand *command2)

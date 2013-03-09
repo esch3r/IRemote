@@ -21,7 +21,9 @@
 #include <gpio.h>
 #include <pincon.h>
 #include <circularbuffer.h>
+#include <rfm12.h>
 #include <led.h>
+#include "iremote.h"
 
 #include "remotecommand.h"
 #include "iremote.h"
@@ -57,7 +59,7 @@ int8 RemoteControl_initialize(void);
 
 void RemoteControl_startCapture(RemoteControl_Medium medium);
 void RemoteControl_stopCapture(void);
-RemoteCommand *RemoteControl_command(void);
+RemoteCommand* RemoteControl_command(void);
 
 void RemoteControl_runCommand(RemoteCommand *command);
 void RemoteControl_stopCommand(void);

@@ -25,7 +25,8 @@ volatile uint32 radio868MhzReceiveTimeout = 9000;
 volatile uint32 radio868MhzSendTimeout = 10000;
 volatile uint8  radio868MhzRepeatCount = 5;
 
-RemoteCommand *tmpCommand = NULL;
+RemoteCommand captureCommand;
+RemoteCommand *sendCommand;
 
 void captureFunction(void);
 void runFunction(void);
@@ -83,17 +84,14 @@ void RemoteControl_outputCommand(RemoteCommand *command)
 RemoteCommand* RemoteControl_command(void)
 {
     if (frameReceived == 1)
-        return tmpCommand;
+        return &captureCommand;
     else
         return NULL;
 }
 
 void RemoteControl_startCapture(RemoteControl_Medium medium)
-{
-    if (tmpCommand != NULL)
-        RemoteCommand_free(tmpCommand);
-    
-    tmpCommand = RemoteCommand_create();
+{    
+    RemoteCommand_initialize(&captureCommand);
     frameReceived = 0;
     firstCapture = 1;
     currentPosition = 0;
@@ -169,20 +167,21 @@ void captureFunction(void)
         {
            if ((currentPosition > 1) && ((currentPosition % 2) == 1))
            {
-               tmpCommand->length = currentPosition;
-               tmpCommand->medium = currentMedium;
+               captureCommand.length = currentPosition;
+               captureCommand.medium = currentMedium;
                frameReceived = true;
                RemoteControl_stopCapture();
                return;
            }
            else
            {
-               firstCapture = 1;
+               //firstCapture = 1;
+               currentPosition = 0;
            }
         }
         else if (timeDiff > 200)
         {
-            tmpCommand->data[currentPosition] = timeDiff;
+            captureCommand.data[currentPosition] = timeDiff;
             
             currentPosition++;
             if (currentPosition == REMOTE_COMMAND_MAX_TRANSITIONS)
@@ -198,12 +197,12 @@ void captureFunction(void)
     
     Timer_reset(Timer3);                      // Reset the timer
     
-    Led_toggle(Led2);   // visual feedback
+    Led_toggle(LedYellow);   // visual feedback
 }
 
 void RemoteControl_runCommand(RemoteCommand* command)
 {
-    tmpCommand = command;
+    sendCommand = command;
     currentMedium = command->medium;
     currentPosition = 0;
     commandRunning = 1;     // Set the variable which indicates that a command is running
@@ -267,7 +266,7 @@ void RemoteControl_stopCommand(void )
 
 void runFunction(void )
 {
-    uint16 timeout = tmpCommand->data[currentPosition];
+    uint16 timeout = sendCommand->data[currentPosition];
     
     if (currentMedium == RemoteControl_Medium_Ir)
     {
@@ -295,9 +294,9 @@ void runFunction(void )
         Rfm12_ookToggle(Rfm12_1);
     }
     
-    Led_toggle(Led2);
+    Led_toggle(LedYellow);
     
-    if (currentPosition < tmpCommand->length)
+    if (currentPosition < sendCommand->length)
     {
         Timer_setIntervalUs(Timer3, timeout);
 
@@ -306,7 +305,7 @@ void runFunction(void )
     else
     {
         RemoteControl_stopCommand();
-        Led_clear(Led2);
+        Led_clear(LedYellow);
     }
 }
 

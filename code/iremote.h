@@ -21,7 +21,6 @@
 #include <button.h>
 #include <pwm.h>
 #include <crc.h>
-#include <rfm12.h>
 #include "remotecontrol.h"
 
 typedef enum {
@@ -66,6 +65,8 @@ typedef struct {
     char   wlanMask[20];
     char   wlanGateway[20];
     uint8  networkMode;
+    char   wlanPrimaryDnsAddress[20];
+    char   wlanSecondaryDnsAddress[20];
 } ApplicationSettings;
 
 typedef enum {

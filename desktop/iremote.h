@@ -100,9 +100,11 @@ public:
     void setWlanHostname(const QString &hostname);
     void setWlanAuth(WlanAuthType mode);
     void setWlanDhcpMethod(IpDhcpMethod method);
-    void setWlanIpAddress(QString address);
-    void setWlanSubnetMask(QString address);
-    void setWlanGateway(QString address);
+    void setWlanIpAddress(const QString address);
+    void setWlanSubnetMask(const QString address);
+    void setWlanGateway(const QString address);
+    void setWlanPrimaryDnsAddress(const QString address);
+    void setWlanSecondaryDnsAddress(const QString address);
 
     void setIrCount(int times);
     void setIrReceiveTimeout(int ms);
@@ -125,6 +127,8 @@ public:
     QString getWlanIpAddress();
     QString getWlanSubnetMask();
     QString getWlanGateway();
+    QString getWlanPrimaryDnsAddress();
+    QString getWlanSecondaryDnsAddress();
 
     int getIrCount();
     int getIrReceiveTimeout();

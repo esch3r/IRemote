@@ -26,11 +26,7 @@ typedef struct {
 /** Creates an empty IR-Command
  *  @return Pointer to the new created command, return NULL on failure.
  */
-RemoteCommand* RemoteCommand_create(void);
-/** Frees the memory of an IR-Command.
- *  @param command Pointer to the command that should be freed.
- */
-void RemoteCommand_free(RemoteCommand *command);
+void RemoteCommand_initialize(RemoteCommand* command);
 /** Compares 2 IR-Commands, it is not necessare that the commands are 100% equal (see MAX_TOLERANCE).
  *  @param command1 Command 1
  *  @param command2 Command 2

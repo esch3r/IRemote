@@ -79,8 +79,6 @@ private slots:
 
     void on_runButton_clicked();
 
-    void on_settingsSubmitButton_clicked();
-
     void on_ipMethodCombo_currentIndexChanged(int index);
 
     void on_profileAddButton_clicked();
@@ -101,8 +99,6 @@ private slots:
 
     void on_wlanInfrastructureButton_clicked();
 
-    void on_setIrButton_clicked();
-
     void on_capture433Button_clicked();
 
     void on_copyCommandButton_clicked();
@@ -115,17 +111,7 @@ private slots:
 
     void on_hideCommandTableButton_clicked();
 
-    void on_setRadio433Button_clicked();
-
-    void on_setRadio868Button_clicked();
-
-    void on_settingsReadButton_clicked();
-
-    void on_getIrButton_clicked();
-
-    void on_getRadio433Button_clicked();
-
-    void on_getRadio868Button_clicked();
+    void on_saveSettingsButton_clicked();
 
 private:
     Ui::IRemoteWindow *ui;
@@ -169,6 +155,9 @@ private:
     void addProfile(QString name);
     void removeProfile(int id);
     void refreshProfiles();
+
+    void getConfig();
+    void setConfig();
 };
 
 #endif // IREMOTEWINDOW_H

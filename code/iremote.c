@@ -2,7 +2,7 @@
 
 ActiveConnection activeConnections = 0;
 
-RemoteCommand *currentCommand;
+RemoteCommand currentCommand;
 ApplicationState applicationState = ApplicationState_Idle;
 ApplicationSettings applicationSettings;
 
@@ -52,7 +52,7 @@ int8 initializeHardware(void)
 int8 initializeVariables(void )
 {
     // init variables
-    currentCommand = RemoteCommand_create();
+    //RemoteCommand_initialize(&currentCommand);
     
     //load settings....
     Iap_loadApplicationSettings(&applicationSettings, sizeof(ApplicationSettings));
@@ -77,6 +77,8 @@ int8 initializeVariables(void )
         strcpy(applicationSettings.wlanIp, "169.254.1.1");
         strcpy(applicationSettings.wlanMask, "255.255.0.0");
         strcpy(applicationSettings.wlanGateway, "169.254.1.2");
+        strcpy(applicationSettings.wlanPrimaryDnsAddress, "192.168.1.1");
+        strcpy(applicationSettings.wlanSecondaryDnsAddress, "192.168.1.2");
         applicationSettings.networkMode = NetworkMode_Adhoc;
         
         applicationSettings.firstStartIdentificator = 42;   // remove the first start indicator
@@ -168,6 +170,10 @@ int8 startWlanInfrastructureMode(ApplicationSettings *settings)
     if (WiFly_setIpGateway(settings->wlanGateway) == -1)
         return -1;
     if (WiFly_fileIoSaveDefault() == -1)
+        return -1;
+    if (WiFly_setDnsAddr(settings->wlanPrimaryDnsAddress) == -1)
+        return -1;
+    if (WiFly_setDnsBackup(settings->wlanSecondaryDnsAddress) == -1)
         return -1;
     
     if (WiFly_actionReboot() == -1)
@@ -340,7 +346,7 @@ void processCommand(char *buffer)
             uint16 i;
             for (i = 0; i < commandSize; i+=2)
             {
-                ((char*)currentCommand)[i/2] = (char)hex2int(dataPointer+i,2);
+                ((char*)(&currentCommand))[i/2] = (char)hex2int(dataPointer+i,2);
             }
         }
         startState(ApplicationState_RunCommand);
@@ -558,6 +564,38 @@ void processCommand(char *buffer)
                 if (dataPointer != NULL)
                 {
                     strncpy(applicationSettings.wlanGateway, dataPointer, 20);
+                    printAcknowledgement();
+                    return;
+                }
+                else
+                {
+                    printUnknownCommand();
+                    return;
+                }
+            }
+            else if (compareExtendedCommand("dns",dataPointer))
+            {
+                // set auth
+                dataPointer = strtok_r(NULL, " ", &savePointer);
+                if (dataPointer != NULL)
+                {
+                    strncpy(applicationSettings.wlanPrimaryDnsAddress, dataPointer, 20);
+                    printAcknowledgement();
+                    return;
+                }
+                else
+                {
+                    printUnknownCommand();
+                    return;
+                }
+            }
+            else if (compareExtendedCommand("backupDns",dataPointer))
+            {
+                // set auth
+                dataPointer = strtok_r(NULL, " ", &savePointer);
+                if (dataPointer != NULL)
+                {
+                    strncpy(applicationSettings.wlanSecondaryDnsAddress, dataPointer, 20);
                     printAcknowledgement();
                     return;
                 }
@@ -848,6 +886,18 @@ void processCommand(char *buffer)
                 printAcknowledgement();
                 return;
             }
+            else if (compareExtendedCommand("dns",dataPointer))
+            {
+                printfData("%s\r", applicationSettings.wlanPrimaryDnsAddress);
+                printAcknowledgement();
+                return;
+            }
+            else if (compareExtendedCommand("backupDns",dataPointer))
+            {
+                printfData("%s\r", applicationSettings.wlanSecondaryDnsAddress);
+                printAcknowledgement();
+                return;
+            }
             else
             {
                 printUnknownCommand();
@@ -910,7 +960,7 @@ void processCommand(char *buffer)
             }
             else if (compareExtendedCommand("count",dataPointer))
             {
-                printfData("%u\r", applicationSettings.radio868RepeatCount);
+                printfData("%u\r", applicationSettings.radio433RepeatCount);
                 printAcknowledgement();
                 return;
             }
@@ -1117,7 +1167,7 @@ void startState(ApplicationState state)
                 
         printfData("Running command\r");
         Led_blink(Led2);
-        RemoteControl_runCommand(currentCommand);
+        RemoteControl_runCommand(&currentCommand);
     }
     else if (state == ApplicationState_FlashFirmware)
     {
@@ -1146,10 +1196,11 @@ void mainTask(void)
               || (applicationState == ApplicationState_CaptureRadio868MhzCommand)
         )
         {
-            currentCommand = RemoteControl_command();
-            if (currentCommand != NULL)    // We finally received something
+            RemoteCommand *receivedCommand;
+            receivedCommand = RemoteControl_command();
+            if (receivedCommand != NULL)    // We finally received something
             {
-                RemoteControl_outputCommand(currentCommand);
+                RemoteControl_outputCommand(receivedCommand);
                 startState(ApplicationState_Idle);
             }
         }
@@ -1182,6 +1233,7 @@ void ledTask(void)
     if ((activeConnections & NetworkConnection))
     {
         Led_set(LedGreen);  // Green LED
+        Led_clear(LedRed);
     }
     else
     {

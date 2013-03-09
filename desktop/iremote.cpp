@@ -116,8 +116,8 @@ void IRemote::closeNetwork()
     tcpSocket = NULL;
     activeConnections &= ~NetworkConnection;
     wantsConnection = false;
-    emit networkDisconnected();
     endQueue();
+    emit networkDisconnected();
 }
 
 #ifdef SERIALPORT
@@ -204,7 +204,7 @@ void IRemote::setWlanDhcpMethod(IRemote::IpDhcpMethod method)
     startQueue();
 }
 
-void IRemote::setWlanIpAddress(QString address)
+void IRemote::setWlanIpAddress(const QString address)
 {
     QueueCommand command;
     command.command = QString("set w i %1\r").arg(address).toLocal8Bit();
@@ -216,7 +216,7 @@ void IRemote::setWlanIpAddress(QString address)
     startQueue();
 }
 
-void IRemote::setWlanSubnetMask(QString address)
+void IRemote::setWlanSubnetMask(const QString address)
 {
     QueueCommand command;
     command.command = QString("set w m %1\r").arg(address).toLocal8Bit();
@@ -228,10 +228,34 @@ void IRemote::setWlanSubnetMask(QString address)
     startQueue();
 }
 
-void IRemote::setWlanGateway(QString address)
+void IRemote::setWlanGateway(const QString address)
 {
     QueueCommand command;
     command.command = QString("set w g %1\r").arg(address).toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+}
+
+void IRemote::setWlanPrimaryDnsAddress(const QString address)
+{
+    QueueCommand command;
+    command.command = QString("set w d %1\r").arg(address).toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+}
+
+void IRemote::setWlanSecondaryDnsAddress(const QString address)
+{
+    QueueCommand command;
+    command.command = QString("set w b %1\r").arg(address).toLocal8Bit();
     command.response = "ACK";
     command.timeout = m_responseTimeout;
     command.type = NormalQueueCommandType;
@@ -472,6 +496,36 @@ QString IRemote::getWlanGateway()
 {
     QueueCommand command;
     command.command = QString("get w g\r").toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+    waitForQueue();
+
+    return receivedData;
+}
+
+QString IRemote::getWlanPrimaryDnsAddress()
+{
+    QueueCommand command;
+    command.command = QString("get w d\r").toLocal8Bit();
+    command.response = "ACK";
+    command.timeout = m_responseTimeout;
+    command.type = NormalQueueCommandType;
+
+    commandQueue.enqueue(command);
+    startQueue();
+    waitForQueue();
+
+    return receivedData;
+}
+
+QString IRemote::getWlanSecondaryDnsAddress()
+{
+    QueueCommand command;
+    command.command = QString("get w b\r").toLocal8Bit();
     command.response = "ACK";
     command.timeout = m_responseTimeout;
     command.type = NormalQueueCommandType;
@@ -800,10 +854,10 @@ void IRemote::incomingNetworkData()
 {
     QByteArray data;
 
-    if (tcpSocket == NULL)
+    if ((tcpSocket == NULL))
         return;
 
-    while (tcpSocket->bytesAvailable() != 0)
+    while ((tcpSocket != NULL) && (tcpSocket->bytesAvailable() != 0))
     {
        data = tcpSocket->read(1);
        incomingByte(data.at(0));
@@ -947,7 +1001,10 @@ void IRemote::receivedCommand(QByteArray command)
             {
                 remoteCommand = repair433MhzCommand(remoteCommand); // try to repair 433MHz commands
             }
-            irCommandReceived(remoteCommand);
+
+            responseTimer->stop();                  // stop the response timer, as we alredy have received what we need
+            waitingForRespose = false;
+            emit irCommandReceived(remoteCommand);  // and this is blocking
         }
     }
     else
